@@ -29,12 +29,15 @@ var ERROR_CODES = {
 var flagSaveUser = 0;
 
 /**
+ * @protected 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"C1A3ACE5-EDC1-4EF1-A994-1F75DAF75816"}
  */
 var userName = '';
+
 /**
+ * @protected 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"9C34684C-041A-44E0-9AF1-83235786B3D8"}
@@ -42,6 +45,7 @@ var userName = '';
 var password = '';
 
 /**
+ * @protected 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"C5AEC878-26B1-4D35-A533-1D6527ACBE69"}
@@ -49,6 +53,7 @@ var password = '';
 var tenantName = '';
 
 /**
+ * @protected 
  * @properties={typeid:24,uuid:"2F8D781B-F5CB-46E4-9D07-984A8E42B71B"}
  */
 function login(){
@@ -90,6 +95,7 @@ function login(){
 }
 
 /**
+ * @protected 
  * @properties={typeid:24,uuid:"BCB050CC-2B33-4959-A63C-7463484FB3F1"}
  */
 function onLoginSuccess(){
@@ -101,9 +107,9 @@ function onLoginSuccess(){
 }
 
 /**
- * TODO generated, please specify type and doc for the params
- * @param error
- *
+ * @protected 
+ * @param {String} error One of the error codes
+ * @see ERROR_CODES
  * @properties={typeid:24,uuid:"E27794C5-C3A3-4C09-827F-A9A1EB1658C0"}
  */
 function onLoginError(error){

@@ -58,6 +58,9 @@ function login(user){
 		return false;
 	}
 
+	// sync permissions
+	syncPermissions();
+	
 	// get internal groups
 	var servoyGroups = [];
 	var permissions = user.getPermissions();
@@ -1343,7 +1346,7 @@ function save(record){
  * @private 
  * @properties={typeid:24,uuid:"EA173150-F833-4823-9110-5C576FFE362E"}
  */
-function snycPermissions(){
+function syncPermissions(){
 	var permissionFS = datasources.db.svy_security.permissions.getFoundSet();
 	var groups = security.getGroups().getColumnAsArray(2);
 	for(var i in groups){
@@ -1357,6 +1360,15 @@ function snycPermissions(){
 			
 			// TODO proper logging
 			application.output('Created permission "'+groups[i]+'" which did not exist',LOGGINGLEVEL.DEBUG); // TODO proper logging
+		}
+	}
+	
+	// look for removed permissions
+	permissionFS.loadAllRecords();
+	for (i = 1; i <= permissionFS.getSize(); i++) {
+		var record = permissionFS.getRecord(i);
+		if(groups.indexOf(record.internal_name) == -1){
+			application.output('Permission "'+record.permission_name+'" is no longer found within internal security settings', LOGGINGLEVEL.WARNING); // TODO proper logging
 		}
 	}
 }
