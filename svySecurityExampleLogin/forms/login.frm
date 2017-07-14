@@ -26,6 +26,7 @@ uuid:"7C1B871F-8721-4963-B4B8-F264643B29B9"
 dataProviderID:"userName",
 location:"20,110",
 name:"userName",
+onActionMethodID:"2F8D781B-F5CB-46E4-9D07-984A8E42B71B",
 size:"180,30",
 typeid:4,
 uuid:"B56E4953-0278-41D7-8753-02E0C4301D63"
@@ -34,6 +35,7 @@ uuid:"B56E4953-0278-41D7-8753-02E0C4301D63"
 dataProviderID:"tenantName",
 location:"20,40",
 name:"tenantName",
+onActionMethodID:"2F8D781B-F5CB-46E4-9D07-984A8E42B71B",
 size:"180,30",
 typeid:4,
 uuid:"B80BC0DB-45F3-4DC0-846D-65463AE1DCA0"
@@ -54,7 +56,7 @@ displayType:4,
 location:"21,270",
 name:"flagSaveUser",
 size:"184,20",
-text:"Rememner Me",
+text:"Remember Me",
 typeid:4,
 uuid:"BFC53832-DE6F-42C3-BFF1-383479251AC7"
 },
@@ -63,6 +65,7 @@ dataProviderID:"password",
 displayType:6,
 location:"20,180",
 name:"password",
+onActionMethodID:"2F8D781B-F5CB-46E4-9D07-984A8E42B71B",
 size:"180,30",
 typeid:4,
 uuid:"D1B9D09A-1EFD-4381-B385-1C082A570306"
