@@ -1,13 +1,19 @@
 /**
+ * Login cookie name
+ * 
  * @private
  * @type {String}
  *
  * @properties={typeid:35,uuid:"65B6F5CA-83A9-4C40-9CD7-C0749C146654"}
  */
-var LOGIN_PROPERTY = 'com.servoy.extensions.security.login';
+var LOGIN_COOKIE = 'com.servoy.extensions.security.login';
 
 /**
+ * Error codes returned in onLoginError 
+ * 
  * @protected 
+ * @enum 
+ * @see onLoginError
  * @properties={typeid:35,uuid:"E67B9796-263B-4E7A-A9B8-BFCCA9348DF7",variableType:-4}
  */
 var ERROR_CODES = {
@@ -21,6 +27,8 @@ var ERROR_CODES = {
 };
 
 /**
+ * "Remember Me flag" can be used with checkbox
+ * 
  * @protected 
  * @type {Number}
  *
@@ -29,6 +37,8 @@ var ERROR_CODES = {
 var flagSaveUser = 0;
 
 /**
+ * User name to login as
+ * 
  * @protected 
  * @type {String}
  *
@@ -37,6 +47,8 @@ var flagSaveUser = 0;
 var userName = '';
 
 /**
+ * Password to check on login
+ * 
  * @protected 
  * @type {String}
  *
@@ -45,6 +57,8 @@ var userName = '';
 var password = '';
 
 /**
+ * Tenant name to login with
+ * 
  * @protected 
  * @type {String}
  *
@@ -53,88 +67,116 @@ var password = '';
 var tenantName = '';
 
 /**
+ * Login method will authenticate the user
+ * If login is successful, onLoginSuccess is called
+ * If login is unsuccessful, onLoginError is called and an error code is supplied
+ * NOTE: onLoginSuccess if called AFTER onOpen event of the main solution
+ * 
  * @protected 
+ * @return {Boolean} True when successful
+ * @see onLoginError
+ * @see onLoginSuccess
+ * @see ERROR_CODES
+ * 
  * @properties={typeid:24,uuid:"2F8D781B-F5CB-46E4-9D07-984A8E42B71B"}
  */
 function login(){
 	
 	if(!tenantName){
 		onLoginError(ERROR_CODES.TENANT_NOT_SPECIFIED);
-		return;
+		return false;
 	}
 	if(!userName){
 		onLoginError(ERROR_CODES.USER_NOT_SPECIFIED);
-		return;
+		return false;
 	}
 	if(!password){
 		onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
-		return;
+		return false;
 	}
 	
 	var tenant = scopes.svySecurity.getTenant(tenantName);
 	if(!tenant){
 		onLoginError(ERROR_CODES.TENANT_NOT_FOUND);
-		return;
+		return false;
 	}
 	
 	var user = tenant.getUser(userName);
 	if(!user){
 		onLoginError(ERROR_CODES.USER_NOT_FOUND);
-		return;
+		return false;
 	}
 	if(!user.checkPassword(password)){
 		onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
-		return;
+		return false;
 	}
 	if(!scopes.svySecurity.login(user)){
 		onLoginError(ERROR_CODES.INSUFFICIENT_PERMISSIONS);
-		return;
+		return false;
 	}
 	
+	// reset cookie if applicable
+	if(flagSaveUser){
+		setCookie();
+	} else {
+		clearCookie();
+	}
+	
+	// notify success
 	onLoginSuccess();
+	
+	return true;
 }
 
 /**
+ * Hook for child forms. Called after successful login.
+ * NOTE: onLoginSuccess if called AFTER onOpen event of the main solution
+ *  
  * @protected 
  * @properties={typeid:24,uuid:"BCB050CC-2B33-4959-A63C-7463484FB3F1"}
  */
 function onLoginSuccess(){
-	if(flagSaveUser){
-		saveUser();
-	} else {
-		clearSavedUser();
-	}
+	// for child form implementation
 }
 
 /**
+ * Hook for child forms. Called after failed login. 
+ * Implementing forms can trap this error and notify user in their own way.
+ * 
  * @protected 
  * @param {String} error One of the error codes
  * @see ERROR_CODES
  * @properties={typeid:24,uuid:"E27794C5-C3A3-4C09-827F-A9A1EB1658C0"}
  */
 function onLoginError(error){
-	
+	// for child form implementation
 }
 
 /**
+ * Saves the login settings in the cookie
+ * @private 
  * @properties={typeid:24,uuid:"11E848CB-A546-44E9-8EA2-4C7041D88FFF"}
  */
-function saveUser(){
-	application.setUserProperty(LOGIN_PROPERTY,JSON.stringify({userName:userName,tenantName:tenantName}));
+function setCookie(){
+	application.setUserProperty(LOGIN_COOKIE,JSON.stringify({userName:userName,tenantName:tenantName}));
 }
 
 /**
+ * Clears the login settings from the cookie
+ * @private 
  * @properties={typeid:24,uuid:"EA96B97D-F503-4EFC-9158-4DEE3E5DC296"}
  */
-function clearSavedUser(){
-	application.setUserProperty(LOGIN_PROPERTY, null);
+function clearCookie(){
+	application.setUserProperty(LOGIN_COOKIE, null);
 }
 
 /**
+ * Loads login settings from cookie
+ * @private 
  * @properties={typeid:24,uuid:"401168F2-B966-4842-A056-1BE64FE1EF43"}
  */
-function loadUser(){
-	var str = application.getUserProperty(LOGIN_PROPERTY);
+function readCookie(){
+	var str = application.getUserProperty(LOGIN_COOKIE);
 	flagSaveUser = str ? 1 : 0;
 	if(str){
 		/** @type {{userName:String,tenantName}} */
@@ -145,7 +187,9 @@ function loadUser(){
 }
 /**
  * Callback method for when form is shown.
- *
+ * Reads the cookie on first show
+ * NOTE: Implementing forms should call _super.onShow if overriding
+ * 
  * @param {Boolean} firstShow form is shown first time after load
  * @param {JSEvent} event the event that triggered the action
  *
@@ -155,6 +199,6 @@ function loadUser(){
  */
 function onShow(firstShow, event) {
 	if(firstShow){
-		loadUser();
+		readCookie();
 	}
 }
