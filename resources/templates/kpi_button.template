@@ -1,0 +1,32 @@
+{
+"elements":[
+{
+anchors:9,
+dataProviderID:"tenantCount",
+location:"0,0",
+onActionMethodID:"addTenant",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,120",
+styleClass:"flat-button transition-medium large",
+text:"Tenant Count",
+typeid:7
+},
+{
+anchors:9,
+location:"0,90",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,30",
+styleClass:"small-label",
+text:"Active Tenants",
+transparent:true,
+typeid:7
+}
+],
+"grouping":true,
+"layout":"Absolute-Layout",
+"location":"30,110"
+}

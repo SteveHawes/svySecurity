@@ -1,0 +1,19 @@
+{
+"elements":[
+{
+anchors:3,
+location:"0,0",
+onActionMethodID:"addTenant",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"100,40",
+styleClass:"flat-button transition-medium",
+text:"Add Tenant",
+typeid:7
+}
+],
+"grouping":false,
+"layout":"Absolute-Layout",
+"location":"650,40"
+}
