@@ -82,6 +82,7 @@ function login(user){
 	
 	// login
 	if(!security.login(user.getUserName(),user.getID(),servoyGroups)){
+		// TODO logging
 		return false;
 	}
 	
@@ -216,6 +217,23 @@ function getUser(userName, tenantName){
 	// No Match
 	// TODO logging
 	return null;
+}
+
+/**
+ * @public 
+ * @return {Array<User>}
+ * @properties={typeid:24,uuid:"6BF188EF-BC15-43AE-AB70-BB9A83FB2B18"}
+ */
+function getUsers(){
+	var users = [];
+	var fs = datasources.db.svy_security.users.getFoundSet();
+	fs.sort('display_name asc')
+	fs.loadAllRecords();
+	for (var i = 1; i <= fs.getSize(); i++) {
+		var record = fs.getRecord(i);
+		users.push(new User(record));
+	}
+	return users;
 }
 
 /**
