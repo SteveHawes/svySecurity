@@ -3,7 +3,8 @@ deleteRelatedRecords:true,
 encapsulation:2,
 foreignDataSource:"db:/svy_security/user_roles",
 items:[
-{foreignColumnName:"user_id",primaryDataProviderID:"id",typeid:23,uuid:"C1BDAA22-2EAB-4B1F-ABAF-0B6359725E30"}
+{foreignColumnName:"user_id",primaryDataProviderID:"id",typeid:23,uuid:"C1BDAA22-2EAB-4B1F-ABAF-0B6359725E30"},
+{foreignColumnName:"tenant_id",primaryDataProviderID:"tenant_id",typeid:23,uuid:"DE7731A0-E961-4C17-B2F5-CCD1FBB50030"}
 ],
 joinType:1,
 name:"users_to_user_roles",
