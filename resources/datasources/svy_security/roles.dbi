@@ -15,7 +15,7 @@ allowNull:true,
 creationOrderIndex:8,
 dataType:12,
 flags:4,
-foreignType:"applications",
+foreignType:"application",
 length:36,
 name:"application_id",
 titleText:"Application"
