@@ -1,5 +1,7 @@
 groups:[
+"abc",
 "Administrators",
+"canSeeSalary",
 "Users Full Access",
 "Users Read-Only"
 ],
