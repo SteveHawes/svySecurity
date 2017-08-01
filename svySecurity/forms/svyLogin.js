@@ -91,7 +91,7 @@ function login(){
 		return false;
 	}
 	if(!password){
-		onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
+		onLoginError(ERROR_CODES.PASSWORD_NOT_SPECIFIED);
 		return false;
 	}
 	
