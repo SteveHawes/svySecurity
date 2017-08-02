@@ -1138,6 +1138,7 @@ function Permission(record){
 			if(record.permissions_to_roles_permissions.newRecord() == -1){
 				throw 'New record failed';
 			}
+			record.permissions_to_roles_permissions.tenant_id = role.getTenant().getID();
 			record.permissions_to_roles_permissions.role_id = role.getID();
 			save(record)
 		}
