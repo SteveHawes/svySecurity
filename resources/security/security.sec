@@ -1,7 +1,5 @@
 groups:[
-"Administrators",
-"Users Full Access",
-"Users Read-Only"
+"Administrators"
 ],
 usergroups:{
 
