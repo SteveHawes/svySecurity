@@ -297,6 +297,43 @@ function getSession(){
 }
 
 /**
+ * Gets all the active sessions for this system.
+ * 
+ * @public 
+ * @return {Array<Session>}
+ * @properties={typeid:24,uuid:"D3256103-0741-498E-9CA9-0E34E9D530E2"}
+ */
+function getActiveSessions(){
+	var expiration = new Date();
+	expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
+	var q = datasources.db.svy_security.sessions.createSelect();
+	q.where
+		.add(q.columns.session_end.isNull)
+		.add(q.columns.last_client_ping.gt(expiration))
+	var fs = datasources.db.svy_security.sessions.getFoundSet();
+	fs.loadRecords(q);
+	var sessions = [];
+	for (var i = 1; i <= fs.getSize(); i++) {
+		var sesh = fs.getRecord(i);
+		sessions.push(new Session(sesh));
+	}
+	return sessions;
+}
+
+/**
+ * Gets the number of unique logins this system has from any location at any time
+ * @public 
+ * @return {Number} 
+ *
+ * @properties={typeid:24,uuid:"6AAEA97C-C8FB-45FC-886C-1B43678C2F2C"}
+ */
+function getSessionCount(){
+	var q = datasources.db.svy_security.sessions.createSelect();
+	q.result.add(q.columns.id.count);
+	return databaseManager.getDataSetByQuery(q,1).getValue(1,1);
+}
+
+/**
  * @private 
  * @param {JSRecord<db:/svy_security/tenants>} record
  * @constructor 
@@ -490,6 +527,40 @@ function Tenant(record){
 		record.tenant_description = description;
 		save(record);
 		return this;
+	}
+	
+	/**
+	 * Gets the active sessions for this tenant 
+	 * This includes any sessions from any device or location
+	 * NOTE: Any unterminated sessions are deemed to be active when they not been idle for more than a set timeout period
+	 * 
+	 * @public 
+	 * @return {Array<Session>}
+	 */
+	this.getActiveSessions = function(){
+		var expiration = new Date();
+		expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
+		var q = record.tenants_to_sessions.getQuery();
+		q.where
+			.add(q.columns.session_end.isNull)
+			.add(q.columns.last_client_ping.gt(expiration))
+		var fs = datasources.db.svy_security.sessions.getFoundSet();
+		fs.loadRecords(q);
+		var sessions = [];
+		for (var i = 1; i <= fs.getSize(); i++) {
+			var sesh = fs.getRecord(i);
+			sessions.push(new Session(sesh));
+		}
+		return sessions;
+	}
+	
+	/**
+	 * Gets the number of unique logins this tenant has from any location at any time
+	 * @public 
+	 * @return {Number} 
+	 */
+	this.getSessionCount = function(){
+		return databaseManager.getFoundSetCount(record.tenants_to_sessions);
 	}
 }
 
@@ -741,24 +812,6 @@ function User(record){
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * Gets the user's most recent sessions
-	 * By default this is limited to the most recent 200 sessions, but an optional limit may be specified.
-	 * 
-	 * @public 
-	 * @param {Number} [limit] Defalut is 200
-	 * @return {Array<Session>} 
-	 */
-	this.getSessions = function(limit){
-		var sessions = [];
-		limit = !limit ? 200: limit;
-		for (var i = 1; i < limit && i <= record.users_to_sessions.getSize(); i++) {
-			var userSession = record.users_to_sessions.getRecord(i);
-			sessions.push(new Session(userSession));
-		}
-		return sessions;
 	}
 	
 	/**
@@ -1465,3 +1518,14 @@ function filterSecurityTables(){
 		throw 'Failed to filter security tables';	
 	}
 }
+
+/**
+ * Initializes the module.
+ * NOTE: This var must remain at the BOTTOM of the file.
+ * @private 
+ * @SuppressWarnings (unused)
+ * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
+ */
+var init = function(){
+	syncPermissions();
+}();
