@@ -156,15 +156,14 @@ function getTenant(name){
 	
 	// no name, look for current user's tenant
 	if(!name){
-		var user = getUser();
-		
-		// No logged-in user
-		if(!user){
+
+		// No logged-in user/tenant
+		if(!utils.hasRecords(active_tenant)){
 			return null;
 		}
 		
 		// get user's tenant
-		return user.getTenant();
+		return new Tenant(active_tenant.getRecord(1));
 	}
 	
 	// lookup tenant by name
@@ -205,12 +204,22 @@ function getUser(userName, tenantName){
 		return new User(active_user.getSelectedRecord());
 	}
 	
+	// tenant not specified, use active tenant
+	if(!tenantName){
+		if(utils.hasRecords(active_tenant)){
+			tenantName = active_tenant.tenant_name;
+		} else {
+			throw 'Calling getUser w/ no tenant supplied and no active tenant. Results may not be unique.';
+		}
+	}
+	
 	// get matching user
 	var fs = datasources.db.svy_security.users.getFoundSet();
 	fs.find();
 	fs.user_name = userName;
 	fs.users_to_tenants.tenant_name = tenantName;
-	if(fs.search()){
+	var results = fs.search()  
+	if(results == 1){
 		return new User(fs.getSelectedRecord());
 	}
 	
