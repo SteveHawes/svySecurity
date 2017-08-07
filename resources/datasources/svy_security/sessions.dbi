@@ -15,7 +15,8 @@ allowNull:true,
 creationOrderIndex:5,
 dataType:12,
 length:50,
-name:"ip_address"
+name:"ip_address",
+titleText:"IP Address"
 },
 {
 allowNull:true,
@@ -23,13 +24,15 @@ autoEnterSubType:0,
 autoEnterType:1,
 creationOrderIndex:7,
 dataType:93,
-name:"last_client_ping"
+name:"last_client_ping",
+titleText:"Last Activity"
 },
 {
 allowNull:true,
 creationOrderIndex:4,
 dataType:93,
-name:"session_end"
+name:"session_end",
+titleText:"Session End"
 },
 {
 allowNull:true,
@@ -44,7 +47,7 @@ titleText:"Session Start"
 allowNull:true,
 creationOrderIndex:2,
 dataType:12,
-flags:4,
+flags:12,
 foreignType:"tenants",
 length:36,
 name:"tenant_id",
@@ -52,20 +55,37 @@ titleText:"Tenant"
 },
 {
 allowNull:true,
+creationOrderIndex:9,
+dataType:12,
+length:50,
+name:"tenant_name",
+titleText:"Tenant Name"
+},
+{
+allowNull:true,
 creationOrderIndex:6,
 dataType:12,
 length:256,
-name:"user_agent_string"
+name:"user_agent_string",
+titleText:"User Agent"
 },
 {
 allowNull:true,
 creationOrderIndex:1,
 dataType:12,
-flags:4,
+flags:12,
 foreignType:"users",
 length:36,
 name:"user_id",
 titleText:"User"
+},
+{
+allowNull:true,
+creationOrderIndex:8,
+dataType:12,
+length:50,
+name:"user_name",
+titleText:"User Name"
 }
 ],
 name:"sessions",
