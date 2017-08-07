@@ -494,36 +494,39 @@ function Tenant(record){
 	 * User will not be deleted if it has active sessions
 	 * 
 	 * @public 
-	 * @param {User} user
+	 * @param {User|String} user
 	 * @return {Boolean}
 	 */
 	this.deleteUser = function(user){
+		var userName = user instanceof String ? user : user.getUserName();
+		
 		if(user.getActiveSessions().length){
-			application.output('Could not delete user "'+user.getUserName()+'". Has active sessions',LOGGINGLEVEL.WARNING); // TODO Proper Logging
+			application.output('Could not delete user "'+userName+'". Has active sessions',LOGGINGLEVEL.WARNING); // TODO Proper Logging
 			return false;
 		}
 		
-		var fs = datasources.db.svy_security.users.getFoundSet();
+		var fs = record.tenants_to_users.duplicateFoundSet();
 		fs.find();
-		fs.user_name = user.getUserName()
+		fs.user_name = userName;
 		if(!fs.search()){
-			application.output('Could not delete user "'+user.getUserName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			application.output('Could not delete user "'+userName+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			return false;
 		}
 		
 		databaseManager.startTransaction();
 		try{
 			if(!fs.deleteRecord(1)){
-				application.output('Could not delete user "'+user.getUserName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+				application.output('Could not delete user "'+userName+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
 				return false;
 			}
 			if(!databaseManager.commitTransaction()){
-				application.output('Could not delete user "'+user.getUserName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+				application.output('Could not delete user "'+userName+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
 			}
 			return true;
 			
 		}catch(e){
 			databaseManager.rollbackTransaction();
-			application.output('Could not delete user "'+user.getUserName()+'". Unkown error: '+e.message+'. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			application.output('Could not delete user "'+userName+'". Unkown error: '+e.message+'. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
 			return false;
 		}
 	}
@@ -595,16 +598,22 @@ function Tenant(record){
 	 * Users with active sessions will be affected, but design-time security (CRUD, UI) will not be affected until next log-in.
 	 * 
 	 * @public 
-	 * @param {Role} role
+	 * @param {Role|String} role
 	 * @return {Tenant}
 	 */
 	this.deleteRole = function(role){
+		var roleName = role instanceof String ? role : role.getName();
 		
-		if(!record.tenants_to_roles.selectRecord(role.getName())){
-			throw 'Role '+role.getName()+' not found in tenant';
+		var fs = record.tenants_to_roles.duplicateFoundSet();
+		if(!fs.find()){
+			throw 'Role not deleted. Find failed';
 		}
-		if(!record.tenants_to_roles.deleteRecord()){
-			throw 'Role '+role.getName()+' could not be deleted. Check log for details';
+		fs.role_name = roleName;
+		if(!fs.search()){
+			throw 'Role '+roleName+' not found in tenant';
+		}
+		if(!fs.deleteRecord()){
+			throw 'Role '+roleName+' could not be deleted. Check log for details';
 		}
 		return this;
 	}
@@ -834,13 +843,16 @@ function User(record){
 	 * Grants the specified role to this user
 	 * 
 	 * @public 
-	 * @param {Role} role
+	 * @param {Role|String} role
 	 * @return {User} This user for call-chaining
 	 */
 	this.addRole = function(role){
+		
 		if(!role){
 			throw 'Role cannot be null';
 		}
+		var roleName = role instanceof String ? role : role.getName();
+		
 		// already has role, no change
 		if(this.hasRole(role)){
 			return this;
@@ -848,7 +860,7 @@ function User(record){
 		if(record.users_to_user_roles.newRecord() == -1){
 			throw 'failed to create record';
 		}
-		record.users_to_user_roles.role_name = role.getName();
+		record.users_to_user_roles.role_name = roleName;
 		if(!record.users_to_user_roles.creation_user_name){
 			// TODO Logging ?
 			record.users_to_user_roles.creation_user_name = SYSTEM_USER;
@@ -861,16 +873,17 @@ function User(record){
 	 * Removes the specified role from this user
 	 * 
 	 * @public 
-	 * @param {Role} role
+	 * @param {Role|String} role
 	 * @return {User} This user for call-chaining
 	 */
 	this.removeRole = function(role){
 		if(!role){
 			throw 'Role cannot be null';
 		}
+		var roleName = role instanceof String ? role : role.getName();
 		for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
 			var link = record.users_to_user_roles.getRecord(i);
-			if(link.role_name == role.getName()){
+			if(link.role_name == roleName){
 				if(!record.users_to_user_roles.deleteRecord(link)){
 					throw 'failed to delete record'
 				}
@@ -899,13 +912,17 @@ function User(record){
 	 * Checks if this user is granted the specified role
 	 * 
 	 * @public 
-	 * @param {Role} role
+	 * @param {Role|String} role
 	 * @return {Boolean}
 	 */
 	this.hasRole = function(role){
+		if(!role){
+			throw 'Role cannot be null';
+		}
+		var roleName = role instanceof String ? role : role.getName();
 		for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
 			var link = record.users_to_user_roles.getRecord(i);
-			if(link.role_name == role.getName()){
+			if(link.role_name == roleName){
 				return true;
 			}
 		}
@@ -945,13 +962,17 @@ function User(record){
 	 * Checks if the this user is granted the specified permission via their roles 
 	 * 
 	 * @public 
-	 * @param {Permission} permission
+	 * @param {Permission|String} permission
 	 * @return {Boolean}
 	 */
 	this.hasPermission = function(permission){
+		if(!permission){
+			throw 'Permission cannot be null';
+		}
+		var permissionName = permission instanceof String ? permission : permission.getName();
 		var permissions = this.getPermissions();
 		for(var i in permissions){
-			if(permissions[i].getName() == permission.getName()){
+			if(permissions[i].getName() == permissionName){
 				return true;
 			}
 		}
@@ -1142,14 +1163,17 @@ function Role(record){
 	 * @return {Role} this role for call-chaining
 	 */
 	this.addUser = function(user){
+		
 		if(!user){
 			throw 'User cannot be null'
 		}
+		
+		var userName = user instanceof String ? user : user.getUserName();
 		if(!this.hasUser(user)){
 			if(record.roles_to_user_roles.newRecord() == -1){
 				throw 'New record failed';
 			}
-			record.roles_to_user_roles.user_name = user.getUserName();
+			record.roles_to_user_roles.user_name = userName;
 			if(!record.roles_to_user_roles.creation_user_name){
 				// TODO logging ?
 				record.roles_to_user_roles.creation_user_name = SYSTEM_USER;
@@ -1178,15 +1202,18 @@ function Role(record){
 	 * Checks if this role is granted to the specified user
 	 * 
 	 * @public 
-	 * @param {User} user
+	 * @param {User|String} user
 	 * @return {Boolean}
 	 */
 	this.hasUser = function(user){
+		
 		if(!user){
 			throw 'User cannot be null';
 		}
+		
+		var userName = user instanceof String ? user : user.getUserName();
 		for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
-			if(record.roles_to_user_roles.getRecord(i).user_name == user.getUserName()){
+			if(record.roles_to_user_roles.getRecord(i).user_name == userName){
 				return true;
 			}
 		}
@@ -1197,15 +1224,16 @@ function Role(record){
 	 * Removes this granted role from the specified user
 	 * 
 	 * @public 
-	 * @param {User} user
+	 * @param {User|String} user
 	 * @return {Role} this role for call-chaining
 	 */
 	this.removeUser = function(user){
 		if(!user){
 			throw 'User cannot be null';
 		}
+		var userName = user instanceof String ? user : user.getUserName();
 		for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
-			if(record.roles_to_user_roles.getRecord(i).user_name == user.getUserName()){
+			if(record.roles_to_user_roles.getRecord(i).user_name == userName){
 				if(!record.roles_to_user_roles.deleteRecord(i)){
 					throw 'Failed to delete record';
 				}
@@ -1220,19 +1248,22 @@ function Role(record){
 	 * Any users with this role with inherit the permission
 	 * 
 	 * @public 
-	 * @param {Permission} permission
+	 * @param {Permission|String} permission
 	 * @return {Role} this role for call-chaining
 	 */
 	this.addPermission = function(permission){
+		
 		if(!permission){
 			throw 'Permission cannot be null';
 		}
+		
 		// already has it
+		var permissionName = permission instanceof String ? permission : permission.getName();
 		if(!this.hasPermission(permission)){
 			if(record.roles_to_roles_permissions.newRecord() == -1){
 				throw 'New record failed';
 			}
-			record.roles_to_roles_permissions.permission_name = permission.getName();
+			record.roles_to_roles_permissions.permission_name = permissionName;
 			if(!record.roles_to_roles_permissions.creation_user_name){
 				// TODO Logging ?
 				record.roles_to_roles_permissions.creation_user_name = SYSTEM_USER;
@@ -1262,15 +1293,16 @@ function Role(record){
 	 * Checks if this role is granted the specified permission
 	 * 
 	 * @public 
-	 * @param {Permission} permission
+	 * @param {Permission|String} permission
 	 * @return {Boolean}
 	 */
 	this.hasPermission = function(permission){
 		if(!permission){
 			throw 'Permission cannot be null';
 		}
+		var permissionName = permission instanceof String ? permission : permission.getName();
 		for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
-			if(record.roles_to_roles_permissions.getRecord(i).permission_name == permission.getName()){
+			if(record.roles_to_roles_permissions.getRecord(i).permission_name == permissionName){
 				return true;
 			}
 		}
@@ -1281,15 +1313,16 @@ function Role(record){
 	 * Removes the specified permission from this role
 	 * 
 	 * @public 
-	 * @param {Permission} permission
+	 * @param {Permission|String} permission
 	 * @return {Role} this role for call-chaining
 	 */
 	this.removePermission = function(permission){
 		if(!permission){
 			throw 'Permission cannot be null';
 		}
+		var permissionName = permission instanceof String ? permission : permission.getName();
 		for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
-			if(record.roles_to_roles_permissions.getRecord(i).permission_name == permission.getName()){
+			if(record.roles_to_roles_permissions.getRecord(i).permission_name == permissionName){
 				if(!record.roles_to_roles_permissions.deleteRecord(i)){
 					throw 'Delete record failed';
 				}
@@ -1369,12 +1402,14 @@ function Permission(record){
 		if(!role){
 			throw 'Role cannot be null';
 		}
+		var roleName = role instanceof String ? role : role.getName();
+		
 		if(!this.hasRole(role)){
 			if(record.permissions_to_roles_permissions.newRecord() == -1){
 				throw 'New record failed';
 			}
 			record.permissions_to_roles_permissions.tenant_name = role.getTenant().getName();
-			record.permissions_to_roles_permissions.role_name = role.getName();
+			record.permissions_to_roles_permissions.role_name = roleName;
 			if(!record.permissions_to_roles_permissions.creation_user_name){
 				record.permissions_to_roles_permissions.creation_user_name = SYSTEM_USER;
 			}
@@ -1402,15 +1437,16 @@ function Permission(record){
 	 * Checks if this permission has the specified role
 	 * 
 	 * @public 
-	 * @param {Role} role
+	 * @param {Role|String} role
 	 * @return {Boolean}
 	 */
 	this.hasRole = function(role){
 		if(!role){
 			throw 'Role cannot be null';
 		}
+		var roleName = role instanceof String ? role : role.getName();
 		for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
-			if(record.permissions_to_roles_permissions.getRecord(i).role_name == role.getName()){
+			if(record.permissions_to_roles_permissions.getRecord(i).role_name == roleName){
 				return true;
 			}
 		}
@@ -1421,15 +1457,17 @@ function Permission(record){
 	 * Removes this granted permission from the specified role
 	 * 
 	 * @public 
-	 * @param {Role} role The role to remove
+	 * @param {Role|String} role The role to remove
 	 * @return {Permission} Returns this permission for call-chaining
 	 */
 	this.removeRole = function(role){
 		if(!role){
 			throw 'Role cannot be null';
 		}
+		var roleName = role instanceof String ? role : role.getName();
+		
 		for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
-			if(record.permissions_to_roles_permissions.getRecord(i).role_name == role.getName()){
+			if(record.permissions_to_roles_permissions.getRecord(i).role_name == roleName){
 				if(!record.permissions_to_roles_permissions.deleteRecord(i)){
 					throw 'Failed to delete record';
 				}
