@@ -19,7 +19,7 @@ name:"tenant_name",
 titleText:"Tenant Name"
 },
 {
-allowNull:true,
+allowNull:false,
 autoEnterSubType:8,
 autoEnterType:1,
 creationOrderIndex:2,
@@ -28,7 +28,7 @@ name:"creation_datetime",
 titleText:"Created"
 },
 {
-allowNull:true,
+allowNull:false,
 autoEnterSubType:2,
 autoEnterType:1,
 creationOrderIndex:5,

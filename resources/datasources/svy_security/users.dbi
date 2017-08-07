@@ -19,13 +19,22 @@ name:"user_name",
 titleText:"User Name"
 },
 {
-allowNull:true,
+allowNull:false,
 autoEnterSubType:8,
 autoEnterType:1,
 creationOrderIndex:3,
 dataType:93,
 name:"creation_datetime",
 titleText:"Created"
+},
+{
+allowNull:false,
+autoEnterSubType:2,
+autoEnterType:1,
+creationOrderIndex:9,
+dataType:12,
+length:50,
+name:"creation_user_name"
 },
 {
 allowNull:true,
