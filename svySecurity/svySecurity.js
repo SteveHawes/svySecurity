@@ -250,7 +250,7 @@ function getUser(userName, tenantName){
 		if(utils.hasRecords(active_tenant)){
 			tenantName = active_tenant.tenant_name;
 		} else {
-			throw 'Calling getUser w/ no tenant supplied and no active tenant. Results may not be unique.';
+			
 		}
 	}
 	
@@ -258,15 +258,23 @@ function getUser(userName, tenantName){
 	var fs = datasources.db.svy_security.users.getFoundSet();
 	fs.find();
 	fs.user_name = userName;
-	fs.users_to_tenants.tenant_name = tenantName;
-	var results = fs.search()  
-	if(results == 1){
-		return new User(fs.getSelectedRecord());
+	fs.tenant_name = tenantName;
+	var results = fs.search();
+	
+	// no tenant and non-unique results
+	if(results > 1){
+		throw 'Calling getUser w/ no tenant supplied and no active tenant. Results may not be unique.';
 	}
 	
 	// No Match
-	// TODO logging
-	return null;
+	if(results == 0){
+		// TODO logging ?
+		return null;
+	}
+	
+	
+	// cerate user object
+	return new User(fs.getSelectedRecord());
 }
 
 /**
