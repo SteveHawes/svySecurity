@@ -44,6 +44,16 @@ var SESSION_PING_INTERVAL = 10000;
 var SESSION_TIMEOUT = 30 * 60 * 1000; 
 
 /**
+ * Default user name for creation user audit fields when no user present
+ * 
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"92742CC7-4C88-4CFE-8A4F-9AD555927665"}
+ */
+var SYSTEM_USER = 'system_user';
+
+/**
  * @public 
  * @param {User} user
  * @return {Boolean}
@@ -59,6 +69,7 @@ function login(user){
 	}
 
 	// sync permissions
+	// TODO Necessary to do here ?
 	syncPermissions();
 	
 	// get internal groups
@@ -120,6 +131,10 @@ function createTenant(name){
 	var fs = datasources.db.svy_security.tenants.getFoundSet();
 	fs.newRecord();
 	fs.tenant_name = name;
+	if(!fs.creation_user_name){
+		// TODO log warning ?
+		fs.creation_user_name = SYSTEM_USER;
+	}
 	save(fs);
 	return new Tenant(fs.getSelectedRecord());
 }
@@ -424,6 +439,10 @@ function Tenant(record){
 		}
 		
 		record.tenants_to_users.user_name = userName;
+		if(!record.tenants_to_users.creation_user_name){
+			// TODO log warning ?
+			record.tenants_to_users.creation_user_name = SYSTEM_USER;
+		}
 		save(record.tenants_to_users)
 				
 		var user = new User(record.tenants_to_users.getSelectedRecord());
@@ -528,6 +547,10 @@ function Tenant(record){
 			throw 'Could not create record';
 		}
 		record.tenants_to_roles.role_name = name;
+		if(!record.tenants_to_roles.creation_user_name){
+			// TODO Logging ?
+			record.tenants_to_roles.creation_user_name = SYSTEM_USER;
+		}
 		save(record.tenants_to_roles);
 		return new Role(record.tenants_to_roles.getSelectedRecord());
 	}
@@ -594,30 +617,6 @@ function Tenant(record){
 	 */
 	this.getName = function(){
 		return record.tenant_name;
-	}
-	
-	/**
-	 * Gets the description of this tenant
-	 * 
-	 * @public 
-	 * @return {String}
-	 * @deprecated 
-	 */
-	this.getDescription = function(){
-//		return record.tenant_description;
-		return null;
-	}
-	
-	/**
-	 * @public 
-	 * @param {String} description
-	 * @return {Tenant} Returns this tenant for call chaining
-	 * @deprecated 
-	 */
-	this.setDescription = function(description){
-//		record.tenant_description = description;
-//		save(record);
-		return this;
 	}
 	
 	/**
@@ -850,6 +849,10 @@ function User(record){
 			throw 'failed to create record';
 		}
 		record.users_to_user_roles.role_name = role.getName();
+		if(!record.users_to_user_roles.creation_user_name){
+			// TODO Logging ?
+			record.users_to_user_roles.creation_user_name = SYSTEM_USER;
+		}
 		save(record.users_to_user_roles);
 		return this;
 	}
@@ -1101,34 +1104,6 @@ function Role(record){
 	}
 	
 	/**
-	 * Gets the description of this role
-	 * 
-	 * @public 
-	 * @return {String}
-	 * @deprecated 
-	 */
-	this.getDescription = function(){
-//		return record.role_description;
-		return null;
-	}
-	
-	/**
-	 * Sets the description of this role
-	 * 
-	 * @public 
-	 * @param {String} description
-	 * @return {Role} this role for call-chaining
-	 * @deprecated 
-	 */
-	this.setDescription = function(description){
-//		if(record.role_description != description){
-//			record.role_description = description;
-//			save(record);
-//		}
-		return this;
-	}
-	
-	/**
 	 * @public 
 	 * @return {String}
 	 */
@@ -1175,6 +1150,10 @@ function Role(record){
 				throw 'New record failed';
 			}
 			record.roles_to_user_roles.user_name = user.getUserName();
+			if(!record.roles_to_user_roles.creation_user_name){
+				// TODO logging ?
+				record.roles_to_user_roles.creation_user_name = SYSTEM_USER;
+			}
 			save(record.roles_to_user_roles);
 		}
 		return this;
@@ -1254,6 +1233,10 @@ function Role(record){
 				throw 'New record failed';
 			}
 			record.roles_to_roles_permissions.permission_name = permission.getName();
+			if(!record.roles_to_roles_permissions.creation_user_name){
+				// TODO Logging ?
+				record.roles_to_roles_permissions.creation_user_name = SYSTEM_USER;
+			}
 			save(record.roles_to_roles_permissions);
 		}
 		return this;
@@ -1357,34 +1340,6 @@ function Permission(record){
 	}
 	
 	/**
-	 * Gets the display description for this permission
-	 * 
-	 * @public 
-	 * @return {String}
-	 * @deprecated 
-	 */
-	this.getDescription = function(){
-//		return record.permission_description;
-		return null;
-	}
-	
-	/**
-	 * Sets the description of this permission
-	 * 
-	 * @public 
-	 * @param {String} description
-	 * @return {Permission} Returns this permission for call-chaining
-	 * @deprecated 
-	 */
-	this.setDescription = function(description){
-//		if(description != record.permission_description){
-//			record.permission_description = description;
-//			save(record);
-//		}
-		return this;
-	}
-	
-	/**
 	 * @public 
 	 * @return {String}
 	 */
@@ -1420,6 +1375,9 @@ function Permission(record){
 			}
 			record.permissions_to_roles_permissions.tenant_name = role.getTenant().getName();
 			record.permissions_to_roles_permissions.role_name = role.getName();
+			if(!record.permissions_to_roles_permissions.creation_user_name){
+				record.permissions_to_roles_permissions.creation_user_name = SYSTEM_USER;
+			}
 			save(record)
 		}
 		return this;
@@ -1703,6 +1661,9 @@ function syncPermissions(){
 				throw 'New Record Failed';
 			}
 			permissionFS.permission_name = groups[i];
+			if(!permissionFS.creation_user_name){
+				permissionFS.creation_user_name = SYSTEM_USER;
+			}
 			save(permissionFS);
 			
 			// TODO proper logging
@@ -1786,10 +1747,8 @@ function filterSecurityTables(){
 	var filterName = 'com.servoy.extensions.security.data-filter';
 	var serverName = datasources.db.svy_security.getServerName();
 	databaseManager.removeTableFilterParam(serverName,filterName);
-	if(
-		!databaseManager.addTableFilterParam(serverName,null,'tenant_name','=',activeTenantName,filterName) ||
-		!databaseManager.addTableFilterParam(datasources.db.svy_security.tenants.getDataSource(),'id','=',activeTenantName,filterName)){
-			
+	if(!databaseManager.addTableFilterParam(serverName,null,'tenant_name','=',activeTenantName,filterName)){
+		logout();
 		throw 'Failed to filter security tables';	
 	}
 }
