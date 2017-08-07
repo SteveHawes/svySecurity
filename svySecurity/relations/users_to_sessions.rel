@@ -3,7 +3,7 @@ encapsulation:2,
 foreignDataSource:"db:/svy_security/sessions",
 initialSort:"session_start desc",
 items:[
-{foreignColumnName:"user_id",primaryDataProviderID:"id",typeid:23,uuid:"CC72DCB2-58C9-4F0A-A26D-0E2BC79B67B1"}
+{foreignColumnName:"user_name",primaryDataProviderID:"user_name",typeid:23,uuid:"CC72DCB2-58C9-4F0A-A26D-0E2BC79B67B1"}
 ],
 joinType:1,
 name:"users_to_sessions",

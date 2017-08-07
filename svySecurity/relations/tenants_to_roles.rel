@@ -1,8 +1,9 @@
 allowCreationRelatedRecords:true,
+deleteRelatedRecords:true,
 encapsulation:2,
 foreignDataSource:"db:/svy_security/roles",
 items:[
-{foreignColumnName:"tenant_id",primaryDataProviderID:"id",typeid:23,uuid:"F7483FEB-038B-4428-AFCD-37E10C6997F5"}
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"F7483FEB-038B-4428-AFCD-37E10C6997F5"}
 ],
 joinType:1,
 name:"tenants_to_roles",
