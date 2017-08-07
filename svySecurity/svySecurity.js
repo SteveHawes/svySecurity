@@ -12,7 +12,7 @@ var sessionID = null;
  *
  * @properties={typeid:35,uuid:"626CE06E-AF5A-42A1-8F8F-BE308B37F213"}
  */
-var tenantID = null;
+var activeTenantName = null;
 
 /**
  * @protected 
@@ -20,7 +20,7 @@ var tenantID = null;
  *
  * @properties={typeid:35,uuid:"A6511E73-F3FD-4A19-97F3-D9B55493F853"}
  */
-var userID = null;
+var activeUserName = null;
 
 /**
  * The interval (milliseconds) for an active session to update the ping time in the database
@@ -65,12 +65,12 @@ function login(user){
 	var servoyGroups = [];
 	var permissions = user.getPermissions();
 	for(var i in permissions){
-		servoyGroups.push(permissions[i].getInternalName())
+		servoyGroups.push(permissions[i].getName());
 	}
 	
 	// no groups
 	if(!servoyGroups.length){
-		application.output('No Groups. Cannot login', LOGGINGLEVEL.WARNING);
+		application.output('No Permissions. Cannot login', LOGGINGLEVEL.WARNING);
 		return false;
 	}
 	
@@ -81,7 +81,7 @@ function login(user){
 	filterSecurityTables();
 	
 	// login
-	if(!security.login(user.getUserName(),user.getID(),servoyGroups)){
+	if(!security.login(user.getUserName(),user.getUserName(),servoyGroups)){
 		// TODO logging
 		return false;
 	}
@@ -181,16 +181,56 @@ function getTenant(name){
 }
 
 /**
+ * NOTE: USE WITH CAUTION! There is no undo.
+ * Immediately and permanently deletes the specified tenant and all supporting records, including all users and roles
+ * Tenant will not be deleted if it has users w/ active sessions
+ * 
+ * @public 
+ * @param {Tenant} tenant
+ * @return {Boolean} False if tenant was unable to be deleted, most commonly because of active sessions.
+ * @properties={typeid:24,uuid:"416DAE0D-25B4-485F-BDB9-189B151EA1B9"}
+ * @AllowToRunInFind
+ */
+function deleteTenant(tenant){
+	if(tenant.getActiveSessions().length){
+		application.output('Cannot delete tenant. Has active sessions',LOGGINGLEVEL.WARNING); // TODO Proper Logging
+		return false;
+	}
+	var fs = datasources.db.svy_security.tenants.getFoundSet();
+	fs.find();
+	fs.tenant_name = tenant.getName();
+	if(!fs.search()){
+		application.output('Could not delete tenant. Unexpected could not find tenant "'+tenant.getName()+'".',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+		return false;
+	}
+	databaseManager.startTransaction();
+	try{
+		if(!fs.deleteRecord(1)){
+			application.output('Could not delete tenant "'+tenant.getName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			return false;
+		}
+		if(!databaseManager.commitTransaction()){
+			application.output('Could not delete tenant "'+tenant.getName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+		}
+		return true;
+		
+	}catch(e){
+		databaseManager.rollbackTransaction();
+		application.output('Could not delete tenant "'+tenant.getName()+'". Unkown error: '+e.message+'. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+		return false;
+	}
+}
+
+/**
  * Gets the user by specified username, or null to get the current logged-in user
  * 
  * @public 
  * @param {String} [userName] The username, can be null to get the current user
- * @param {String} [tenantName] The name of the tenant, can be null if username is also null when getting the current user
  * @return {User}
  * @properties={typeid:24,uuid:"FCF267E6-1580-402E-8252-ED18964474DA"}
  * @AllowToRunInFind
  */
-function getUser(userName, tenantName){
+function getUser(userName){
 
 	// Looking for logged-in user
 	if(!userName){
@@ -204,20 +244,10 @@ function getUser(userName, tenantName){
 		return new User(active_user.getSelectedRecord());
 	}
 	
-	// tenant not specified, use active tenant
-	if(!tenantName){
-		if(utils.hasRecords(active_tenant)){
-			tenantName = active_tenant.tenant_name;
-		} else {
-			throw 'Calling getUser w/ no tenant supplied and no active tenant. Results may not be unique.';
-		}
-	}
-	
 	// get matching user
 	var fs = datasources.db.svy_security.users.getFoundSet();
 	fs.find();
 	fs.user_name = userName;
-	fs.users_to_tenants.tenant_name = tenantName;
 	var results = fs.search()  
 	if(results == 1){
 		return new User(fs.getSelectedRecord());
@@ -347,6 +377,7 @@ function getSessionCount(){
  * @param {JSRecord<db:/svy_security/tenants>} record
  * @constructor 
  * @properties={typeid:24,uuid:"BD7E0091-054F-434E-B5EE-44862926D03D"}
+ * @AllowToRunInFind
  */
 function Tenant(record){
 	
@@ -355,6 +386,7 @@ function Tenant(record){
 	 * 
 	 * @public 
 	 * @return {String}
+	 * @deprecated 
 	 */
 	this.getID = function(){
 		return record.id.toString()
@@ -364,7 +396,7 @@ function Tenant(record){
 	 * Creates a user with the specified user name
 	 * 
 	 * @public 
-	 * @param {String} userName Must be unique in tenant
+	 * @param {String} userName Must be unique in system
 	 * @param {String} [password] Create user with password
 	 * @return {User}
 	 * @throws {String} If the user name is not unique
@@ -374,9 +406,11 @@ function Tenant(record){
 		if(!userName){
 			throw 'User name cannot be null or empty';
 		}
-		if(this.getUser(userName)){
-			throw 'User Name "'+userName+'"is not unique in tenant';
+		
+		if(userNameExists(userName)){
+			throw 'User Name "'+userName+'"is not unique';
 		}
+		
 		if(record.tenants_to_users.newRecord() == -1){
 			throw 'Failed to create record';
 		}
@@ -425,6 +459,46 @@ function Tenant(record){
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * NOTE: USE WITH CAUTION! There is no undo.
+	 * Immediately and permanently deletes the specified user and all supporting records
+	 * User will not be deleted if it has active sessions
+	 * 
+	 * @public 
+	 * @param {User} user
+	 * @return {Boolean}
+	 */
+	this.deleteUser = function(user){
+		if(user.getActiveSessions().length){
+			application.output('Could not delete user "'+user.getUserName()+'". Has active sessions',LOGGINGLEVEL.WARNING); // TODO Proper Logging
+			return false;
+		}
+		
+		var fs = datasources.db.svy_security.users.getFoundSet();
+		fs.find();
+		fs.user_name = user.getUserName()
+		if(!fs.search()){
+			application.output('Could not delete user "'+user.getUserName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+		}
+		
+		databaseManager.startTransaction();
+		try{
+			if(!fs.deleteRecord(1)){
+				application.output('Could not delete user "'+user.getUserName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+				return false;
+			}
+			if(!databaseManager.commitTransaction()){
+				application.output('Could not delete user "'+user.getUserName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			}
+			return true;
+			
+		}catch(e){
+			databaseManager.rollbackTransaction();
+			application.output('Could not delete user "'+user.getUserName()+'". Unkown error: '+e.message+'. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			return false;
+		}
 	}
 	
 	/**
@@ -486,6 +560,25 @@ function Tenant(record){
 	}
 	
 	/**
+	 * Deletes the role from this tenant. All associated permissions and grants to users are removed immediately.
+	 * Users with active sessions will be affected, but design-time security (CRUD, UI) will not be affected until next log-in.
+	 * 
+	 * @public 
+	 * @param {Role} role
+	 * @return {Tenant}
+	 */
+	this.deleteRole = function(role){
+		
+		if(!record.tenants_to_roles.selectRecord(role.getName())){
+			throw 'Role '+role.getName()+' not found in tenant';
+		}
+		if(!record.tenants_to_roles.deleteRecord()){
+			throw 'Role '+role.getName()+' could not be deleted. Check log for details';
+		}
+		return this;
+	}
+	
+	/**
 	 * Gets the name of this tenant which is unique in system
 	 * 
 	 * @public 
@@ -496,44 +589,44 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Sets the name of the tenant. Must be unique in system
-	 * @public 
-	 * @param {String} name
-	 * @return {Tenant} Returns this tenant for call chaining
-	 */
-	this.setName = function(name){
-		if(!name){
-			throw 'Tenant name cannot be null or empty';
-		}
-		if(name == record.tenant_name){
-			// Log no change?
-			return this;
-		}
-		if(getTenant(name)){
-			throw 'Tenant name "'+name+'" is not unique in system';
-		}
-		record.tenant_name = name;
-		save(record);
-		return this;
-	}
-	
-	/**
 	 * Gets the description of this tenant
 	 * 
 	 * @public 
 	 * @return {String}
+	 * @deprecated 
 	 */
 	this.getDescription = function(){
-		return record.tenant_description;
+//		return record.tenant_description;
+		return null;
 	}
 	
 	/**
 	 * @public 
 	 * @param {String} description
 	 * @return {Tenant} Returns this tenant for call chaining
+	 * @deprecated 
 	 */
 	this.setDescription = function(description){
-		record.tenant_description = description;
+//		record.tenant_description = description;
+//		save(record);
+		return this;
+	}
+	
+	/**
+	 * @public 
+	 * @return {String}
+	 */
+	this.getDisplayName = function(){
+		return record.display_name;
+	}
+	
+	/**
+	 * @public 
+	 * @param {String} displayName
+	 * @return {Tenant}
+	 */
+	this.setDisplayName = function(displayName){
+		record.display_name = displayName;
 		save(record);
 		return this;
 	}
@@ -571,6 +664,69 @@ function Tenant(record){
 	this.getSessionCount = function(){
 		return databaseManager.getFoundSetCount(record.tenants_to_sessions);
 	}
+	
+	/**
+	 * Locks the tenant account preventing its users from logging in
+	 * Lock will remain in place until it expires or it is removed using unlock()
+	 * Users with active sessions will be unaffected until subsequent login attempts
+	 * 
+	 * @public 
+	 * @param {String} [reason]
+	 * @param {Date} [expiration]
+	 * @return {Tenant}
+	 */
+	this.lock = function(reason, expiration){
+		record.lock_flag = 1;
+		record.lock_reason = reason;
+		record.lock_expiration = expiration;
+		save(record);
+		return this;
+	}
+	
+	/**
+	 * Removes any lock on the tenant account
+	 * 
+	 * @public 
+	 * @return {Tenant}
+	 */
+	this.unlock = function(){
+		record.lock_flag = null;
+		record.lock_reason = null;
+		record.lock_expiration = null;
+		save(record);
+		return this;
+	}
+	
+	/**
+	 * Indicates if a tenant account is locked
+	 * 
+	 * @public 
+	 * @return {Boolean}
+	 */
+	this.isLocked = function(){
+		return record.lock_flag == 1;
+	}
+	
+	/**
+	 * Indicates the reason for the lock.
+	 * 
+	 * @public 
+	 * @return {String}
+	 */
+	this.getLockReason = function(){
+		return record.lock_reason;
+	}
+	
+	/**
+	 * Indicates the expiration time of the lock
+	 * Lock will remain in place until it expires or it is removed using unlock()
+	 * 
+	 * @public 
+	 * @return {Date}
+	 */
+	this.getLockExpiration = function(){
+		return record.lock_expiration;
+	}
 }
 
 /**
@@ -587,6 +743,7 @@ function User(record){
 	 * 
 	 * @public 
 	 * @return {String}
+	 * @deprecated 
 	 */
 	this.getID = function(){
 		return record.id.toString()
@@ -610,29 +767,6 @@ function User(record){
 	 */
 	this.getUserName = function(){
 		return record.user_name;
-	}
-	
-	/**
-	 * Sets this user's username. Must be non-null and unique in tenant
-	 * 
-	 * @public 
-	 * @param {String} userName
-	 * @return {User} This user for call-chaining
-	 */
-	this.setUserName = function(userName){
-		if(!userName){
-			throw 'User name must be non-null non-empty string'
-		}
-		if(record.user_name == userName){
-			// log no change ?
-			return this;
-		}
-		if(this.getTenant().getUser(userName)){
-			throw 'UserName "'+userName+'" is not unique in tenant';
-		}
-		record.user_name = userName;
-		save(record);
-		return this;
 	}
 	
 	/**
@@ -717,7 +851,7 @@ function User(record){
 		if(record.users_to_user_roles.newRecord() == -1){
 			throw 'failed to create record';
 		}
-		record.users_to_user_roles.role_id = role.getID();
+		record.users_to_user_roles.role_name = role.getName();
 		save(record.users_to_user_roles);
 		return this;
 	}
@@ -735,7 +869,7 @@ function User(record){
 		}
 		for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
 			var link = record.users_to_user_roles.getRecord(i);
-			if(link.role_id == role.getID()){
+			if(link.role_name == role.getName()){
 				if(!record.users_to_user_roles.deleteRecord(link)){
 					throw 'failed to delete record'
 				}
@@ -770,7 +904,7 @@ function User(record){
 	this.hasRole = function(role){
 		for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
 			var link = record.users_to_user_roles.getRecord(i);
-			if(link.role_id == role.getID()){
+			if(link.role_name == role.getName()){
 				return true;
 			}
 		}
@@ -816,7 +950,7 @@ function User(record){
 	this.hasPermission = function(permission){
 		var permissions = this.getPermissions();
 		for(var i in permissions){
-			if(permissions[i].getID() == permission.getID()){
+			if(permissions[i].getName() == permission.getName()){
 				return true;
 			}
 		}
@@ -856,6 +990,73 @@ function User(record){
 		}
 		return sessions;
 	}
+	
+	/**
+	 * Locks the user account preventing them from logging in
+	 * Lock will remain in place until it expires or it is removed using unlock()
+	 * Users with active sessions will be unaffected until subsequent login attempts
+	 * 
+	 * @public 
+	 * @param {String} [reason] The reason. Can be a system code, i18n message or plain text
+	 * @param {Date} [expiration] The expiration. If no expiration date supplied, locks will persist until unlock() is called.
+	 * @return {User}
+	 * @see User.unlock
+	 */
+	this.lock = function(reason, expiration){
+		record.lock_flag = 1;
+		record.lock_reason = reason;
+		record.lock_expiration = expiration;
+		save(record);
+		return this;
+	}
+	
+	/**
+	 * Removes any lock on the user account
+	 * 
+	 * @public 
+	 * @return {User}
+	 * @see User.lock
+	 */
+	this.unlock = function(){
+		record.lock_flag = null;
+		record.lock_reason = null;
+		record.lock_expiration = null;
+		save(record);
+		return this;
+	}
+	
+	/**
+	 * Indicates if this user's account is locked
+	 * 
+	 * @public 
+	 * @return {Boolean}
+	 * @see User.lock
+	 */
+	this.isLocked = function(){
+		return record.lock_flag == 1;
+	}
+	
+	/**
+	 * Indicates the reason indicated for lock.
+	 * 
+	 * @public 
+	 * @return {String}
+	 * @see User.lock
+	 */
+	this.getLockReason = function(){
+		return record.lock_reason;
+	}
+	
+	/**
+	 * Indicates when the lock will expire. 
+	 * If no expiration is specified, locks will persist until unlock() is called.
+	 * 
+	 * @public 
+	 * @return {Date}
+	 */
+	this.getLockExpiration = function(){
+		return record.lock_expiration;
+	}
 }
 
 /**
@@ -872,6 +1073,7 @@ function Role(record){
 	 * 
 	 * @public 
 	 * @return {String}
+	 * @deprecated 
 	 */
 	this.getID = function(){
 		return record.id.toString()
@@ -915,9 +1117,11 @@ function Role(record){
 	 * 
 	 * @public 
 	 * @return {String}
+	 * @deprecated 
 	 */
 	this.getDescription = function(){
-		return record.role_description;
+//		return record.role_description;
+		return null;
 	}
 	
 	/**
@@ -926,12 +1130,32 @@ function Role(record){
 	 * @public 
 	 * @param {String} description
 	 * @return {Role} this role for call-chaining
+	 * @deprecated 
 	 */
 	this.setDescription = function(description){
-		if(record.role_description != description){
-			record.role_description = description;
-			save(record);
-		}
+//		if(record.role_description != description){
+//			record.role_description = description;
+//			save(record);
+//		}
+		return this;
+	}
+	
+	/**
+	 * @public 
+	 * @return {String}
+	 */
+	this.getDisplayName = function(){
+		return record.display_name;
+	}
+	
+	/**
+	 * @public 
+	 * @param {String} displayName
+	 * @return {Role}
+	 */
+	this.setDisplayName = function(displayName){
+		record.display_name = displayName;
+		save(record);
 		return this;
 	}
 	
@@ -944,6 +1168,8 @@ function Role(record){
 	this.getTenant = function(){
 		return new Tenant(record.roles_to_tenants.getSelectedRecord());
 	}
+	
+	
 	
 	/**
 	 * Grants this role to the specified user
@@ -960,7 +1186,7 @@ function Role(record){
 			if(record.roles_to_user_roles.newRecord() == -1){
 				throw 'New record failed';
 			}
-			record.roles_to_user_roles.user_id = user.getID();
+			record.roles_to_user_roles.user_name = user.getUserName();
 			save(record.roles_to_user_roles);
 		}
 		return this;
@@ -993,7 +1219,7 @@ function Role(record){
 			throw 'User cannot be null';
 		}
 		for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
-			if(record.roles_to_user_roles.getRecord(i).user_id == user.getID()){
+			if(record.roles_to_user_roles.getRecord(i).user_name == user.getUserName()){
 				return true;
 			}
 		}
@@ -1012,7 +1238,7 @@ function Role(record){
 			throw 'User cannot be null';
 		}
 		for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
-			if(record.roles_to_user_roles.getRecord(i).user_id == user.getID()){
+			if(record.roles_to_user_roles.getRecord(i).user_name == user.getUserName()){
 				if(!record.roles_to_user_roles.deleteRecord(i)){
 					throw 'Failed to delete record';
 				}
@@ -1039,7 +1265,7 @@ function Role(record){
 			if(record.roles_to_roles_permissions.newRecord() == -1){
 				throw 'New record failed';
 			}
-			record.roles_to_roles_permissions.permission_id = permission.getID();
+			record.roles_to_roles_permissions.permission_name = permission.getName();
 			save(record.roles_to_roles_permissions);
 		}
 		return this;
@@ -1073,7 +1299,7 @@ function Role(record){
 			throw 'Permission cannot be null';
 		}
 		for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
-			if(record.roles_to_roles_permissions.getRecord(i).permission_id == permission.getID()){
+			if(record.roles_to_roles_permissions.getRecord(i).permission_name == permission.getName()){
 				return true;
 			}
 		}
@@ -1092,7 +1318,7 @@ function Role(record){
 			throw 'Permission cannot be null';
 		}
 		for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
-			if(record.roles_to_roles_permissions.getRecord(i).permission_id == permission.getID()){
+			if(record.roles_to_roles_permissions.getRecord(i).permission_name == permission.getName()){
 				if(!record.roles_to_roles_permissions.deleteRecord(i)){
 					throw 'Delete record failed';
 				}
@@ -1116,19 +1342,10 @@ function Permission(record){
 	 * 
 	 * @public 
 	 * @return {String}
+	 * @deprecated 
 	 */
 	this.getID = function(){
 		return record.id.toString()
-	}
-	
-	/**
-	 * Gets the internal name of this permission
-	 * This is for internal use only, to link this permission to Servoy's security engine 
-	 * @public  
-	 * @return {String}
-	 */
-	this.getInternalName = function(){
-		return record.internal_name;
 	}
 	
 	/**
@@ -1165,9 +1382,11 @@ function Permission(record){
 	 * 
 	 * @public 
 	 * @return {String}
+	 * @deprecated 
 	 */
 	this.getDescription = function(){
-		return record.permission_description;
+//		return record.permission_description;
+		return null;
 	}
 	
 	/**
@@ -1176,12 +1395,32 @@ function Permission(record){
 	 * @public 
 	 * @param {String} description
 	 * @return {Permission} Returns this permission for call-chaining
+	 * @deprecated 
 	 */
 	this.setDescription = function(description){
-		if(description != record.permission_description){
-			record.permission_description = description;
-			save(record);
-		}
+//		if(description != record.permission_description){
+//			record.permission_description = description;
+//			save(record);
+//		}
+		return this;
+	}
+	
+	/**
+	 * @public 
+	 * @return {String}
+	 */
+	this.getDisplayName = function(){
+		return record.display_name;
+	}
+	
+	/**
+	 * @public 
+	 * @param {String} displayName
+	 * @return {Permission}
+	 */
+	this.setDisplayName = function(displayName){
+		record.display_name = displayName;
+		save(record);
 		return this;
 	}
 	
@@ -1200,8 +1439,8 @@ function Permission(record){
 			if(record.permissions_to_roles_permissions.newRecord() == -1){
 				throw 'New record failed';
 			}
-			record.permissions_to_roles_permissions.tenant_id = role.getTenant().getID();
-			record.permissions_to_roles_permissions.role_id = role.getID();
+			record.permissions_to_roles_permissions.tenant_name = role.getTenant().getName();
+			record.permissions_to_roles_permissions.role_name = role.getName();
 			save(record)
 		}
 		return this;
@@ -1234,7 +1473,7 @@ function Permission(record){
 			throw 'Role cannot be null';
 		}
 		for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
-			if(record.permissions_to_roles_permissions.getRecord(i).role_id == role.getID()){
+			if(record.permissions_to_roles_permissions.getRecord(i).role_name == role.getName()){
 				return true;
 			}
 		}
@@ -1253,7 +1492,7 @@ function Permission(record){
 			throw 'Role cannot be null';
 		}
 		for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
-			if(record.permissions_to_roles_permissions.getRecord(i).role_id == role.getID()){
+			if(record.permissions_to_roles_permissions.getRecord(i).role_name == role.getName()){
 				if(!record.permissions_to_roles_permissions.deleteRecord(i)){
 					throw 'Failed to delete record';
 				}
@@ -1262,10 +1501,36 @@ function Permission(record){
 		}
 		return this;
 	}
+	
+	/**
+	 * @public 
+	 * @return {Array<User>}
+	 */
+	this.getUsers = function(){
+		
+		var users = [];
+		var q = datasources.db.svy_security.users.createSelect();
+		var fs = datasources.db.svy_security.users.getFoundSet();
+		
+		q.result.addPk();
+		q.where.add(
+			q.joins.users_to_user_roles
+			.joins.user_roles_to_roles
+			.joins.roles_to_roles_permissions
+			.columns.permission_id.eq(record.id)
+		);
+		
+		fs.loadRecords(q);
+		for (var i = 1; i <= fs.getSize(); i++) {
+			var user = fs.getRecord(i);
+			users.push(new User(user));
+		}
+		return users;
+	}
 }
 
 /**
- * TODO Tie to servoy session JSClient ID and refactor isXXX methods
+ * TODO Tie to servoy session JSClient ID and refactor isXXX methods ?
  * 
  * @private 
  * @param {JSRecord<db:/svy_security/sessions>} record
@@ -1286,22 +1551,45 @@ function Session(record){
 	
 	/**
 	 * Gets the user of this session
-	 * 
+	 * Returns null if the user has been deleted. Instead use getUserName
 	 * @public 
 	 * @return {User}
+	 * @see Session.getUserName
 	 */
 	this.getUser = function(){
+		if(!utils.hasRecords(record.sessions_to_users)){
+			return null;
+		}
 		return new User(record.sessions_to_users.getSelectedRecord());
 	}
 	
 	/**
+	 * @public 
+	 * @return {String} The user name at the time of login
+	 */
+	this.getUserName = function(){
+		return record.user_name;
+	}
+	
+	/**
 	 * Gets the tenant for this session
-	 * 
+	 * Returns null if the tenant has been deleted. Instead use getTenantName
 	 * @public 
 	 * @return {Tenant}
 	 */
 	this.getTenant = function(){
+		if(!utils.hasRecords(record.sessions_to_tenants)){
+			return null;
+		}
 		return new Tenant(record.sessions_to_tenants.getSelectedRecord());
+	}
+	
+	/**
+	 * @public 
+	 * @return {String} The tenant name at the time of login
+	 */
+	this.getTenantName = function(){
+		return record.tenant_name;
 	}
 	
 	/**
@@ -1435,7 +1723,6 @@ function syncPermissions(){
 			if(permissionFS.newRecord() == -1){
 				throw 'New Record Failed';
 			}
-			permissionFS.internal_name = groups[i];
 			permissionFS.permission_name = groups[i];
 			save(permissionFS);
 			
@@ -1448,7 +1735,7 @@ function syncPermissions(){
 	permissionFS.loadAllRecords();
 	for (i = 1; i <= permissionFS.getSize(); i++) {
 		var record = permissionFS.getRecord(i);
-		if(groups.indexOf(record.internal_name) == -1){
+		if(groups.indexOf(record.permission_name) == -1){
 			application.output('Permission "'+record.permission_name+'" is no longer found within internal security settings', LOGGINGLEVEL.WARNING); // TODO proper logging
 		}
 	}
@@ -1468,8 +1755,8 @@ function initSession(user){
 	// create session
 	var fs = datasources.db.svy_security.sessions.getFoundSet();
 	fs.newRecord();
-	fs.user_id = user.getID();
-	fs.tenant_id = user.getTenant().getID();
+	fs.user_name = user.getUserName();
+	fs.tenant_name = user.getTenant().getName();
 	fs.ip_address = application.getIPAddress();
 	fs.last_client_ping = new Date();
 	if(application.getApplicationType() == APPLICATION_TYPES.NG_CLIENT){
@@ -1483,8 +1770,8 @@ function initSession(user){
 	plugins.scheduler.addJob(jobName,new Date(),sessionClientPing,SESSION_PING_INTERVAL);
 	
 	// store session id
-	userID = user.getID();
-	tenantID = user.getTenant().getID();
+	activeUserName = user.getUserName();
+	activeTenantName = user.getTenant().getName();
 	sessionID = fs.id.toString();
 
 }
@@ -1521,11 +1808,29 @@ function filterSecurityTables(){
 	var serverName = datasources.db.svy_security.getServerName();
 	databaseManager.removeTableFilterParam(serverName,filterName);
 	if(
-		!databaseManager.addTableFilterParam(serverName,null,'tenant_id','=',tenantID,filterName) ||
-		!databaseManager.addTableFilterParam(datasources.db.svy_security.tenants.getDataSource(),'id','=',tenantID,filterName)){
+		!databaseManager.addTableFilterParam(serverName,null,'tenant_name','=',activeTenantName,filterName) ||
+		!databaseManager.addTableFilterParam(datasources.db.svy_security.tenants.getDataSource(),'id','=',activeTenantName,filterName)){
 			
 		throw 'Failed to filter security tables';	
 	}
+}
+/**
+ * Check for user name bypassing any filters for current tenant
+ * @private 
+ * @param {Object} userName
+ * @return {Boolean} True if user is found in system
+ *
+ * @properties={typeid:24,uuid:"1FA4E812-55A3-4B03-9EF9-D155FFA89BD4"}
+ */
+function userNameExists(userName){
+	var q = datasources.db.svy_security.users.createSelect();
+	q.result.addPk();
+	q.where.add(q.columns.user_name.eq(userName))
+	var ds = databaseManager.getDataSetByQuery(q,false,1);
+	if(ds.getException()){
+		throw 'SQL error checking for existing user'; 
+	}
+	return ds.getMaxRowIndex() > 0;
 }
 
 /**
