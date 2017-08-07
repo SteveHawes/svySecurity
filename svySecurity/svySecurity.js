@@ -851,8 +851,11 @@ function User(record){
 		if(!role){
 			throw 'Role cannot be null';
 		}
+		/** @type {String} */
 		var roleName = role instanceof String ? role : role.getName();
-		
+		if(!this.getTenant().getRole(roleName)){
+			throw 'Role "'+roleName+'" does not exists in tenant';
+		}
 		// already has role, no change
 		if(this.hasRole(role)){
 			return this;
@@ -1168,7 +1171,11 @@ function Role(record){
 			throw 'User cannot be null'
 		}
 		
+		/** @type {String} */
 		var userName = user instanceof String ? user : user.getUserName();
+		if(!this.getTenant().getUser(userName)){
+			throw 'User "'+userName+'" does not exist in tenant';
+		}
 		if(!this.hasUser(user)){
 			if(record.roles_to_user_roles.newRecord() == -1){
 				throw 'New record failed';
@@ -1257,8 +1264,12 @@ function Role(record){
 			throw 'Permission cannot be null';
 		}
 		
-		// already has it
+		
+		/** @type {String} */
 		var permissionName = permission instanceof String ? permission : permission.getName();
+		if(!scopes.svySecurity.getPermission(permissionName)){
+			throw 'Permission "'+permissionName+'" does not exist in system';
+		}
 		if(!this.hasPermission(permission)){
 			if(record.roles_to_roles_permissions.newRecord() == -1){
 				throw 'New record failed';
