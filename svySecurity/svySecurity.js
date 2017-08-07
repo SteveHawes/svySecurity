@@ -131,6 +131,7 @@ function createTenant(name){
 	var fs = datasources.db.svy_security.tenants.getFoundSet();
 	fs.newRecord();
 	fs.tenant_name = name;
+	fs.display_name = name;
 	if(!fs.creation_user_name){
 		// TODO log warning ?
 		fs.creation_user_name = SYSTEM_USER;
@@ -439,6 +440,8 @@ function Tenant(record){
 		}
 		
 		record.tenants_to_users.user_name = userName;
+		record.tenants_to_users.display_name = userName;
+		
 		if(!record.tenants_to_users.creation_user_name){
 			// TODO log warning ?
 			record.tenants_to_users.creation_user_name = SYSTEM_USER;
@@ -550,6 +553,7 @@ function Tenant(record){
 			throw 'Could not create record';
 		}
 		record.tenants_to_roles.role_name = name;
+		record.tenants_to_roles.display_name = name;
 		if(!record.tenants_to_roles.creation_user_name){
 			// TODO Logging ?
 			record.tenants_to_roles.creation_user_name = SYSTEM_USER;
@@ -1710,6 +1714,7 @@ function syncPermissions(){
 				throw 'New Record Failed';
 			}
 			permissionFS.permission_name = groups[i];
+			permissionFS.display_name = groups[i];
 			if(!permissionFS.creation_user_name){
 				permissionFS.creation_user_name = SYSTEM_USER;
 			}
