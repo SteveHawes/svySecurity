@@ -226,11 +226,12 @@ function deleteTenant(tenant){
  * 
  * @public 
  * @param {String} [userName] The username, can be null to get the current user
+ * @param {String} [tenantName] The name of the tenant, can be null if username is also null when getting the current user
  * @return {User}
  * @properties={typeid:24,uuid:"FCF267E6-1580-402E-8252-ED18964474DA"}
  * @AllowToRunInFind
  */
-function getUser(userName){
+function getUser(userName, tenantName){
 
 	// Looking for logged-in user
 	if(!userName){
@@ -244,10 +245,20 @@ function getUser(userName){
 		return new User(active_user.getSelectedRecord());
 	}
 	
+	// tenant not specified, use active tenant
+	if(!tenantName){
+		if(utils.hasRecords(active_tenant)){
+			tenantName = active_tenant.tenant_name;
+		} else {
+			throw 'Calling getUser w/ no tenant supplied and no active tenant. Results may not be unique.';
+		}
+	}
+	
 	// get matching user
 	var fs = datasources.db.svy_security.users.getFoundSet();
 	fs.find();
 	fs.user_name = userName;
+	fs.users_to_tenants.tenant_name = tenantName;
 	var results = fs.search()  
 	if(results == 1){
 		return new User(fs.getSelectedRecord());
@@ -380,17 +391,6 @@ function getSessionCount(){
  * @AllowToRunInFind
  */
 function Tenant(record){
-	
-	/**
-	 * Returns the internal unique id of this tenant
-	 * 
-	 * @public 
-	 * @return {String}
-	 * @deprecated 
-	 */
-	this.getID = function(){
-		return record.id.toString()
-	}
 	
 	/**
 	 * Creates a user with the specified user name
@@ -738,16 +738,6 @@ function Tenant(record){
  */
 function User(record){
 	
-	/**
-	 * Returns the internal unique id of this user
-	 * 
-	 * @public 
-	 * @return {String}
-	 * @deprecated 
-	 */
-	this.getID = function(){
-		return record.id.toString()
-	}
 	
 	/**
 	 * Returns the tenant that owns this user
@@ -1068,17 +1058,7 @@ function User(record){
  */
 function Role(record){
 	
-	/**
-	 * Returns the internal unique id of this Role
-	 * 
-	 * @public 
-	 * @return {String}
-	 * @deprecated 
-	 */
-	this.getID = function(){
-		return record.id.toString()
-	}
-	
+		
 	/**
 	 * Gets the unique display name of this role
 	 * 
@@ -1337,16 +1317,7 @@ function Role(record){
  */
 function Permission(record){
 	
-	/**
-	 * Returns the internal unique id of this Role
-	 * 
-	 * @public 
-	 * @return {String}
-	 * @deprecated 
-	 */
-	this.getID = function(){
-		return record.id.toString()
-	}
+	
 	
 	/**
 	 * Gets the display name of this permission
@@ -1517,7 +1488,7 @@ function Permission(record){
 			q.joins.users_to_user_roles
 			.joins.user_roles_to_roles
 			.joins.roles_to_roles_permissions
-			.columns.permission_id.eq(record.id)
+			.columns.permission_name.eq(record.permission_name)
 		);
 		
 		fs.loadRecords(q);
