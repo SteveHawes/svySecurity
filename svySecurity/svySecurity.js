@@ -54,6 +54,15 @@ var SESSION_TIMEOUT = 30 * 60 * 1000;
 var SYSTEM_USER = 'system_user';
 
 /**
+ * The default validity in milliseconds of an access token
+ * @private 
+ * @type {Number}
+ *
+ * @properties={typeid:35,uuid:"43F8E253-42D9-4721-8337-98B17EEE087C",variableType:8}
+ */
+var ACCESS_TOKEN_DEFAULT_VALIDITY = 30 * 60 * 1000;
+
+/**
  * @public 
  * @param {User} user
  * @return {Boolean}
@@ -405,6 +414,42 @@ function getSessionCount(){
 	var q = datasources.db.svy_security.sessions.createSelect();
 	q.result.add(q.columns.id.count);
 	return databaseManager.getDataSetByQuery(q,1).getValue(1,1);
+}
+
+/**
+ * Consumes a token and returns a user if a valid match was found
+ * 
+ * @public 
+ * @param {String} token
+ * @return {User} The matching user or null if the token is not valid
+ * TODO what to do if called when security tables are already filtered for another tenant ?
+ * 
+ * @properties={typeid:24,uuid:"D8CE88B5-FEEC-4996-8116-1AA32B0D5F75"}
+ */
+function consumeAccessToken(token){
+	if(!token){
+		throw 'token cannot be null';
+	}
+	var expiration = new Date();
+	var q = datasources.db.svy_security.users.createSelect();
+	q.result.addPk();
+	q.where.add(q.columns.access_token.eq(token)).add(q.columns.access_token_expiration.gt(expiration));
+	var fs = datasources.db.svy_security.users.getFoundSet();
+	fs.loadRecords(q);
+	
+	// no matching token
+	// TODO logging here
+	if(!fs.getSize()){
+		return null;
+	}
+	
+	// clear token
+	var record = fs.getRecord(1);
+	record.access_token = null;
+	record.access_token_expiration = null;
+	save(record);
+	
+	return new User(record);
 }
 
 /**
@@ -1085,6 +1130,23 @@ function User(record){
 	 */
 	this.getLockExpiration = function(){
 		return record.lock_expiration;
+	}
+	
+	/**
+	 * Generates a secure access token to authenticate this user within a window of validity
+	 * @public 
+	 * @param {Date} [expiration] The expiration time of the token. Default is 30 minutes in future
+	 * @return {String}
+	 */
+	this.generateAccessToken = function(expiration){
+		record.access_token = application.getUUID().toString();
+		if(!expiration){
+			expiration = new Date();
+			expiration.setTime(expiration.getTime() + ACCESS_TOKEN_DEFAULT_VALIDITY);
+		}
+		record.access_token_expiration = expiration;
+		save(record);
+		return record.access_token;
 	}
 }
 

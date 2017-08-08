@@ -19,6 +19,19 @@ name:"user_name",
 titleText:"User Name"
 },
 {
+allowNull:true,
+creationOrderIndex:10,
+dataType:12,
+length:36,
+name:"access_token"
+},
+{
+allowNull:true,
+creationOrderIndex:11,
+dataType:93,
+name:"access_token_expiration"
+},
+{
 allowNull:false,
 autoEnterSubType:8,
 autoEnterType:1,
