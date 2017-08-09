@@ -805,7 +805,14 @@ function Tenant(record){
 	 * @return {Boolean}
 	 */
 	this.isLocked = function(){
-		return record.is_locked == 1;
+		if(record.lock_flag == 1){
+			if(record.lock_expiration){
+				var now = new Date();
+				return now < record.lock_expiration;
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -1147,7 +1154,14 @@ function User(record){
 	 * @see User.lock
 	 */
 	this.isLocked = function(){
-		return record.is_locked == 1;
+		if(record.lock_flag == 1){
+			if(record.lock_expiration){
+				var now = new Date();
+				return now < record.lock_expiration;
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	/**
