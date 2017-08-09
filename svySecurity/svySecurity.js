@@ -1175,15 +1175,16 @@ function User(record){
 	/**
 	 * Generates a secure access token to authenticate this user within a window of validity
 	 * @public 
-	 * @param {Date} [expiration] The expiration time of the token. Default is 30 minutes in future
+	 * @param {Number} [duration] The duration of validity in milliseconds. Default is 30 minutes in future
 	 * @return {String}
 	 */
-	this.generateAccessToken = function(expiration){
+	this.generateAccessToken = function(duration){
 		record.access_token = application.getUUID().toString();
-		if(!expiration){
-			expiration = new Date();
-			expiration.setTime(expiration.getTime() + ACCESS_TOKEN_DEFAULT_VALIDITY);
+		if(!duration){
+			duration = ACCESS_TOKEN_DEFAULT_VALIDITY;
 		}
+		var expiration = new Date();
+		expiration.setTime(expiration.getTime() + duration);
 		record.access_token_expiration = expiration;
 		save(record);
 		return record.access_token;
