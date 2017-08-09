@@ -1486,25 +1486,6 @@ function Permission(record){
 	}
 	
 	/**
-	 * Sets the display name of this permission. The name must be unique in system.
-	 * 
-	 * @public 
-	 * @param {String} name Must be non-null and unique
-	 * @return {Permission} Returns this permission for call-chaining
-	 */
-	this.setName = function(name){
-		if(!name){
-			throw 'Name cannot be null or empty';
-		}
-		if(getPermission(name)){
-			throw 'Permission name "'+name+'" is not unique';
-		}
-		record.permission_name = name;
-		save(record);
-		return this;
-	}
-	
-	/**
 	 * @public 
 	 * @return {String}
 	 */
