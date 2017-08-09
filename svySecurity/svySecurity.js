@@ -70,6 +70,10 @@ var ACCESS_TOKEN_DEFAULT_VALIDITY = 30 * 60 * 1000;
  */
 function login(user){
 	
+	if(!user){
+		throw 'User cannot be null';
+	}
+	
 	// already logged-in
 	if(security.getUserUID()){
 		// TODO logging
@@ -77,6 +81,18 @@ function login(user){
 		return false;
 	}
 
+	// check for lock
+	if(user.isLocked()){
+		application.output('User "'+user.getUserName()+'" is locked and cannot be logged-in');
+		return false;
+	}
+	
+	// check for tenant lock
+	if(user.getTenant().isLocked()){
+		application.output('Tenant "'+user.getTenant().getName()+'" is locked and cannot be logged-in');
+		return false;
+	}
+	
 	// sync permissions
 	// TODO Necessary to do here ?
 	syncPermissions();
@@ -121,7 +137,8 @@ function logout(){
 }
 
 /**
- * Creates a new tenant with the specified name
+ * Creates and returns new tenant with the specified name.
+ * Tenants names must be unique in the system.
  * 
  * @public 
  * @param {String} name The name of the tenant. Must be unique.
@@ -206,21 +223,33 @@ function getTenant(name){
 }
 
 /**
- * NOTE: USE WITH CAUTION! There is no undo.
  * Immediately and permanently deletes the specified tenant and all supporting records, including all users and roles
  * Tenant will not be deleted if it has users w/ active sessions
+ * NOTE: USE WITH CAUTION! There is no undo.
  * 
  * @public 
- * @param {Tenant} tenant
+ * @param {Tenant|String} tenant The tenant object or name of tenant
  * @return {Boolean} False if tenant was unable to be deleted, most commonly because of active sessions.
  * @properties={typeid:24,uuid:"416DAE0D-25B4-485F-BDB9-189B151EA1B9"}
  * @AllowToRunInFind
  */
 function deleteTenant(tenant){
+	if(!tenant){
+		throw 'Tenant cannot be null';
+	}
+	if(tenant instanceof String){
+		/** @type {String} */
+		var tenantName = tenant;
+		tenant = scopes.svySecurity.getTenant(tenantName);
+	}
+	
+	// check active sessions
 	if(tenant.getActiveSessions().length){
 		application.output('Cannot delete tenant. Has active sessions',LOGGINGLEVEL.WARNING); // TODO Proper Logging
 		return false;
 	}
+	
+	// get foundset
 	var fs = datasources.db.svy_security.tenants.getFoundSet();
 	fs.find();
 	fs.tenant_name = tenant.getName();
@@ -228,6 +257,7 @@ function deleteTenant(tenant){
 		application.output('Could not delete tenant. Unexpected could not find tenant "'+tenant.getName()+'".',LOGGINGLEVEL.ERROR); // TODO Proper Logging
 		return false;
 	}
+	
 	databaseManager.startTransaction();
 	try{
 		if(!fs.deleteRecord(1)){
@@ -417,11 +447,12 @@ function getSessionCount(){
 }
 
 /**
- * Consumes a token and returns a user if a valid match was found
+ * Consumes a secure-access token and returns a user if a valid match was found
+ * Tokens may be used only once to identify a user. Subsequent calls to consume the same token will fail.
  * 
  * @public 
  * @param {String} token
- * @return {User} The matching user or null if the token is not valid
+ * @return {User} The matching user or null if the token is not valid.
  * TODO what to do if called when security tables are already filtered for another tenant ?
  * 
  * @properties={typeid:24,uuid:"D8CE88B5-FEEC-4996-8116-1AA32B0D5F75"}
@@ -736,13 +767,18 @@ function Tenant(record){
 	 * Users with active sessions will be unaffected until subsequent login attempts
 	 * 
 	 * @public 
-	 * @param {String} [reason]
-	 * @param {Date} [expiration]
+	 * @param {String} [reason] The reason for the lock
+	 * @param {Number} [duration] The duration of the lock. If no duration specified, the lock will remain until unlock() is called
+	 * @see unlock
 	 * @return {Tenant}
 	 */
-	this.lock = function(reason, expiration){
+	this.lock = function(reason, duration){
 		record.lock_flag = 1;
 		record.lock_reason = reason;
+		if(duration){
+			var expiration = new Date();
+			expiration.setTime(expiration.getTime() + duration);
+		}
 		record.lock_expiration = expiration;
 		save(record);
 		return this;
@@ -769,7 +805,7 @@ function Tenant(record){
 	 * @return {Boolean}
 	 */
 	this.isLocked = function(){
-		return record.lock_flag == 1;
+		return record.is_locked == 1;
 	}
 	
 	/**
@@ -1072,13 +1108,17 @@ function User(record){
 	 * 
 	 * @public 
 	 * @param {String} [reason] The reason. Can be a system code, i18n message or plain text
-	 * @param {Date} [expiration] The expiration. If no expiration date supplied, locks will persist until unlock() is called.
+	 * @param {Number} [duration] The duration of the lock in milliseconds. If no duration supplied, locks will persist until unlock() is called.
 	 * @return {User}
 	 * @see User.unlock
 	 */
-	this.lock = function(reason, expiration){
+	this.lock = function(reason, duration){
 		record.lock_flag = 1;
 		record.lock_reason = reason;
+		if(duration){
+			var expiration = new Date();
+			expiration.setTime(expiration.getTime() + duration);
+		}
 		record.lock_expiration = expiration;
 		save(record);
 		return this;

@@ -23,7 +23,9 @@ var ERROR_CODES = {
 	TENANT_NOT_FOUND : 'tenant-not-found',
 	USER_NOT_FOUND : 'user-ot-found',
 	PASSWORD_MISMATCH : 'password-mismatch',
-	INSUFFICIENT_PERMISSIONS : 'insufficient-permissions'
+	INSUFFICIENT_PERMISSIONS : 'insufficient-permissions',
+	LOCKED_USER : 'locked-user',
+	LOCKED_TENANT : 'loxcked-tenant'
 };
 
 /**
@@ -100,7 +102,6 @@ function login(){
 		onLoginError(ERROR_CODES.TENANT_NOT_FOUND);
 		return false;
 	}
-	
 	var user = tenant.getUser(userName);
 	if(!user){
 		onLoginError(ERROR_CODES.USER_NOT_FOUND);
@@ -108,6 +109,14 @@ function login(){
 	}
 	if(!user.checkPassword(password)){
 		onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
+		return false;
+	}
+	if(user.isLocked()){
+		onLoginError(ERROR_CODES.LOCKED_USER);
+		return false;
+	}
+	if(tenant.isLocked()){
+		onLoginError(ERROR_CODES.LOCKED_TENANT);
 		return false;
 	}
 	if(!scopes.svySecurity.login(user)){
@@ -199,6 +208,6 @@ function readCookie(){
  */
 function onShow(firstShow, event) {
 	if(firstShow){
-		readCookie();
+//		readCookie();
 	}
 }
