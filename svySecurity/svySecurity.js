@@ -1495,7 +1495,7 @@ function Permission(record){
 	
 	/**
 	 * @public 
-	 * @param {String} displayName
+	 * @param {String} [displayName]
 	 * @return {Permission}
 	 */
 	this.setDisplayName = function(displayName){
