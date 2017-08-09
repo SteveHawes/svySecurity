@@ -1147,7 +1147,7 @@ function User(record){
 	 * @see User.lock
 	 */
 	this.isLocked = function(){
-		return record.lock_flag == 1;
+		return record.is_locked == 1;
 	}
 	
 	/**
