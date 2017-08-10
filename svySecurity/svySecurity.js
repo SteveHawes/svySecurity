@@ -1,13 +1,13 @@
 /**
- * @protected 
+ * @private  
  * @type {String}
- *
+ * @SuppressWarnings(unused)
  * @properties={typeid:35,uuid:"6BE0C9D3-A073-4B3E-BED4-183542BA5B7B"}
  */
 var sessionID = null;
 
 /**
- * @protected 
+ * @private  
  * @type {String}
  *
  * @properties={typeid:35,uuid:"626CE06E-AF5A-42A1-8F8F-BE308B37F213"}
@@ -15,9 +15,9 @@ var sessionID = null;
 var activeTenantName = null;
 
 /**
- * @protected 
+ * @private 
  * @type {String}
- *
+ * @SuppressWarnings(unused)
  * @properties={typeid:35,uuid:"A6511E73-F3FD-4A19-97F3-D9B55493F853"}
  */
 var activeUserName = null;
@@ -27,7 +27,7 @@ var activeUserName = null;
  * TODO should be externalized? Should be stored in db, so next expected time should be calculated ?
  * @private 
  * @type {Number}
- *
+ * @SuppressWarnings(unused)
  * @properties={typeid:35,uuid:"9D18DE69-F778-4117-B8B3-0FCFF75E3B83",variableType:4}
  */
 var SESSION_PING_INTERVAL = 10000;
@@ -1769,10 +1769,9 @@ function Session(record){
 	}
 	
 	/**
-	 * Records a client ping in the database. Internal user only.
+	 * Records a client ping in the database. Internal-use only.
 	 * 
 	 * @protected  
-	 * NOTE: This should only be called within this scope
 	 */
 	this.sendPing = function(){
 		record.last_client_ping = new Date();
