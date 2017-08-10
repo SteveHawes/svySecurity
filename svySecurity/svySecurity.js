@@ -505,7 +505,7 @@ function consumeAccessToken(token){
 
 /**
  * Use {@link createTenant} to create tenant objects. Creating tenant objects with the new operator is reserved for internal use only.
- * @classdesc Tenant account which is used segregate all data. [Users]{@link User} and [Roles]{@link Role} belong to a Tenant.
+ * @classdesc Tenant account which is used to segregate all data. [Users]{@link User} and [Roles]{@link Role} belong to a Tenant.
  * @protected 
  * @param {JSRecord<db:/svy_security/tenants>} record The database record where the tenant account information is stored.
  * @constructor 
