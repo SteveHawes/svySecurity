@@ -1,23 +1,23 @@
 /**
- * @private  
+ * @protected  
  * @type {String}
- * @SuppressWarnings(unused)
+ * @ignore
  * @properties={typeid:35,uuid:"6BE0C9D3-A073-4B3E-BED4-183542BA5B7B"}
  */
 var sessionID = null;
 
 /**
- * @private  
+ * @protected 
  * @type {String}
- *
+ * @ignore
  * @properties={typeid:35,uuid:"626CE06E-AF5A-42A1-8F8F-BE308B37F213"}
  */
 var activeTenantName = null;
 
 /**
- * @private 
+ * @protected 
  * @type {String}
- * @SuppressWarnings(unused)
+ * @ignore
  * @properties={typeid:35,uuid:"A6511E73-F3FD-4A19-97F3-D9B55493F853"}
  */
 var activeUserName = null;
@@ -63,9 +63,14 @@ var SYSTEM_USER = 'system_user';
 var ACCESS_TOKEN_DEFAULT_VALIDITY = 30 * 60 * 1000;
 
 /**
+ * Logs in the specified user and initializes a new {@link Session} for it.
+ * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
+ * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
+ * This method internally calls the standard Servoy security.login(). 
+ * @note This method does not perform any password checks - for validation of user passwords use [User.checkPassword]{@link User#checkPassword}.
  * @public 
- * @param {User} user
- * @return {Boolean}
+ * @param {User} user The user to log in.
+ * @return {Boolean} Returns true if the login was successful and a user {@link Session} was created, otherwise false.
  * @properties={typeid:24,uuid:"83266E3D-BB41-416F-988C-964593F1F33C"}
  */
 function login(user){
@@ -126,7 +131,9 @@ function login(user){
 }
 
 /**
- * Logs the current user out of the application
+ * Logs the current user out of the application and closes the associated {@link Session}.
+ * This method internally calls security.logout() to end the Servoy client session.
+ * 
  * @public 
  * 
  * @properties={typeid:24,uuid:"341F328D-C8A6-4568-BF0C-F807A19B8977"}
@@ -137,12 +144,12 @@ function logout(){
 }
 
 /**
- * Creates and returns new tenant with the specified name.
- * Tenants names must be unique in the system.
+ * Creates and returns a new tenant with the specified name.
+ * The names of tenants must be unique in the system.
  * 
  * @public 
  * @param {String} name The name of the tenant. Must be unique.
- * @return {Tenant} The tenant that is created
+ * @return {Tenant} The tenant that is created.
  * 
  * @properties={typeid:24,uuid:"2093C23A-D1E5-49D2-AA0B-428D5CB8B0FA"}
  */
@@ -167,9 +174,9 @@ function createTenant(name){
 }
 
 /**
- * Get all the tenants in the system
+ * Gets all tenants in the system.
  * @public 
- * @return {Array<Tenant>}
+ * @return {Array<Tenant>} An array with all tenants or an empty array if no tenants are defined.
  *
  * @properties={typeid:24,uuid:"449FDFC0-DD1A-46EB-A576-2D6771C1BEBD"}
  */
@@ -185,11 +192,13 @@ function getTenants(){
 }
 
 /**
- * Gets the specified tenant. If no tenant name is specified, the current tenant is returned
+ * Gets a tenant by its unique tenant name. 
+ * If tenant name is not specified then will return the tenant of the currently logged in user.
+ * If tenant name is not specified and no user is currently logged in then will return null.
  * 
  * @public 
  * @param {String} [name] The name of the tenant to get. Or null to get the current tenant.
- * @return {Tenant} The tenant or null if not found / no logged-in user
+ * @return {Tenant} The tenant or null if not found / no user is logged in.
  * 
  * @properties={typeid:24,uuid:"35A8C27C-1B0E-478F-95E2-B068FBF57BB4"}
  * @AllowToRunInFind
@@ -223,13 +232,13 @@ function getTenant(name){
 }
 
 /**
- * Immediately and permanently deletes the specified tenant and all supporting records, including all users and roles
- * Tenant will not be deleted if it has users w/ active sessions
- * NOTE: USE WITH CAUTION! There is no undo.
+ * Immediately and permanently deletes the specified tenant and all records associated with it, including all users and roles.
+ * Tenant will not be deleted if it has users with active sessions.
+ * @note USE WITH CAUTION! There is no undo for this operation.
  * 
  * @public 
- * @param {Tenant|String} tenant The tenant object or name of tenant
- * @return {Boolean} False if tenant was unable to be deleted, most commonly because of active sessions.
+ * @param {Tenant|String} tenant The tenant object or the name of the tenant to delete.
+ * @return {Boolean} False if tenant could not be deleted, most commonly because of active user sessions associated with the tenant.
  * @properties={typeid:24,uuid:"416DAE0D-25B4-485F-BDB9-189B151EA1B9"}
  * @AllowToRunInFind
  */
@@ -238,7 +247,10 @@ function deleteTenant(tenant){
 		throw 'Tenant cannot be null';
 	}
 	if(tenant instanceof String){
-		/** @type {String} */
+		/** 
+		 * @type {String} 
+		 * @private
+		 */
 		var tenantName = tenant;
 		tenant = scopes.svySecurity.getTenant(tenantName);
 	}
@@ -277,12 +289,13 @@ function deleteTenant(tenant){
 }
 
 /**
- * Gets the user by specified username, or null to get the current logged-in user
+ * Gets a user by the specified username and tenant name. 
+ * If username is not specified will return the user currently logged in the application, if available.
  * 
  * @public 
- * @param {String} [userName] The username, can be null to get the current user
- * @param {String} [tenantName] The name of the tenant, can be null if username is also null when getting the current user
- * @return {User}
+ * @param {String} [userName] The username of the user to return. Can be null to get the current user.
+ * @param {String} [tenantName] The name of the tenant associated with the user. Can be null if username is also null when getting the current user.
+ * @return {User} The specified user (or current user if parameters are not specified) or null if the specified user does not exist (or if parameters are not specified and a user is not logged in currently).
  * @properties={typeid:24,uuid:"FCF267E6-1580-402E-8252-ED18964474DA"}
  * @AllowToRunInFind
  */
@@ -333,8 +346,10 @@ function getUser(userName, tenantName){
 }
 
 /**
+ * Gets all users in the system.
  * @public 
- * @return {Array<User>}
+ * @return {Array<User>} An array with all users or an empty array if no users are defined.
+ * 
  * @properties={typeid:24,uuid:"6BF188EF-BC15-43AE-AB70-BB9A83FB2B18"}
  */
 function getUsers(){
@@ -350,10 +365,10 @@ function getUsers(){
 }
 
 /**
- * Gets all of the permissions in this application
+ * Gets all permissions available in this application.
  * 
  * @public 
- * @return {Array<Permission>}
+ * @return {Array<Permission>} An array with all permissions or an empty array if no permissions are defined.
  *
  * @properties={typeid:24,uuid:"08508668-696C-4BEF-8322-0884B2405FDF"}
  */
@@ -369,11 +384,11 @@ function getPermissions(){
 }
 
 /**
- * Gets a permission by unique display name
+ * Gets a permission by its unique permission name.
  * 
  * @public 
- * @param {String} name The display name of the permission
- * @return {Permission} The permission or null if not found
+ * @param {String} name The name of the permission.
+ * @return {Permission} The specified permission or null if a permission with the specified name is not found.
  * 
  * @properties={typeid:24,uuid:"9008A7A4-154B-48A1-AF52-ED6CAFAADCBA"}
  * @AllowToRunInFind
@@ -392,14 +407,12 @@ function getPermission(name){
 }
 
 /**
- * Gets the current session, null if no session initialized
- * NOTE: Sessions represent authenticated user sessions
- * They are not initialized until after login.
+ * Gets the current user session or null if no session initialized (no user is currently [logged in]{@link login}).
+ * @note Sessions represent authenticated user sessions. They are not initialized until after user login.
  *  
  * @public 
- * @return {Session}
- * @see login();
- * 
+ * @return {Session} The current session or null if a user is not currently logged in.
+  * 
  * @properties={typeid:24,uuid:"41BC69E2-367B-439F-B0FE-B0B7A0533C24"}
  */
 function getSession(){
@@ -410,10 +423,11 @@ function getSession(){
 }
 
 /**
- * Gets all the active sessions for this system.
+ * Gets all active sessions for the application.
+ * @note If users close the application without [logging out]{@link logout} then their sessions will remain active for a period of time.
  * 
  * @public 
- * @return {Array<Session>}
+ * @return {Array<Session>} An array will all active sessions or an empty array if there are no active sessions.
  * @properties={typeid:24,uuid:"D3256103-0741-498E-9CA9-0E34E9D530E2"}
  */
 function getActiveSessions(){
@@ -434,9 +448,12 @@ function getActiveSessions(){
 }
 
 /**
- * Gets the number of unique logins this system has from any location at any time
+ * Gets the number of all unique sessions which have ever been initialized in the application.
+ * This includes both active sessions (for users currently logged in the application) 
+ * and inactive sessions (sessions from the past which have already been closed).
+ * 
  * @public 
- * @return {Number} 
+ * @return {Number} The number of all sessions (active and closed).
  *
  * @properties={typeid:24,uuid:"6AAEA97C-C8FB-45FC-886C-1B43678C2F2C"}
  */
@@ -447,13 +464,16 @@ function getSessionCount(){
 }
 
 /**
- * Consumes a secure-access token and returns a user if a valid match was found
- * Tokens may be used only once to identify a user. Subsequent calls to consume the same token will fail.
+ * Consumes a secure-access token and returns the user associated with the token if a valid match was found.
+ * Tokens may be used only once to identify a user. 
+ * Subsequent calls to consume the same token will fail.
+ * Secure-access tokens are created with {@link User#generateAccessToken}
+ * 
+ * TODO what to do if called when security tables are already filtered for another tenant ?
  * 
  * @public 
- * @param {String} token
- * @return {User} The matching user or null if the token is not valid.
- * TODO what to do if called when security tables are already filtered for another tenant ?
+ * @param {String} token The secure-access token to use.
+ * @return {User} The user associated with the specified token or null if the token is not valid or has expired.
  * 
  * @properties={typeid:24,uuid:"D8CE88B5-FEEC-4996-8116-1AA32B0D5F75"}
  */
@@ -484,23 +504,27 @@ function consumeAccessToken(token){
 }
 
 /**
- * @private 
- * @param {JSRecord<db:/svy_security/tenants>} record
+ * Use {@link createTenant} to create tenant objects. Creating tenant objects with the new operator is reserved for internal use only.
+ * @classdesc Tenant account which is used segregate all data. [Users]{@link User} and [Roles]{@link Role} belong to a Tenant.
+ * @protected 
+ * @param {JSRecord<db:/svy_security/tenants>} record The database record where the tenant account information is stored.
  * @constructor 
+ * 
  * @properties={typeid:24,uuid:"BD7E0091-054F-434E-B5EE-44862926D03D"}
  * @AllowToRunInFind
  */
 function Tenant(record){
 	
 	/**
-	 * Creates a user with the specified user name
+	 * Creates a user with the specified user name.
+	 * @note If password is not specified the user account will be created with a blank password.
+	 * Use {@link User#setPassword} to set or change the user password.
 	 * 
 	 * @public 
-	 * @param {String} userName Must be unique in system
-	 * @param {String} [password] Create user with password
-	 * @return {User}
-	 * @throws {String} If the user name is not unique
-	 * @see User.setPassword
+	 * @param {String} userName Must be unique in system.
+	 * @param {String} [password] The password to use for the new user.
+	 * @return {User} The user which was created.
+	 * @throws {String} If the user name is not specified or is not unique.
 	 */
 	this.createUser = function(userName, password){
 		if(!userName){
@@ -532,10 +556,10 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Gets all the users for this tenant
+	 * Gets all users for this tenant.
 	 * 
 	 * @public 
-	 * @return {Array<User>}
+	 * @return {Array<User>} An array with all users associated with this tenant or an empty array if the tenant has no users.
 	 */
 	this.getUsers = function(){
 		var users = [];
@@ -547,11 +571,11 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Gets the named user in this tenant
+	 * Gets the user (associated with this tenant) specified by the username.
 	 * 
 	 * @public 
-	 * @param {String} userName The unique name of the user
-	 * @return {User} The matching user or null of not found
+	 * @param {String} userName The username of the user.
+	 * @return {User} The matching user or null if a user with the specified username and associated with this tenant is not found.
 	 */
 	this.getUser = function(userName){
 		if(!userName){
@@ -568,13 +592,13 @@ function Tenant(record){
 	}
 	
 	/**
-	 * NOTE: USE WITH CAUTION! There is no undo.
-	 * Immediately and permanently deletes the specified user and all supporting records
-	 * User will not be deleted if it has active sessions
+	 * Immediately and permanently deletes the specified user and all security-related records associated with it.
+	 * The user will not be deleted if it has active sessions.
+	 * @note USE WITH CAUTION! There is no undo for this operation.
 	 * 
 	 * @public 
-	 * @param {User|String} user
-	 * @return {Boolean}
+	 * @param {User|String} user The user object or the username of the user to be deleted. The specified user must be associated with this tenant.
+	 * @return {Boolean} True if the user is deleted, otherwise false.
 	 */
 	this.deleteUser = function(user){
 		var userName = user instanceof String ? user : user.getUserName();
@@ -611,12 +635,12 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Creates a role in this tenant with the specified name
+	 * Creates a role associated with this tenant using the specified role name.
 	 * 
 	 * @public 
-	 * @param {String} name The name of the role. Must be unique in tenant
-	 * @return {Role}
-	 * @throws {String} If the role name is not unique
+	 * @param {String} name The name of the role to be created. Must be unique to this tenant.
+	 * @return {Role} The role which was created.
+	 * @throws {String} If the role name is not unique to this tenant.
 	 */
 	this.createRole = function(name){
 		if(!name){
@@ -639,11 +663,11 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Gets a role by name unique to this tenant
+	 * Gets a role by name unique to this tenant.
 	 * 
 	 * @public
-	 * @param {String} name the role name
-	 * @return {Role} The matching role, or null if not found
+	 * @param {String} name The name of the role to get.
+	 * @return {Role} The matching role, or null if a role with the specified name and associated with this tenant is not found.
 	 */
 	this.getRole = function(name){
 		if(!name){
@@ -660,9 +684,9 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Gets the roles for this tenant
+	 * Gets the roles associated with this tenant.
 	 * @public 
-	 * @return {Array<Role>}
+	 * @return {Array<Role>} An array with the roles associated with this tenant or an empty array if the tenant has no roles.
 	 */
 	this.getRoles = function(){
 		var roles = [];
@@ -674,12 +698,13 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Deletes the role from this tenant. All associated permissions and grants to users are removed immediately.
+	 * Deletes the specified role from this tenant. 
+	 * All associated permissions and grants to users are removed immediately.
 	 * Users with active sessions will be affected, but design-time security (CRUD, UI) will not be affected until next log-in.
 	 * 
 	 * @public 
-	 * @param {Role|String} role
-	 * @return {Tenant}
+	 * @param {Role|String} role The role object or name of role to be deleted. The role must be associated with this tenant.
+	 * @return {Tenant} This tenant for call-chaining support.
 	 */
 	this.deleteRole = function(role){
 		var roleName = role instanceof String ? role : role.getName();
@@ -699,27 +724,32 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Gets the name of this tenant which is unique in system
+	 * Gets the name of this tenant. 
+	 * Tenant names are unique in the system and are specified when the tenant is created.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The name of this tenant.
 	 */
 	this.getName = function(){
 		return record.tenant_name;
 	}
 	
 	/**
+	 * Gets the display name of this tenant.
+	 * The display name can be set using {@link Tenant#setDisplayName}.
+	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The display name of this tenant. Can be null if a display name is not set.
 	 */
 	this.getDisplayName = function(){
 		return record.display_name;
 	}
 	
 	/**
+	 * Sets the display name of this tenant.
 	 * @public 
-	 * @param {String} displayName
-	 * @return {Tenant}
+	 * @param {String} displayName The display name to use.
+	 * @return {Tenant} This tenant for call-chaining support.
 	 */
 	this.setDisplayName = function(displayName){
 		record.display_name = displayName;
@@ -728,12 +758,12 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Gets the active sessions for this tenant 
-	 * This includes any sessions from any device or location
-	 * NOTE: Any unterminated sessions are deemed to be active when they not been idle for more than a set timeout period
+	 * Gets the active sessions for users associated with this tenant. 
+	 * This includes any sessions from any device and any location for users associated with this tenant.
+	 * @note Any unterminated sessions are deemed to be active when they have not been idle for more than a set timeout period.
 	 * 
 	 * @public 
-	 * @return {Array<Session>}
+	 * @return {Array<Session>} An array with all active sessions for users associated with this tenant or an empty array if the are no active sessions.
 	 */
 	this.getActiveSessions = function(){
 		var expiration = new Date();
@@ -753,24 +783,27 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Gets the number of unique logins this tenant has from any location at any time
+	 * Gets the number of all unique sessions which have ever been initialized in the system by users associated with this tenant. 
+	 * This includes both active sessions (for users currently logged in the application) 
+	 * and inactive sessions (sessions from the past which have already been terminated).
+	 * 
 	 * @public 
-	 * @return {Number} 
+	 * @return {Number} The number of all sessions (active and inactive) for users associated with this tenant. 
 	 */
 	this.getSessionCount = function(){
 		return databaseManager.getFoundSetCount(record.tenants_to_sessions);
 	}
 	
 	/**
-	 * Locks the tenant account preventing its users from logging in
-	 * Lock will remain in place until it expires or it is removed using unlock()
-	 * Users with active sessions will be unaffected until subsequent login attempts
+	 * Locks the tenant account preventing its users from logging in.
+	 * The lock will remain in place until it expires (if a duration was specified) or it is removed using {Tenant#unlock}.
+	 * Users with active sessions will be unaffected until subsequent login attempts.
+	 * Can be called even if the tenant is already locked. In such cases the lock reason and duration will be reset.
 	 * 
 	 * @public 
-	 * @param {String} [reason] The reason for the lock
-	 * @param {Number} [duration] The duration of the lock. If no duration specified, the lock will remain until unlock() is called
-	 * @see unlock
-	 * @return {Tenant}
+	 * @param {String} [reason] The reason for the lock.
+	 * @param {Number} [duration] The duration of the lock (in milliseconds). If no duration specified, the lock will remain until {Tenant#unlock} is called.
+	 * @return {Tenant} This tenant for call-chaining support.
 	 */
 	this.lock = function(reason, duration){
 		record.lock_flag = 1;
@@ -785,10 +818,11 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Removes any lock on the tenant account
+	 * Removes the lock on the tenant account which is created by {@link Tenant#lock}.
+	 * Can be safely called even if the tenant is not locked.
 	 * 
 	 * @public 
-	 * @return {Tenant}
+	 * @return {Tenant} This tenant for call-chaining support.
 	 */
 	this.unlock = function(){
 		record.lock_flag = null;
@@ -799,10 +833,10 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Indicates if a tenant account is locked
+	 * Indicates if the tenant account is locked using {@link Tenant#lock}.
 	 * 
 	 * @public 
-	 * @return {Boolean}
+	 * @return {Boolean} True if the tenant account is currently locked and the lock has not expired.
 	 */
 	this.isLocked = function(){
 		if(record.lock_flag == 1){
@@ -816,21 +850,21 @@ function Tenant(record){
 	}
 	
 	/**
-	 * Indicates the reason for the lock.
+	 * Gets the reason for the account lock created by {@link Tenant#lock}.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The lock reason. Can be null.
 	 */
 	this.getLockReason = function(){
 		return record.lock_reason;
 	}
 	
 	/**
-	 * Indicates the expiration time of the lock
-	 * Lock will remain in place until it expires or it is removed using unlock()
+	 * Gets the expiration date/time of the lock created by {@link Tenant#lock}.
+	 * The lock will remain in place until it expires or it is removed using {@link Tenant#unlock}.
 	 * 
 	 * @public 
-	 * @return {Date}
+	 * @return {Date} The date/time when the lock expires. Can be null. The date/time is using the Servoy application server timezone.
 	 */
 	this.getLockExpiration = function(){
 		return record.lock_expiration;
@@ -838,7 +872,9 @@ function Tenant(record){
 }
 
 /**
- * @private 
+ * Use {@link Tenant#createUser} to create user objects. Creating user objects with the new operator is reserved for internal use only.
+ * @classdesc Application user account associated with a {@link Tenant}. Security [Permissions]{@link Permission} are granted to users through their {@link Role} membership. 
+ * @protected 
  * @param {JSRecord<db:/svy_security/users>} record
  * @constructor 
  * @properties={typeid:24,uuid:"96BACE39-6564-4270-8DBD-D16E11F0370E"}
@@ -848,41 +884,43 @@ function User(record){
 	
 	
 	/**
-	 * Returns the tenant that owns this user
+	 * Returns the tenant that owns this user account.
 	 * 
 	 * @public 
-	 * @return {Tenant}
+	 * @return {Tenant} The parent tenant associated with this user.
 	 */
 	this.getTenant = function(){
 		return new Tenant(record.users_to_tenants.getSelectedRecord());
 	}
 	
 	/**
-	 * Gets this username
+	 * Gets the username of this user which was specified when the user was created.
+	 * The username cannot be changed after the user is created and is unique to the associated tenant.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The username of this user.
 	 */
 	this.getUserName = function(){
 		return record.user_name;
 	}
 	
 	/**
-	 * Gets the display name for this user, i.e. "Jane Doe"
+	 * Gets the display name of this user, i.e. "Jane Doe".
+	 * The display name can be set using {@link User#setDisplayName}.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The display name of this user.
 	 */
 	this.getDisplayName = function(){
 		return record.display_name;
 	}
 	
 	/**
-	 * Sets the display name of this user
+	 * Sets the display name of this user.
 	 * 
 	 * @public 
-	 * @param {String} displayName
-	 * @return {User} This user for call-chaining
+	 * @param {String} displayName The display name to use.
+	 * @return {User} This user for call-chaining support.
 	 */
 	this.setDisplayName = function(displayName){
 		// no change
@@ -895,11 +933,12 @@ function User(record){
 	}
 	
 	/**
-	 * Checks if the specified password matches this user's hashed password
+	 * Checks if the specified password matches the password of this user.
+	 * User password can be set when the user is created or by using {@link User#setPassword}.
 	 * 
 	 * @public 
-	 * @param {String} password
-	 * @return {Boolean}
+	 * @param {String} password The password (plain-text) to check.
+	 * @return {Boolean} True if the specified password matches the password of this user.
 	 */
 	this.checkPassword = function(password){
 		if(!password){
@@ -910,11 +949,13 @@ function User(record){
 	
 	/**
 	 * Sets the users password. 
-	 * Specified plain-text password will be hashed and cannot be returned.
+	 * The specified plain-text password will not be stored. 
+	 * Only its hash will be stored and used for password validation.
+	 * The actual plain-text password cannot be retrieved from the stored hash.
 	 *
 	 * @public 
-	 * @param {String} password The plain-text password. 
-	 * @return {User} This user for call-chaining
+	 * @param {String} password The plain-text password to use. 
+	 * @return {User} This user for call-chaining support.
 	 */
 	this.setPassword = function(password){
 		if(!password){
@@ -932,18 +973,21 @@ function User(record){
 	}
 	
 	/**
-	 * Grants the specified role to this user
+	 * Adds this user as member of the specified role and grants the user all permissions which the role has.
 	 * 
 	 * @public 
-	 * @param {Role|String} role
-	 * @return {User} This user for call-chaining
+	 * @param {Role|String} role The role object or role name to use. The role must be associated with the tenant of this user.
+	 * @return {User} This user for call-chaining support.
 	 */
 	this.addRole = function(role){
 		
 		if(!role){
 			throw 'Role cannot be null';
 		}
-		/** @type {String} */
+		/** 
+		 * @type {String} 
+		 * @private
+		 */
 		var roleName = role instanceof String ? role : role.getName();
 		if(!this.getTenant().getRole(roleName)){
 			throw 'Role "'+roleName+'" does not exists in tenant';
@@ -965,11 +1009,12 @@ function User(record){
 	}
 	
 	/**
-	 * Removes the specified role from this user
+	 * Removes the membership of this user from the specified role. 
+	 * All permissions of the role will no longer be granted to the user.
 	 * 
 	 * @public 
-	 * @param {Role|String} role
-	 * @return {User} This user for call-chaining
+	 * @param {Role|String} role The role object or role name to use. The role must be associated with the tenant of this user.
+	 * @return {User} This user for call-chaining support.
 	 */
 	this.removeRole = function(role){
 		if(!role){
@@ -989,10 +1034,10 @@ function User(record){
 	}
 	
 	/**
-	 * Gets all the roles that are granted to this user
+	 * Gets all the roles that this user is member of.
 	 *
 	 * @public 
-	 * @return {Array<Role>}
+	 * @return {Array<Role>} An array with all roles which this user is member of or an empty array if the user is not a member of any role.
 	 */
 	this.getRoles = function(){
 		var roles = [];
@@ -1004,11 +1049,11 @@ function User(record){
 	}
 	
 	/**
-	 * Checks if this user is granted the specified role
+	 * Checks if this user is a member of the specified role.
 	 * 
 	 * @public 
-	 * @param {Role|String} role
-	 * @return {Boolean}
+	 * @param {Role|String} role The role object or role name to check. The role must be associated with the tenant of this user.
+	 * @return {Boolean} True if the user is a member of the specified role.
 	 */
 	this.hasRole = function(role){
 		if(!role){
@@ -1025,11 +1070,14 @@ function User(record){
 	}
 	
 	/**
-	 * Gets all the permissions granted to this user via all of their roles
-	 * Result will exclude duplicates
+	 * Gets all the permissions granted to this user via its roles membership.
+	 * Result will exclude duplicates.
+	 * Permissions cannot be granted directly to the user.
+	 * Use {@link User#addRole} or {@link Role#addUser} to make the user a member 
+	 * of specific roles and all role permissions will be granted to the user.
 	 * 
 	 * @public 
-	 * @return {Array<Permission>}
+	 * @return {Array<Permission>} An array with the permissions granted to this user or an empty array if the user has no permissions. 
 	 */
 	this.getPermissions = function(){
 		// map permisions to reduce recursive iterations 
@@ -1054,11 +1102,14 @@ function User(record){
 	}
 	
 	/**
-	 * Checks if the this user is granted the specified permission via their roles 
+	 * Checks if the this user is granted the specified permission via the user's role membership.
+	 * Permissions cannot be granted directly to the user.
+	 * Use {@link User#addRole} or {@link Role#addUser} to make the user a member 
+	 * of specific roles and all role permissions will be granted to the user. 
 	 * 
 	 * @public 
-	 * @param {Permission|String} permission
-	 * @return {Boolean}
+	 * @param {Permission|String} permission The permission object or permission name to check.
+	 * @return {Boolean} True if the user has been granted the specified permission.
 	 */
 	this.hasPermission = function(permission){
 		if(!permission){
@@ -1075,21 +1126,24 @@ function User(record){
 	}
 	
 	/**
-	 * Gets the number of unique logins this user has from any location at any time
+	 * Gets the number of all unique sessions which have ever been initialized in the system by this user. 
+	 * This includes both active sessions (for users currently logged in the application) 
+	 * and inactive sessions (sessions from the past which have already been terminated).
+	 * 
 	 * @public 
-	 * @return {Number} 
+	 * @return {Number} The number of all sessions (active and inactive) for this user.
 	 */
 	this.getSessionCount = function(){
 		return databaseManager.getFoundSetCount(record.users_to_sessions);
 	}
 	
 	/**
-	 * Gets the active sessions for this user 
-	 * This includes any sessions from any device or location
-	 * NOTE: Any unterminated sessions are deemed to be active when they not been idle for more than a set timeout period
+	 * Gets the active sessions this user. 
+	 * This includes any sessions from any device and any location for this user.
+	 * @note Any unterminated sessions are deemed to be active when they have not been idle for more than a set timeout period.
 	 * 
 	 * @public 
-	 * @return {Array<Session>}
+	 * @return {Array<Session>} An array with all active sessions for this user or an empty array if the are no active sessions.
 	 */
 	this.getActiveSessions = function(){
 		var expiration = new Date();
@@ -1109,15 +1163,15 @@ function User(record){
 	}
 	
 	/**
-	 * Locks the user account preventing them from logging in
-	 * Lock will remain in place until it expires or it is removed using unlock()
-	 * Users with active sessions will be unaffected until subsequent login attempts
+	 * Locks the user account preventing it from logging in.
+	 * The lock will remain in place until it expires (if a duration was specified) or it is removed using {User#unlock}.
+	 * Users with active sessions will be unaffected until subsequent login attempts.
+	 * Can be called even if the user account is already locked. In such cases the lock reason and duration will be reset.
 	 * 
 	 * @public 
-	 * @param {String} [reason] The reason. Can be a system code, i18n message or plain text
-	 * @param {Number} [duration] The duration of the lock in milliseconds. If no duration supplied, locks will persist until unlock() is called.
-	 * @return {User}
-	 * @see User.unlock
+	 * @param {String} [reason] The reason for the lock.
+	 * @param {Number} [duration] The duration of the lock (in milliseconds). If no duration specified, the lock will remain until {User#unlock} is called.
+	 * @return {User} This user for call-chaining support.
 	 */
 	this.lock = function(reason, duration){
 		record.lock_flag = 1;
@@ -1132,11 +1186,11 @@ function User(record){
 	}
 	
 	/**
-	 * Removes any lock on the user account
+	 * Removes the lock on the user account which is created by {@link User#lock}.
+	 * Can be safely called even if the user account is not locked.
 	 * 
 	 * @public 
-	 * @return {User}
-	 * @see User.lock
+	 * @return {User} This user for call-chaining support.
 	 */
 	this.unlock = function(){
 		record.lock_flag = null;
@@ -1147,11 +1201,10 @@ function User(record){
 	}
 	
 	/**
-	 * Indicates if this user's account is locked
+	 * Indicates if the use account is locked using {@link User#lock}.
 	 * 
 	 * @public 
-	 * @return {Boolean}
-	 * @see User.lock
+	 * @return {Boolean} True if the user account is currently locked and the lock has not expired.
 	 */
 	this.isLocked = function(){
 		if(record.lock_flag == 1){
@@ -1165,32 +1218,33 @@ function User(record){
 	}
 	
 	/**
-	 * Indicates the reason indicated for lock.
+	 * Gets the reason for the account lock created by {@link User#lock}.
 	 * 
 	 * @public 
-	 * @return {String}
-	 * @see User.lock
+	 * @return {String} The lock reason. Can be null.
 	 */
 	this.getLockReason = function(){
 		return record.lock_reason;
 	}
 	
 	/**
-	 * Indicates when the lock will expire. 
-	 * If no expiration is specified, locks will persist until unlock() is called.
+	 * Gets the expiration date/time of the lock created by {@link User#lock}.
+	 * The lock will remain in place until it expires or it is removed using {@link User#unlock}.
 	 * 
 	 * @public 
-	 * @return {Date}
+	 * @return {Date} The date/time when the lock expires. Can be null. The date/time is using the Servoy application server timezone.
 	 */
 	this.getLockExpiration = function(){
 		return record.lock_expiration;
 	}
 	
 	/**
-	 * Generates a secure access token to authenticate this user within a window of validity
+	 * Generates a secure access token to authenticate this user within a window of validity of the specified duration.
+	 * The generated access token can be used with {@link consumeAccessToken}.
+	 * 
 	 * @public 
-	 * @param {Number} [duration] The duration of validity in milliseconds. Default is 30 minutes in future
-	 * @return {String}
+	 * @param {Number} [duration] The duration of token validity in milliseconds. Default is 30 minutes in future.
+	 * @return {String} The generated access token.
 	 */
 	this.generateAccessToken = function(duration){
 		record.access_token = application.getUUID().toString();
@@ -1206,31 +1260,35 @@ function User(record){
 }
 
 /**
- * @private 
+ * Use {@link Tenant#createRole} to create role objects. 
+ * Creating role objects with the new operator is reserved for internal use only.
+ * 
+ * @classdesc Security role which can have [user]{@link User} members and can be granted [permissions]{@link Permission}.
+ * 
+ * @protected  
  * @param {JSRecord<db:/svy_security/roles>} record
  * @constructor 
  * 
  * @properties={typeid:24,uuid:"4FB7C5A5-5E35-47EA-9E3A-9FADD537800A"}
  */
 function Role(record){
-	
-		
+			
 	/**
-	 * Gets the unique display name of this role
+	 * Gets the name of this role. The role name is unique to the associated tenant.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The role name.
 	 */
 	this.getName = function(){
 		return record.role_name;
 	}
 	
 	/**
-	 * Sets the display name of this role, must be unique in tenant
+	 * Sets the name of this role. The role name must be unique to the associated tenant.
 	 * 
 	 * @public 
-	 * @param {String} name
-	 * @return {Role} this role for call-chaining
+	 * @param {String} name The role name to use.
+	 * @return {Role} This role for call-chaining support.
 	 */
 	this.setName = function(name){
 		if(!name){
@@ -1249,17 +1307,19 @@ function Role(record){
 	}
 	
 	/**
+	 * Gets the display name of this role.
 	 * @public 
-	 * @return {String}
+	 * @return {String} The display name of this role. Can be null.
 	 */
 	this.getDisplayName = function(){
 		return record.display_name;
 	}
 	
 	/**
+	 * Sets the display name of this role.
 	 * @public 
-	 * @param {String} displayName
-	 * @return {Role}
+	 * @param {String} displayName The display name to use.
+	 * @return {Role} This role for call-chaining support.
 	 */
 	this.setDisplayName = function(displayName){
 		record.display_name = displayName;
@@ -1268,10 +1328,10 @@ function Role(record){
 	}
 	
 	/**
-	 * Gets the tenant owning this role
+	 * Gets the tenant which this role belongs to.
 	 * 
 	 * @public 
-	 * @return {Tenant}
+	 * @return {Tenant} The tenant which this role belongs to.
 	 */
 	this.getTenant = function(){
 		return new Tenant(record.roles_to_tenants.getSelectedRecord());
@@ -1280,11 +1340,12 @@ function Role(record){
 	
 	
 	/**
-	 * Grants this role to the specified user
+	 * Adds the specified user as member of this role.
+	 * All permissions granted to this role will be granted to the user.
 	 * 
 	 * @public 
-	 * @param {User} user
-	 * @return {Role} this role for call-chaining
+	 * @param {User|String} user The user object or username of user to add. The user must be associated with the tenant of this role.
+	 * @return {Role} This role for call-chaining support.
 	 */
 	this.addUser = function(user){
 		
@@ -1292,7 +1353,10 @@ function Role(record){
 			throw 'User cannot be null'
 		}
 		
-		/** @type {String} */
+		/** 
+		 * @type {String} 
+		 * @private 
+		 */
 		var userName = user instanceof String ? user : user.getUserName();
 		if(!this.getTenant().getUser(userName)){
 			throw 'User "'+userName+'" does not exist in tenant';
@@ -1312,10 +1376,10 @@ function Role(record){
 	}
 	
 	/**
-	 * Gets all the users to which this role is granted
+	 * Gets all the users who are members of this role.
 	 * 
 	 * @public 
-	 * @return {Array<User>}
+	 * @return {Array<User>} An array with all users who are members of this role or an empty array if the role has no members.
 	 */
 	this.getUsers = function(){
 		var users = [];
@@ -1327,11 +1391,11 @@ function Role(record){
 	}
 	
 	/**
-	 * Checks if this role is granted to the specified user
+	 * Checks if the specified user is a member of this role.
 	 * 
 	 * @public 
-	 * @param {User|String} user
-	 * @return {Boolean}
+	 * @param {User|String} user The user object or username of user to check. The user must be associated with the tenant of this role.
+	 * @return {Boolean} True if the specified user is a member of this role.
 	 */
 	this.hasUser = function(user){
 		
@@ -1349,11 +1413,12 @@ function Role(record){
 	}
 	
 	/**
-	 * Removes this granted role from the specified user
+	 * Removes the specified user from the members of this role.
+	 * All permissions granted to this role will no longer be granted to the user.
 	 * 
 	 * @public 
-	 * @param {User|String} user
-	 * @return {Role} this role for call-chaining
+	 * @param {User|String} user The user object or username of user to remove.
+	 * @return {Role} This role for call-chaining support.
 	 */
 	this.removeUser = function(user){
 		if(!user){
@@ -1373,11 +1438,11 @@ function Role(record){
 	
 	/**
 	 * Grants the specified permission to this role. 
-	 * Any users with this role with inherit the permission
+	 * Any users that are members of this role will be granted the permission.
 	 * 
 	 * @public 
-	 * @param {Permission|String} permission
-	 * @return {Role} this role for call-chaining
+	 * @param {Permission|String} permission The permission object or name of permission to add.
+	 * @return {Role} This role for call-chaining support.
 	 */
 	this.addPermission = function(permission){
 		
@@ -1386,7 +1451,10 @@ function Role(record){
 		}
 		
 		
-		/** @type {String} */
+		/** 
+		 * @type {String} 
+		 * @private  
+		 */
 		var permissionName = permission instanceof String ? permission : permission.getName();
 		if(!scopes.svySecurity.getPermission(permissionName)){
 			throw 'Permission "'+permissionName+'" does not exist in system';
@@ -1406,10 +1474,10 @@ function Role(record){
 	}
 	
 	/**
-	 * Gets all the permissions granted to this role
+	 * Gets all the permissions granted to this role.
 	 * 
 	 * @public 
-	 * @return {Array<Permission>}
+	 * @return {Array<Permission>} An array with all permissions granted to this role or an empty array if no permissions are granted.
 	 */
 	this.getPermissions = function(){
 
@@ -1422,11 +1490,11 @@ function Role(record){
 	}
 	
 	/**
-	 * Checks if this role is granted the specified permission
+	 * Checks if the specified permission is granted to this role.
 	 * 
 	 * @public 
-	 * @param {Permission|String} permission
-	 * @return {Boolean}
+	 * @param {Permission|String} permission The permission object or name of permission to check.
+	 * @return {Boolean} True if the specified permission is granted to this role.
 	 */
 	this.hasPermission = function(permission){
 		if(!permission){
@@ -1442,11 +1510,12 @@ function Role(record){
 	}
 	
 	/**
-	 * Removes the specified permission from this role
+	 * Removes the specified permission from this role.
+	 * The permission will no longer be granted to all users that are members of this role.
 	 * 
 	 * @public 
-	 * @param {Permission|String} permission
-	 * @return {Role} this role for call-chaining
+	 * @param {Permission|String} permission The permission object or name of permission to remove.
+	 * @return {Role} This role for call-chaining support.
 	 */
 	this.removePermission = function(permission){
 		if(!permission){
@@ -1466,37 +1535,48 @@ function Role(record){
 }
 
 /**
- * @private 
+ * Permission objects cannot be created through the API. 
+ * They are created automatically when the scope is loaded. 
+ * Use {@link getPermission} or {@link getPermissions} to get permission objects.
+ * Creating permission objects with the new operator is reserved for internal use only.
+ * 
+ * @classdesc Represents a security permission in the system. Mapped internally to a Servoy security group which must be defined. 
+ * 
+ * @protected 
  * @param {JSRecord<db:/svy_security/permissions>} record 
  * @constructor 
  * @properties={typeid:24,uuid:"71B3A503-60B2-4CEC-B8D5-E8961D6032B1"}
  */
 function Permission(record){
-	
-	
-	
+
 	/**
-	 * Gets the display name of this permission
+	 * Gets the name of this permission. 
+	 * The permission name is unique in the system and matches a Servoy security group name.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The name of the permission.
 	 */
 	this.getName = function(){
 		return record.permission_name;
 	}
 	
 	/**
+	 * Gets the display name of this permission.
+	 * The display name can be set using {@link Permission#setDisplayName}.
+	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The display name of the permission. Can be null.
 	 */
 	this.getDisplayName = function(){
 		return record.display_name;
 	}
 	
 	/**
+	 * Sets the display name of this permission.
+	 * 
 	 * @public 
-	 * @param {String} [displayName]
-	 * @return {Permission}
+	 * @param {String} [displayName] The display name to use.
+	 * @return {Permission} This permission for call-chaining support.
 	 */
 	this.setDisplayName = function(displayName){
 		record.display_name = displayName;
@@ -1505,11 +1585,12 @@ function Permission(record){
 	}
 	
 	/**
-	 * Grants this permission to a new role
+	 * Grants this permission to the specified role.
+	 * The permission will be granted to all users that are members of the specified role.
 	 * 
 	 * @public 
-	 * @param {Role} role The role to add
-	 * @return {Permission} Returns this permission for call-chaining
+	 * @param {Role|String} role The role object or the name of the role to which the permission should be granted.
+	 * @return {Permission} This permission for call-chaining support.
 	 */
 	this.addRole = function(role){
 		if(!role){
@@ -1532,10 +1613,10 @@ function Permission(record){
 	}
 	
 	/**
-	 * Gets all the roles to which this permission is granted
+	 * Gets all the roles to which this permission is granted.
 	 * 
 	 * @public 
-	 * @return {Array<Role>}
+	 * @return {Array<Role>} An array with all roles to which this permission is granted or an empty array if the permission has not been granted to any role.
 	 */
 	this.getRoles = function(){
 		var roles = [];
@@ -1547,11 +1628,11 @@ function Permission(record){
 	}
 	
 	/**
-	 * Checks if this permission has the specified role
+	 * Checks if this permission is granted to the specified role.
 	 * 
 	 * @public 
-	 * @param {Role|String} role
-	 * @return {Boolean}
+	 * @param {Role|String} role The role object or the name of the role to check.
+	 * @return {Boolean} True if this permission is granted to the specified role.
 	 */
 	this.hasRole = function(role){
 		if(!role){
@@ -1567,11 +1648,12 @@ function Permission(record){
 	}
 	
 	/**
-	 * Removes this granted permission from the specified role
+	 * Removes this permission from the specified role.
+	 * The permission will no longer be granted to all users that are members of the specified role.
 	 * 
 	 * @public 
-	 * @param {Role|String} role The role to remove
-	 * @return {Permission} Returns this permission for call-chaining
+	 * @param {Role|String} role The role object or the name of the role to remove.
+	 * @return {Permission} This permission for call-chaining support.
 	 */
 	this.removeRole = function(role){
 		if(!role){
@@ -1591,8 +1673,10 @@ function Permission(record){
 	}
 	
 	/**
+	 * Gets all users whom this permission is granted to via the users' role membership.
+	 * 
 	 * @public 
-	 * @return {Array<User>}
+	 * @return {Array<User>} An array with all users whom this permission is granted to or an empty array if no user has this permission.
 	 */
 	this.getUsers = function(){
 		
@@ -1618,9 +1702,16 @@ function Permission(record){
 }
 
 /**
+ * 
+ * Session objects cannot be created through the API. 
+ * They are created automatically when a user is logged in.
+ * Use {@link getSession} to get the current session or {@link getActiveSessions} to get all active sessions. 
+ * Creating session objects with the new operator is reserved for internal use only.
+ * 
  * TODO Tie to servoy session JSClient ID and refactor isXXX methods ?
  * 
- * @private 
+ * @classdesc Security application session created by a {@link User} which starts when the user [logs in]{@link login} and ends when the user [logs out]{@link logout}. 
+ * @protected 
  * @param {JSRecord<db:/svy_security/sessions>} record
  * @constructor 
  * @properties={typeid:24,uuid:"6B34CF86-7237-4C7B-87E8-54F30E03C270"}
@@ -1628,21 +1719,22 @@ function Permission(record){
 function Session(record){
 	
 	/**
-	 * Gets the internal ID of this session
+	 * Gets the internal unique ID of this session.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The internal unique ID of this session. 
 	 */
 	this.getID = function(){
 		return record.id.toString();
 	}
 	
 	/**
-	 * Gets the user of this session
-	 * Returns null if the user has been deleted. Instead use getUserName
+	 * Gets the user who created this session.
+	 * Returns null if the user account has been deleted. 
+	 * In such cases use {@link Session#getUserName} as it will be preserved even if the user account is deleted.
+	 * 
 	 * @public 
-	 * @return {User}
-	 * @see Session.getUserName
+	 * @return {User} The user who created this session or null if the user account has been deleted.
 	 */
 	this.getUser = function(){
 		if(!utils.hasRecords(record.sessions_to_users)){
@@ -1652,16 +1744,20 @@ function Session(record){
 	}
 	
 	/**
+	 * The username of the user associated with this session.
+	 * It will be available even if the associated user account is deleted.
+	 * 
 	 * @public 
-	 * @return {String} The user name at the time of login
+	 * @return {String} The username of the user who created this session.
 	 */
 	this.getUserName = function(){
 		return record.user_name;
 	}
 	
 	/**
-	 * Gets the tenant for this session
-	 * Returns null if the tenant has been deleted. Instead use getTenantName
+	 * Gets the tenant associated with this session.
+	 * Returns null if the tenant has been deleted. 
+	 * In such cases use {@link Session#getTenantName} as it will be preserved even if the tenant account is deleted.
 	 * @public 
 	 * @return {Tenant}
 	 */
@@ -1673,29 +1769,35 @@ function Session(record){
 	}
 	
 	/**
+	 * Gets the name of the tenant associated with this session.
+	 * It will be available even if the associated tenant account is deleted.
+	 * 
 	 * @public 
-	 * @return {String} The tenant name at the time of login
+	 * @return {String} The name of the tenant associated with this session.
 	 */
 	this.getTenantName = function(){
 		return record.tenant_name;
 	}
 	
 	/**
-	 * Gets the start datetime for this session
+	 * Gets the start date/time of this session.
+	 * The session start date/time is set by {@link login}.
 	 * 
 	 * @public 
-	 * @return {Date}
+	 * @return {Date} The start date/time of this session.
 	 */
 	this.getStart = function(){
 		return record.session_start
 	}
 	
 	/**
-	 * Gets the end datetime of this session, null if the session is still active, or not properly terminated.
-	 * NOTE: If a session is not properly terminated, one can compare the last clien ping property to the start to determine if the session is abandoned
+	 * Gets the end datetime of this session.
+	 * Can be null if the session is still active or if the session has not been properly closed.
+	 * The session end date/time is set by {@link logout}.
+	 * @note If a session is not properly close, one can compare the last client ping property (using {@link Session#getLastActivity}) to the start of the session to determine if the session is abandoned.
 	 * 
 	 * @public 
-	 * @return {Date}
+	 * @return {Date} The end date/time of this session.
 	 * 
 	 */
 	this.getEnd = function(){
@@ -1703,11 +1805,11 @@ function Session(record){
 	}
 	
 	/**
-	 * Gets the most recent time of known session activity.
-	 * NOTE: If a session is not properly terminated, one can compare the last client ping property to the start to determine if the session is abandoned
+	 * Gets the most recent time of known session activity (last client ping).
+	 * @note If a session is not properly closed, one can compare the last client ping property to the start of the session to determine if the session is abandoned.
 	 * 
 	 * @public 
-	 * @return {Date}
+	 * @return {Date} The date/time of the last session activity (client ping).
 	 * 
 	 */
 	this.getLastActivity = function(){
@@ -1715,31 +1817,31 @@ function Session(record){
 	}
 	
 	/**
-	 * Gets the client IP address of the session
+	 * Gets the client IP address of the session.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The client IP address of the session.
 	 */
 	this.getIPAddress = function(){
 		return record.ip_address;
 	}
 	
 	/**
-	 * Gets the user agent string of the client session.
-	 * The string will be null if the session was not browser-based
+	 * Gets the client user agent string of the session.
+	 * The user agent string will be null if the session was not browser-based.
 	 * 
 	 * @public 
-	 * @return {String}
+	 * @return {String} The client user agent string of this session. Can be null.
 	 */
 	this.getUserAgentString = function(){
 		return record.user_agent_string;
 	}
 	
 	/**
-	 * Indicates if this sesssion is still active
+	 * Indicates if this session is still active.
 	 * 
 	 * @public 
-	 * @return {Boolean} True if the session has not terminated and has not been inactive for longer than the timeout period 
+	 * @return {Boolean} True if the session has not been terminated and has not been inactive for longer than the session inactivity timeout period. 
 	 */
 	this.isActive = function(){
 		if(record.session_end){
@@ -1750,19 +1852,19 @@ function Session(record){
 	}
 	
 	/**
-	 * Indicates if this session was terminated 
+	 * Indicates if this session was terminated/closed using {@link logout} or closed due to inactivity. 
 	 * @public 
-	 * @return {Boolean} True when session was terminated normally or by timeout from inactivity 
+	 * @return {Boolean} True if the session was terminated/closed normally or by timeout from inactivity. 
 	 */
 	this.isTerminated = function(){
 		return record.session_end != null || this.isAbandoned();
 	}
 	
 	/**
-	 * Indicates if this session was abandoned
+	 * Indicates if this session was abandoned and closed due to inactivity and was not closed by {@link logout}.
 	 *  
 	 * @public 
-	 * @return {Boolean} True if this session was not terminated normally, but has timed out
+	 * @return {Boolean} True if this session was not terminated/closed normally, but has timed out due to inactivity.
 	 */
 	this.isAbandoned = function(){
 		return record.session_end == null && !this.isActive();
