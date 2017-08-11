@@ -23,6 +23,20 @@ var activeTenantName = null;
 var activeUserName = null;
 
 /**
+ * If false then when saving or deleting security-related records 
+ * if an external DB transaction is detected the operation will fail.
+ * If true then when saving or deleting security-related records the
+ * module will start/commit a DB transaction only if an external DB transaction 
+ * is not detected. On exceptions any DB transaction will be rolled back
+ * regardless if it is started internally or externally (exceptions will be propagated
+ * to the external transaction so callers will be able to react on them accordingly)
+ * 
+ * @private 
+ * @properties={typeid:35,uuid:"3DDA0C51-AD48-4496-8C9B-979D0D38EA5B",variableType:-4}
+ */
+var supportExternalDBTransaction = false;
+
+/**
  * The interval (milliseconds) for an active session to update the ping time in the database
  * TODO should be externalized? Should be stored in db, so next expected time should be calculated ?
  * @private 
@@ -161,15 +175,15 @@ function createTenant(name){
 		throw 'Tenant name "'+name+'" is not unique';
 	}
 	var fs = datasources.db.svy_security.tenants.getFoundSet();
-	fs.newRecord();
-	fs.tenant_name = name;
-	fs.display_name = name;
-	if(!fs.creation_user_name){
+	var rec = fs.getRecord(fs.newRecord(false, false));
+	rec.tenant_name = name;
+	rec.display_name = name;
+	if(!rec.creation_user_name){
 		logWarning('Creating security record without current user context');
-		fs.creation_user_name = SYSTEM_USER;
+		rec.creation_user_name = SYSTEM_USER;
 	}
-	save(fs);
-	return new Tenant(fs.getSelectedRecord());
+	saveRecord(rec);
+	return new Tenant(rec);
 }
 
 /**
@@ -265,25 +279,16 @@ function deleteTenant(tenant){
 	fs.find();
 	fs.tenant_name = tenant.getName();
 	if(!fs.search()){
-		logError(utils.stringFormat('Could not delete tenant. Unexpected could not find tenant "%1$s".', [tenant.getName()]));
+		logError(utils.stringFormat('Could not delete tenant. Could not find tenant "%1$s".', [tenant.getName()]));
 		return false;
 	}
 	
-	databaseManager.startTransaction();
 	try{
-		if(!fs.deleteRecord(1)){
-			logError(utils.stringFormat('Could not delete tenant "%1$s". Unkown error. Check log.',[tenant.getName()]));
-			return false;
-		}
-		if(!databaseManager.commitTransaction()){
-			logError(utils.stringFormat('Could not delete tenant "%1$s". Unkown error. Check log.', [tenant.getName()]));
-		}
-		return true;
-		
-	}catch(e){
-		databaseManager.rollbackTransaction();
+	    deleteRecord(fs.getRecord(1));		
+		return true;		
+	}catch(e){		
 		logError(utils.stringFormat('Could not delete tenant "%1$s". Unkown error: %2$s. Check log.', [tenant.getName(), e.message]));
-		return false;
+		throw e;
 	}
 }
 
@@ -496,7 +501,7 @@ function consumeAccessToken(token){
 	var record = fs.getRecord(1);
 	record.access_token = null;
 	record.access_token_expiration = null;
-	save(record);
+	saveRecord(record);
 	
 	return new User(record);
 }
@@ -533,20 +538,21 @@ function Tenant(record){
 			throw 'User Name "'+userName+'"is not unique';
 		}
 		
-		if(record.tenants_to_users.newRecord() == -1){
-			throw 'Failed to create record';
+		var userRec = record.tenants_to_users.getRecord(record.tenants_to_users.newRecord(false, false));
+		if(!userRec){
+			throw 'Failed to create user record';
 		}
 		
-		record.tenants_to_users.user_name = userName;
-		record.tenants_to_users.display_name = userName;
+		userRec.user_name = userName;
+		userRec.display_name = userName;
 		
-		if(!record.tenants_to_users.creation_user_name){
+		if(!userRec.creation_user_name){
 			logWarning('Creating security record without current user context');
-			record.tenants_to_users.creation_user_name = SYSTEM_USER;
+			userRec.creation_user_name = SYSTEM_USER;
 		}
-		save(record.tenants_to_users)
+		saveRecord(userRec);
 				
-		var user = new User(record.tenants_to_users.getSelectedRecord());
+		var user = new User(userRec);
 		if(password){
 			user.setPassword(password);
 		}
@@ -614,21 +620,12 @@ function Tenant(record){
 			return false;
 		}
 		
-		databaseManager.startTransaction();
 		try{
-			if(!fs.deleteRecord(1)){
-				logError(utils.stringFormat('Could not delete user "%1$s". Unkown error. Check log.', [userName]));
-				return false;
-			}
-			if(!databaseManager.commitTransaction()){
-				logError(utils.stringFormat('Could not delete user "%1$s". Unkown error. Check log.', [userName]));
-			}
-			return true;
-			
+		    deleteRecord(fs.getRecord(1));
+			return true;			
 		}catch(e){
-			databaseManager.rollbackTransaction();
 			logError(utils.stringFormat('Could not delete user "%1$s". Unkown error: %2$s. Check log.', [userName, e.message]));
-			return false;
+			throw e;
 		}
 	}
 	
@@ -647,17 +644,19 @@ function Tenant(record){
 		if(this.getRole(name)){
 			throw 'Role name "'+name+'" is not unique';
 		}
-		if(record.tenants_to_roles.newRecord() == -1){
-			throw 'Could not create record';
+		
+		var roleRec = record.tenants_to_roles.getRecord(record.tenants_to_roles.newRecord(false, false));
+		if(!roleRec){
+			throw 'Could not create role record';
 		}
-		record.tenants_to_roles.role_name = name;
-		record.tenants_to_roles.display_name = name;
-		if(!record.tenants_to_roles.creation_user_name){
+		roleRec.role_name = name;
+		roleRec.display_name = name;
+		if(!roleRec.creation_user_name){
 			logWarning('Creating security record without current user context');
-			record.tenants_to_roles.creation_user_name = SYSTEM_USER;
+			roleRec.creation_user_name = SYSTEM_USER;
 		}
-		save(record.tenants_to_roles);
-		return new Role(record.tenants_to_roles.getSelectedRecord());
+		saveRecord(roleRec);
+		return new Role(roleRec);
 	}
 	
 	/**
@@ -751,7 +750,7 @@ function Tenant(record){
 	 */
 	this.setDisplayName = function(displayName){
 		record.display_name = displayName;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -811,7 +810,7 @@ function Tenant(record){
 			expiration.setTime(expiration.getTime() + duration);
 		}
 		record.lock_expiration = expiration;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -826,7 +825,7 @@ function Tenant(record){
 		record.lock_flag = null;
 		record.lock_reason = null;
 		record.lock_expiration = null;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -926,7 +925,7 @@ function User(record){
 			return this;
 		}
 		record.display_name = displayName;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -966,7 +965,7 @@ function User(record){
 		}
 		
 		record.user_password = utils.stringPBKDF2Hash(password);
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -994,15 +993,16 @@ function User(record){
 		if(this.hasRole(role)){
 			return this;
 		}
-		if(record.users_to_user_roles.newRecord() == -1){
-			throw 'failed to create record';
+		var userRolesRec = record.users_to_user_roles.getRecord(record.users_to_user_roles.newRecord(false, false));
+		if(!userRolesRec){
+			throw 'Failed to create user roles record';
 		}
-		record.users_to_user_roles.role_name = roleName;
-		if(!record.users_to_user_roles.creation_user_name){
+		userRolesRec.role_name = roleName;
+		if(!userRolesRec.creation_user_name){
 			logWarning('Creating security record without current user context');
-			record.users_to_user_roles.creation_user_name = SYSTEM_USER;
+			userRolesRec.creation_user_name = SYSTEM_USER;
 		}
-		save(record.users_to_user_roles);
+		saveRecord(userRolesRec);
 		return this;
 	}
 	
@@ -1179,7 +1179,7 @@ function User(record){
 			expiration.setTime(expiration.getTime() + duration);
 		}
 		record.lock_expiration = expiration;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -1194,7 +1194,7 @@ function User(record){
 		record.lock_flag = null;
 		record.lock_reason = null;
 		record.lock_expiration = null;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -1252,7 +1252,7 @@ function User(record){
 		var expiration = new Date();
 		expiration.setTime(expiration.getTime() + duration);
 		record.access_token_expiration = expiration;
-		save(record);
+		saveRecord(record);
 		return record.access_token;
 	}
 }
@@ -1300,7 +1300,7 @@ function Role(record){
 			throw 'Role name "'+name+'" is not unique';
 		}
 		record.role_name = name;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -1321,7 +1321,7 @@ function Role(record){
 	 */
 	this.setDisplayName = function(displayName){
 		record.display_name = displayName;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -1360,15 +1360,16 @@ function Role(record){
 			throw 'User "'+userName+'" does not exist in tenant';
 		}
 		if(!this.hasUser(user)){
-			if(record.roles_to_user_roles.newRecord() == -1){
-				throw 'New record failed';
+		    var userRolesRec = record.roles_to_user_roles.getRecord(record.roles_to_user_roles.newRecord(false, false));
+			if(!userRolesRec){
+				throw 'Failed to create user roles record';
 			}
-			record.roles_to_user_roles.user_name = userName;
-			if(!record.roles_to_user_roles.creation_user_name){
+			userRolesRec.user_name = userName;
+			if(!userRolesRec.creation_user_name){
 				logWarning('Creating security record without current user context');
-				record.roles_to_user_roles.creation_user_name = SYSTEM_USER;
+				userRolesRec.creation_user_name = SYSTEM_USER;
 			}
-			save(record.roles_to_user_roles);
+			saveRecord(userRolesRec);
 		}
 		return this;
 	}
@@ -1458,15 +1459,16 @@ function Role(record){
 			throw 'Permission "'+permissionName+'" does not exist in system';
 		}
 		if(!this.hasPermission(permission)){
-			if(record.roles_to_roles_permissions.newRecord() == -1){
-				throw 'New record failed';
+		    var rolesPermRec = record.roles_to_roles_permissions.getRecord(record.roles_to_roles_permissions.newRecord(false, false));
+			if(!rolesPermRec){
+				throw 'Failed to create roles permission record';
 			}
-			record.roles_to_roles_permissions.permission_name = permissionName;
-			if(!record.roles_to_roles_permissions.creation_user_name){
+			rolesPermRec.permission_name = permissionName;
+			if(!rolesPermRec.creation_user_name){
 				logWarning('Creating security record without current user context');
-				record.roles_to_roles_permissions.creation_user_name = SYSTEM_USER;
+				rolesPermRec.creation_user_name = SYSTEM_USER;
 			}
-			save(record.roles_to_roles_permissions);
+			saveRecord(rolesPermRec);
 		}
 		return this;
 	}
@@ -1578,7 +1580,7 @@ function Permission(record){
 	 */
 	this.setDisplayName = function(displayName){
 		record.display_name = displayName;
-		save(record);
+		saveRecord(record);
 		return this;
 	}
 	
@@ -1605,7 +1607,7 @@ function Permission(record){
 			if(!record.permissions_to_roles_permissions.creation_user_name){
 				record.permissions_to_roles_permissions.creation_user_name = SYSTEM_USER;
 			}
-			save(record)
+			saveRecord(record)
 		}
 		return this;
 	}
@@ -1875,20 +1877,85 @@ function Session(record){
 	 */
 	this.sendPing = function(){
 		record.last_client_ping = new Date();
-		save(record);
+		saveRecord(record);
 	}
 }
 /**
  * Utility to save record with error thrown
  * @private 
- * @param {JSRecord|JSFoundset} record
+ * @param {JSRecord} record
  *
  * @properties={typeid:24,uuid:"A2BD1ED2-F372-477C-BFF5-0CED1A69BDD9"}
  */
-function save(record){
-	if(!databaseManager.saveData(record)){
-		throw 'Failed to save record';
-	}
+function saveRecord(record){
+    var startedLocalTransaction = false;
+    
+    if (databaseManager.hasTransaction()){
+        logDebug('Detected external database transaction');
+        if (!supportExternalDBTransaction) {
+            throw new Error('External database transactions are not allowed.');
+        }        
+    }
+    else {
+        startedLocalTransaction = true;
+        logDebug('Starting internal database transaction');
+        databaseManager.startTransaction();
+    }
+    
+    try {
+    	if(!databaseManager.saveData(record)){
+    		throw new Error('Failed to save record');
+    	}
+    	if (startedLocalTransaction) {
+    	    if (!databaseManager.commitTransaction(true, true)){
+    	        throw new Error('Failed to commit database transaction');
+    	    }
+    	}        
+    }
+    catch (e) {
+        logError(utils.stringFormat('Record could not be saved due to the following: %1$s',[e.message]));
+        databaseManager.rollbackTransaction();
+        record.revertChanges();
+        throw e;
+    }
+}
+
+/**
+ * Utility to delete record with errors thrown
+ * @param {JSRecord} record
+ *
+ * @properties={typeid:24,uuid:"8A2071D7-F4ED-40D7-8285-B3B206DB74CE"}
+ */
+function deleteRecord(record){
+    var startedLocalTransaction = false;
+    
+    if (databaseManager.hasTransaction()){
+        logDebug('Detected external database transaction');
+        if (!supportExternalDBTransaction) {
+            throw new Error('External database transactions are not allowed.');
+        }        
+    }
+    else {
+        startedLocalTransaction = true;
+        logDebug('Starting internal database transaction');
+        databaseManager.startTransaction();
+    }
+    
+    try {
+        if(!record.foundset.deleteRecord(record)){
+            throw new Error('Failed to delete record');
+        }
+        if (startedLocalTransaction) {
+            if (!databaseManager.commitTransaction(true, true)){
+                throw new Error('Failed to commit database transaction');
+            }
+        }        
+    }
+    catch (e) {
+        logError(utils.stringFormat('Record could not be deleted due to the following: %1$s',[e.message]));
+        databaseManager.rollbackTransaction();
+        throw e;
+    }
 }
 
 /**
@@ -1907,15 +1974,16 @@ function syncPermissions(){
 	var groups = security.getGroups().getColumnAsArray(2);
 	for(var i in groups){
 		if(!getPermission(groups[i])){
-			if(permissionFS.newRecord() == -1){
-				throw 'New Record Failed';
+		    var permissionRec = permissionFS.getRecord(permissionFS.newRecord(false, false)); 
+			if(!permissionRec){
+				throw 'Failed to create permission record';
 			}
-			permissionFS.permission_name = groups[i];
-			permissionFS.display_name = groups[i];
-			if(!permissionFS.creation_user_name){
-				permissionFS.creation_user_name = SYSTEM_USER;
+			permissionRec.permission_name = groups[i];
+			permissionRec.display_name = groups[i];
+			if(!permissionRec.creation_user_name){
+			    permissionRec.creation_user_name = SYSTEM_USER;
 			}
-			save(permissionFS);
+			saveRecord(permissionRec);
 			
 			logDebug(utils.stringFormat('Created permission "%1$s" which did not exist', [groups[i]]));
 		}
@@ -1944,15 +2012,15 @@ function initSession(user){
 	
 	// create session
 	var fs = datasources.db.svy_security.sessions.getFoundSet();
-	fs.newRecord();
-	fs.user_name = user.getUserName();
-	fs.tenant_name = user.getTenant().getName();
-	fs.ip_address = application.getIPAddress();
-	fs.last_client_ping = new Date();
+	var sessionRec = fs.getRecord(fs.newRecord(false, false));
+	sessionRec.user_name = user.getUserName();
+	sessionRec.tenant_name = user.getTenant().getName();
+	sessionRec.ip_address = application.getIPAddress();
+	sessionRec.last_client_ping = new Date();
 	if(application.getApplicationType() == APPLICATION_TYPES.NG_CLIENT){
-		fs.user_agent_string = plugins.ngclientutils.getUserAgent();
+	    sessionRec.user_agent_string = plugins.ngclientutils.getUserAgent();
 	}
-	save(fs);
+	saveRecord(sessionRec);
 	
 	// create ping job
 	var jobName = 'com.servoy.extensions.security.sessionUpdater';
@@ -1962,7 +2030,7 @@ function initSession(user){
 	// store session id
 	activeUserName = user.getUserName();
 	activeTenantName = user.getTenant().getName();
-	sessionID = fs.id.toString();
+	sessionID = sessionRec.id.toString();
 
 }
 
@@ -1974,8 +2042,9 @@ function initSession(user){
  */
 function sessionClientPing(){
 	if(!utils.hasRecords(active_session)) return;
-	active_session.last_client_ping = new Date();
-	save(active_session);
+	var sessionRec = active_session.getRecord(1);
+	sessionRec.last_client_ping = new Date();
+	saveRecord(sessionRec);
 }
 
 /**
@@ -1984,8 +2053,9 @@ function sessionClientPing(){
  */
 function closeSession(){
 	if(!utils.hasRecords(active_session)) return;
-	active_session.session_end = new Date();
-	save(active_session);
+	var sessionRec = active_session.getRecord(1);
+	sessionRec.session_end = new Date();
+	saveRecord(sessionRec);
 	sessionID = null;
 }
 
@@ -2067,6 +2137,34 @@ function logWarning(msg) {
  */
 function logError(msg) {
 	application.output(msg, LOGGINGLEVEL.ERROR);
+}
+
+/**
+ * Use this method to change the behavior of the svySecurity module with respect
+ * to DB transactions.
+ * 
+ * If the flag is set to false (default) then when saving or deleting security-related records 
+ * if an external DB transaction is detected the operation will fail.
+ * If the flag is set to true then when saving or deleting security-related records the
+ * module will start/commit a DB transaction only if an external DB transaction 
+ * is not detected. On exceptions any DB transaction will be rolled back
+ * regardless if it is started internally or externally (exceptions will be propagated
+ * to the external transaction so callers will be able to react on them accordingly)
+ * 
+ * @note If using external DB transactions then callers are responsible for refreshing
+ * the state of security-related objects upon transaction rollbacks which occur after
+ * successful calls to the svySecurity API. 
+ * 
+ * @public
+ * @param {Boolean} mustSupportExternalTransactions The value for the supportExternalDBTransaction flag to set.
+ *
+ * @properties={typeid:24,uuid:"0447F6A2-6A4C-4691-8981-F573ECF029DE"}
+ */
+function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions) {
+    if (databaseManager.hasTransaction()) {
+        throw new Error('The external DB transaction support flag can be changed only while a DB transaction is not in progress.');
+    }
+    supportExternalDBTransaction = mustSupportExternalTransactions;
 }
 
 /**
