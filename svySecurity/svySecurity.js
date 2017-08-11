@@ -44,7 +44,7 @@ var supportExternalDBTransaction = false;
  * @SuppressWarnings(unused)
  * @properties={typeid:35,uuid:"9D18DE69-F778-4117-B8B3-0FCFF75E3B83",variableType:4}
  */
-var SESSION_PING_INTERVAL = 10000;
+var SESSION_PING_INTERVAL = 60000;
 
 /**
  * The default timeout (milliseconds) for a session. 
@@ -2044,7 +2044,9 @@ function sessionClientPing(){
 	if(!utils.hasRecords(active_session)) return;
 	var sessionRec = active_session.getRecord(1);
 	sessionRec.last_client_ping = new Date();
-	saveRecord(sessionRec);
+	//intentionally not using saveRecord and not checking result
+	//this is called very often and if some updates fail we try again X seconds later anyway
+	databaseManager.saveData(sessionRec);
 }
 
 /**
@@ -2155,7 +2157,7 @@ function logError(msg) {
  * the state of security-related objects upon transaction rollbacks which occur after
  * successful calls to the svySecurity API. 
  * 
- * @public
+ * @private
  * @param {Boolean} mustSupportExternalTransactions The value for the supportExternalDBTransaction flag to set.
  *
  * @properties={typeid:24,uuid:"0447F6A2-6A4C-4691-8981-F573ECF029DE"}
