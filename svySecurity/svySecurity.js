@@ -517,7 +517,10 @@ function consumeAccessToken(token){
  * @AllowToRunInFind
  */
 function Tenant(record){
-	
+	if (!record){
+	    throw new Error('Tenant record is not specified');
+	}
+    
 	/**
 	 * Creates a user with the specified user name.
 	 * @note If password is not specified the user account will be created with a blank password.
@@ -534,8 +537,8 @@ function Tenant(record){
 			throw 'User name cannot be null or empty';
 		}
 		
-		if(userNameExists(userName)){
-			throw 'User Name "'+userName+'"is not unique';
+		if(userNameExists(userName, this.getName())){
+			throw 'User Name "'+userName+'"is not unique to this tenant';
 		}
 		
 		var userRec = record.tenants_to_users.getRecord(record.tenants_to_users.newRecord(false, false));
@@ -878,7 +881,9 @@ function Tenant(record){
  * @AllowToRunInFind
  */
 function User(record){
-	
+    if (!record){
+        throw new Error('User record is not specified');
+    }
 	
 	/**
 	 * Returns the tenant that owns this user account.
@@ -1270,6 +1275,9 @@ function User(record){
  * @properties={typeid:24,uuid:"4FB7C5A5-5E35-47EA-9E3A-9FADD537800A"}
  */
 function Role(record){
+    if (!record){
+        throw new Error('Role record is not specified');
+    }
 			
 	/**
 	 * Gets the name of this role. The role name is unique to the associated tenant.
@@ -1548,6 +1556,9 @@ function Role(record){
  * @properties={typeid:24,uuid:"71B3A503-60B2-4CEC-B8D5-E8961D6032B1"}
  */
 function Permission(record){
+    if (!record){
+        throw new Error('Permission record is not specified');
+    }
 
 	/**
 	 * Gets the name of this permission. 
@@ -1717,7 +1728,10 @@ function Permission(record){
  * @properties={typeid:24,uuid:"6B34CF86-7237-4C7B-87E8-54F30E03C270"}
  */
 function Session(record){
-	
+    if (!record){
+        throw new Error('Session record is not specified');
+    }
+    
 	/**
 	 * Gets the internal unique ID of this session.
 	 * 
@@ -2076,16 +2090,18 @@ function filterSecurityTables(){
 }
 /**
  * Check for user name bypassing any filters for current tenant
- * @private 
- * @param {Object} userName
+ * @private
+ * @param {String} userName
+ * @param {String} tenantName
  * @return {Boolean} True if user is found in system
  *
  * @properties={typeid:24,uuid:"1FA4E812-55A3-4B03-9EF9-D155FFA89BD4"}
  */
-function userNameExists(userName){
+function userNameExists(userName, tenantName){
 	var q = datasources.db.svy_security.users.createSelect();
 	q.result.addPk();
-	q.where.add(q.columns.user_name.eq(userName))
+	q.where.add(q.columns.user_name.eq(userName));
+	q.where.add(q.columns.tenant_name.eq(tenantName));
 	var ds = databaseManager.getDataSetByQuery(q,false,1);
 	if(ds.getException()){
 		throw 'SQL error checking for existing user'; 
