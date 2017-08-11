@@ -25,7 +25,7 @@ var ERROR_CODES = {
 	PASSWORD_MISMATCH : 'password-mismatch',
 	INSUFFICIENT_PERMISSIONS : 'insufficient-permissions',
 	LOCKED_USER : 'locked-user',
-	LOCKED_TENANT : 'loxcked-tenant'
+	LOCKED_TENANT : 'locked-tenant'
 };
 
 /**

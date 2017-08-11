@@ -81,20 +81,19 @@ function login(user){
 	
 	// already logged-in
 	if(security.getUserUID()){
-		// TODO logging
-		application.output('Already logged-in', LOGGINGLEVEL.WARNING);
+		logWarning('Already logged-in');
 		return false;
 	}
 
 	// check for lock
 	if(user.isLocked()){
-		application.output('User "'+user.getUserName()+'" is locked and cannot be logged-in');
+		logInfo(utils.stringFormat('User "%1$s" is locked and cannot logged in.', [user.getUserName()]));
 		return false;
 	}
 	
 	// check for tenant lock
 	if(user.getTenant().isLocked()){
-		application.output('Tenant "'+user.getTenant().getName()+'" is locked and cannot be logged-in');
+		logInfo(utils.stringFormat('Tenant "%1$s" is locked and users associated with it cannot logged in.', [user.getTenant().getName()]));
 		return false;
 	}
 	
@@ -110,8 +109,8 @@ function login(user){
 	}
 	
 	// no groups
-	if(!servoyGroups.length){
-		application.output('No Permissions. Cannot login', LOGGINGLEVEL.WARNING);
+	if(!servoyGroups.length){		
+		logWarning('No Permissions. Cannot login');
 		return false;
 	}
 	
@@ -122,8 +121,8 @@ function login(user){
 	filterSecurityTables();
 	
 	// login
-	if(!security.login(user.getUserName(),user.getUserName(),servoyGroups)){
-		// TODO logging
+	if(!security.login(user.getUserName(), user.getUserName(), servoyGroups)){
+		logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"',[user.getUserName(), servoyGroups]));
 		return false;
 	}
 	
@@ -166,7 +165,7 @@ function createTenant(name){
 	fs.tenant_name = name;
 	fs.display_name = name;
 	if(!fs.creation_user_name){
-		// TODO log warning ?
+		logWarning('Creating security record without current user context');
 		fs.creation_user_name = SYSTEM_USER;
 	}
 	save(fs);
@@ -257,7 +256,7 @@ function deleteTenant(tenant){
 	
 	// check active sessions
 	if(tenant.getActiveSessions().length){
-		application.output('Cannot delete tenant. Has active sessions',LOGGINGLEVEL.WARNING); // TODO Proper Logging
+		logWarning('Cannot delete tenant. Has active sessions.');
 		return false;
 	}
 	
@@ -266,24 +265,24 @@ function deleteTenant(tenant){
 	fs.find();
 	fs.tenant_name = tenant.getName();
 	if(!fs.search()){
-		application.output('Could not delete tenant. Unexpected could not find tenant "'+tenant.getName()+'".',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+		logError(utils.stringFormat('Could not delete tenant. Unexpected could not find tenant "%1$s".', [tenant.getName()]));
 		return false;
 	}
 	
 	databaseManager.startTransaction();
 	try{
 		if(!fs.deleteRecord(1)){
-			application.output('Could not delete tenant "'+tenant.getName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			logError(utils.stringFormat('Could not delete tenant "%1$s". Unkown error. Check log.',[tenant.getName()]));
 			return false;
 		}
 		if(!databaseManager.commitTransaction()){
-			application.output('Could not delete tenant "'+tenant.getName()+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			logError(utils.stringFormat('Could not delete tenant "%1$s". Unkown error. Check log.', [tenant.getName()]));
 		}
 		return true;
 		
 	}catch(e){
 		databaseManager.rollbackTransaction();
-		application.output('Could not delete tenant "'+tenant.getName()+'". Unkown error: '+e.message+'. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+		logError(utils.stringFormat('Could not delete tenant "%1$s". Unkown error: %2$s. Check log.', [tenant.getName(), e.message]));
 		return false;
 	}
 }
@@ -336,7 +335,6 @@ function getUser(userName, tenantName){
 	
 	// No Match
 	if(results == 0){
-		// TODO logging ?
 		return null;
 	}
 	
@@ -543,7 +541,7 @@ function Tenant(record){
 		record.tenants_to_users.display_name = userName;
 		
 		if(!record.tenants_to_users.creation_user_name){
-			// TODO log warning ?
+			logWarning('Creating security record without current user context');
 			record.tenants_to_users.creation_user_name = SYSTEM_USER;
 		}
 		save(record.tenants_to_users)
@@ -604,7 +602,7 @@ function Tenant(record){
 		var userName = user instanceof String ? user : user.getUserName();
 		
 		if(user.getActiveSessions().length){
-			application.output('Could not delete user "'+userName+'". Has active sessions',LOGGINGLEVEL.WARNING); // TODO Proper Logging
+			logWarning(utils.stringFormat('Could not delete user "%1$s". Has active sessions',[userName]));
 			return false;
 		}
 		
@@ -612,24 +610,24 @@ function Tenant(record){
 		fs.find();
 		fs.user_name = userName;
 		if(!fs.search()){
-			application.output('Could not delete user "'+userName+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			logError(utils.stringFormat('Could not delete user "%1$s". Unkown error. Check log.', [userName]));
 			return false;
 		}
 		
 		databaseManager.startTransaction();
 		try{
 			if(!fs.deleteRecord(1)){
-				application.output('Could not delete user "'+userName+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+				logError(utils.stringFormat('Could not delete user "%1$s". Unkown error. Check log.', [userName]));
 				return false;
 			}
 			if(!databaseManager.commitTransaction()){
-				application.output('Could not delete user "'+userName+'". Unkown error. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+				logError(utils.stringFormat('Could not delete user "%1$s". Unkown error. Check log.', [userName]));
 			}
 			return true;
 			
 		}catch(e){
 			databaseManager.rollbackTransaction();
-			application.output('Could not delete user "'+userName+'". Unkown error: '+e.message+'. Check log.',LOGGINGLEVEL.ERROR); // TODO Proper Logging
+			logError(utils.stringFormat('Could not delete user "%1$s". Unkown error: %2$s. Check log.', [userName, e.message]));
 			return false;
 		}
 	}
@@ -655,7 +653,7 @@ function Tenant(record){
 		record.tenants_to_roles.role_name = name;
 		record.tenants_to_roles.display_name = name;
 		if(!record.tenants_to_roles.creation_user_name){
-			// TODO Logging ?
+			logWarning('Creating security record without current user context');
 			record.tenants_to_roles.creation_user_name = SYSTEM_USER;
 		}
 		save(record.tenants_to_roles);
@@ -1001,7 +999,7 @@ function User(record){
 		}
 		record.users_to_user_roles.role_name = roleName;
 		if(!record.users_to_user_roles.creation_user_name){
-			// TODO Logging ?
+			logWarning('Creating security record without current user context');
 			record.users_to_user_roles.creation_user_name = SYSTEM_USER;
 		}
 		save(record.users_to_user_roles);
@@ -1367,7 +1365,7 @@ function Role(record){
 			}
 			record.roles_to_user_roles.user_name = userName;
 			if(!record.roles_to_user_roles.creation_user_name){
-				// TODO logging ?
+				logWarning('Creating security record without current user context');
 				record.roles_to_user_roles.creation_user_name = SYSTEM_USER;
 			}
 			save(record.roles_to_user_roles);
@@ -1465,7 +1463,7 @@ function Role(record){
 			}
 			record.roles_to_roles_permissions.permission_name = permissionName;
 			if(!record.roles_to_roles_permissions.creation_user_name){
-				// TODO Logging ?
+				logWarning('Creating security record without current user context');
 				record.roles_to_roles_permissions.creation_user_name = SYSTEM_USER;
 			}
 			save(record.roles_to_roles_permissions);
@@ -1919,8 +1917,7 @@ function syncPermissions(){
 			}
 			save(permissionFS);
 			
-			// TODO proper logging
-			application.output('Created permission "'+groups[i]+'" which did not exist',LOGGINGLEVEL.DEBUG); // TODO proper logging
+			logDebug(utils.stringFormat('Created permission "%1$s" which did not exist', [groups[i]]));
 		}
 	}
 	
@@ -1929,7 +1926,7 @@ function syncPermissions(){
 	for (i = 1; i <= permissionFS.getSize(); i++) {
 		var record = permissionFS.getRecord(i);
 		if(groups.indexOf(record.permission_name) == -1){
-			application.output('Permission "'+record.permission_name+'" is no longer found within internal security settings', LOGGINGLEVEL.WARNING); // TODO proper logging
+			logWarning(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings', [record.permission_name]));
 		}
 	}
 }
@@ -2022,6 +2019,54 @@ function userNameExists(userName){
 		throw 'SQL error checking for existing user'; 
 	}
 	return ds.getMaxRowIndex() > 0;
+}
+
+/**
+ * Wrapper for future logging functionality.
+ * For now simply uses application.output
+ * @private 
+ * @param {String} msg
+ *
+ * @properties={typeid:24,uuid:"C17FCF1F-82BD-4883-84A1-E2B3053E4C8F"}
+ */
+function logDebug(msg) {
+	application.output(msg, LOGGINGLEVEL.DEBUG);
+}
+
+/**
+ * Wrapper for future logging functionality.
+ * For now simply uses application.output
+ * @private 
+ * @param {String} msg
+ *
+ * @properties={typeid:24,uuid:"13D3C8BD-2F79-4C48-B960-8DB7C29CD9F5"}
+ */
+function logInfo(msg) {
+	application.output(msg, LOGGINGLEVEL.INFO);
+}
+
+/**
+ * Wrapper for future logging functionality.
+ * For now simply uses application.output
+ * @private 
+ * @param {String} msg
+ *
+ * @properties={typeid:24,uuid:"40A40876-8E5A-4CE1-988F-4A1A98AAFFC0"}
+ */
+function logWarning(msg) {
+	application.output(msg, LOGGINGLEVEL.WARNING);
+}
+
+/**
+ * Wrapper for future logging functionality.
+ * For now simply uses application.output
+ * @private 
+ * @param {String} msg
+ *
+ * @properties={typeid:24,uuid:"F0C92AA6-8F78-4B73-A31E-3204F0AF5F80"}
+ */
+function logError(msg) {
+	application.output(msg, LOGGINGLEVEL.ERROR);
 }
 
 /**
