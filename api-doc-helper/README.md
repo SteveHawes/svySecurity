@@ -5,6 +5,7 @@ Servoy uses some non-standard JSDoc comments and tag formats which cause the reg
 **Requires that Node.js is installed.** All other dependencies will be automatically installed/updated as needed.
 
 To generate markdown API document just execute the batch file **generate-api-doc.bat** and at the prompt specify the source .js file to use.
+
 **Note:** Ensure that the directory where the **generate-api-doc.bat** file resides is the active/current directory before executing the batch file.
 
 The resulting output **result-api-doc.md** file will be generated in the **output** directory along with a copy of the source file but with cleaned-up JSDoc comments which can be parsed by jsdoc-parse without errors.
