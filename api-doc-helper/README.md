@@ -12,8 +12,8 @@ The resulting output **result-api-doc.md** file will be generated in the **outpu
 The batch file can be executed from the command prompt as well specifying the source .js file as argument using:
 
 `
-\> cd "--path of directory of generate-api-doc.bat file--" 
-\> generate-api-doc.bat file "--full path to .js source file--"
+> cd "--path of directory of generate-api-doc.bat file--" 
+> generate-api-doc.bat file "--full path to .js source file--"
 `
 
 After the result output file is generated it will be opened so you can copy its contents and update the GitHub wiki page as needed. If a default program is not set for markdown **.md** you will be prompted to select an application to open the **.md** file with.
@@ -21,5 +21,5 @@ After the result output file is generated it will be opened so you can copy its 
 The **generate-api-doc.bat** helps with the task automation. However the **api-doc-tool** can be used directly by executing:
 
 `
-\> node "prepare-md.js" -s sourceFile -d destinationFile
+> node "prepare-md.js" -s sourceFile -d destinationFile
 `
