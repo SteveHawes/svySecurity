@@ -19,7 +19,10 @@ set varSourceFile=%~1
 goto CHECK_INPUT
 
 :PROMPT_FOR_PATH
-set /P varSourceFile=Please specify the javascript (.js) source file:
+rem set /P varSourceFile=Please specify the javascript (.js) source file:
+
+rem here we set the source file direclty but can also frompt for it using the line above
+set varSourceFile="..\svySecurity\svySecurity.js"
 
 :CHECK_INPUT
 if "%varSourceFile%"=="" goto ERROR_INFO
