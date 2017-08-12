@@ -14,7 +14,7 @@ The batch file can be executed from the command prompt as well specifying the so
 
 ```batch
 > cd "directory-of-generate-api-doc.bat"
-> generate-api-doc.bat file "source-file"
+> generate-api-doc.bat "source-file"
 ```
 
 After the result output file is generated it will be opened so you can copy its contents and update the GitHub wiki page as needed. If a default program is not set for markdown **.md** you will be prompted to select an application to open the **.md** file with.
