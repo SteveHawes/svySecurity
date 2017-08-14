@@ -496,14 +496,21 @@ function consumeAccessToken(token){
 	if(!fs.getSize()){
 		return null;
 	}
+	var record = fs.getRecord(1);
+	
+	//should not be able to consume an access token while the tenant or the user account is locked
+	var user = new User(record);
+	
+	if(user.isLocked()) {
+	    return null;
+	}
 	
 	// clear token
-	var record = fs.getRecord(1);
 	record.access_token = null;
 	record.access_token_expiration = null;
 	saveRecord(record);
 	
-	return new User(record);
+	return user;
 }
 
 /**
@@ -1217,7 +1224,9 @@ function User(record){
 			}
 			return true;
 		}
-		return false;
+		
+		//if the tenant is locked then the user should be treated as locked too
+		return this.getTenant().isLocked();
 	}
 	
 	/**
@@ -1936,6 +1945,7 @@ function saveRecord(record){
 
 /**
  * Utility to delete record with errors thrown
+ * @private 
  * @param {JSRecord} record
  *
  * @properties={typeid:24,uuid:"8A2071D7-F4ED-40D7-8285-B3B206DB74CE"}
