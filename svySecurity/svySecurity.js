@@ -128,17 +128,17 @@ function login(user){
 		return false;
 	}
 	
-	// create session
-	initSession(user);
-	
-	// filter security tables
-	filterSecurityTables();
-	
 	// login
 	if(!security.login(user.getUserName(), user.getUserName(), servoyGroups)){
 		logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"',[user.getUserName(), servoyGroups]));
 		return false;
 	}
+	
+	// create session
+	initSession(user);
+	
+	// filter security tables
+	filterSecurityTables();
 	
 	return true;
 }
