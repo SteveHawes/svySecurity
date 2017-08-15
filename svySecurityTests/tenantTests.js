@@ -89,3 +89,66 @@ function testCreateGetDeleteUser() {
     
 }
 
+/**
+ * @properties={typeid:24,uuid:"0B852E65-7322-409D-8272-58C50BAF4AB1"}
+ */
+function testTenantRoles() {
+    var testTenantName1 = application.getUUID().toString();
+    var testTenantName2 = application.getUUID().toString();
+    var testRoleName1 = application.getUUID().toString();
+    var testRoleName2 = application.getUUID().toString();
+    var testRoleName3 = application.getUUID().toString();
+    var testUserName = application.getUUID().toString();
+    
+    var tenant1 = scopes.svySecurity.createTenant(testTenantName1);
+    var tenant2 = scopes.svySecurity.createTenant(testTenantName2);
+    
+    var roles = tenant1.getRoles();
+    jsunit.assertNotNull('Roles should be empty array', roles);
+    jsunit.assertEquals('Roles should be empty array', 0, roles.length);
+    
+    
+    var roleT1R1 = tenant1.createRole(testRoleName1);
+    jsunit.assertNotNull('Role should be created', roleT1R1);
+    jsunit.assertEquals('Role should be created with correct name', testRoleName1, roleT1R1.getName());
+    jsunit.assertEquals('Role should be created with correct display name', testRoleName1, roleT1R1.getDisplayName());
+
+    var roleT1R2 = tenant1.createRole(testRoleName2);
+    jsunit.assertNotNull('Role should be created', roleT1R2);
+    
+    scopes.sharedTestUtils.assertThrows(tenant1.createRole,[testRoleName1],null,'Should not be able to create duplicate roles for the same tenant');
+    scopes.sharedTestUtils.assertThrows(tenant1.createRole,null,null,'Should not be able to create role without specifying a name');
+    
+    var roleT2R1 = tenant2.createRole(testRoleName1);
+    jsunit.assertNotNull('Role with same name should be created but for different vendor', roleT2R1);
+    var roleT2R3 = tenant2.createRole(testRoleName3); //this role is only for tenant2
+    
+    roles = tenant1.getRoles();
+    jsunit.assertEquals('Roles should contain 2 elements', 2, roles.length);
+    
+    scopes.sharedTestUtils.assertThrows(tenant1.getRole,null,null,'Tenant.getRole should fail if required parameter is not provided');
+    
+    var role = tenant1.getRole(testRoleName1);
+    jsunit.assertNotNull('Role should be found', role);
+    
+    role = tenant1.getRole(testRoleName3); //this role is only for tenant2
+    jsunit.assertNull('Role should not be found', role);
+    
+    scopes.sharedTestUtils.assertThrows(tenant2.deleteRole,null,null,'Tenant.deleteRole should fail if required parameter is not provided');
+    
+    //test deleting role using role obj
+    tenant2.deleteRole(roleT2R3);
+    jsunit.assertNull('Role should be deleted', tenant2.getRole(testRoleName3));
+    
+    //test deleting role from another tenant using role obj
+    scopes.sharedTestUtils.assertThrows(tenant2.deleteRole, [roleT1R1], null, 'Should not be able to delete a role associated with a differnt tenant');
+    
+    //test deleting role from another tenant using role name
+    scopes.sharedTestUtils.assertThrows(tenant2.deleteRole, [testRoleName2], null, 'Should not be able to delete a role associated with a differnt tenant');
+    
+    //test deleting role using role name
+    tenant2.deleteRole(testRoleName1);
+    jsunit.assertNull('Role should be deleted', tenant2.getRole(testRoleName1));
+    jsunit.assertNotNull('Role with same name in another tenant should remain',tenant1.getRole(testRoleName1));
+}
+

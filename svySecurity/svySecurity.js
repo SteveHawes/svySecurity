@@ -741,7 +741,17 @@ function Tenant(record){
 	 * @return {Tenant} This tenant for call-chaining support.
 	 */
 	this.deleteRole = function(role){
-		var roleName = role instanceof String ? role : role.getName();
+		var roleName = null;
+		
+		if (role instanceof String) {
+		    roleName = role;
+		}
+		else {
+		    roleName = role.getName();
+		    if (role.getTenant().getName() != this.getName()) {
+		        throw 'Role not deleted. The specified role instance is associated with a different tenant';
+		    }
+		}
 		
 		var fs = record.tenants_to_roles.duplicateFoundSet();
 		if(!fs.find()){
