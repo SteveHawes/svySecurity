@@ -133,9 +133,8 @@ function testDeleteTenant() {
         result = scopes.svySecurity.deleteTenant(tenant1);
         jsunit.assertTrue('Should be able to delete tenant after logout', result);
         
-        //TODO: this currently fails because security data filtering is not removed by svySecurity.logout
-        //result = scopes.svySecurity.deleteTenant(tenant2);
-        //jsunit.assertTrue('Should be able to delete another tenant after logout', result); 
+        result = scopes.svySecurity.deleteTenant(tenant2);
+        jsunit.assertTrue('Should be able to delete another tenant after logout', result); 
 
     } finally {
         scopes.sharedTestUtils.restoreServoySecurity();

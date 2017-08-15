@@ -77,6 +77,14 @@ var SYSTEM_USER = 'system_user';
 var ACCESS_TOKEN_DEFAULT_VALIDITY = 30 * 60 * 1000;
 
 /**
+ * @private
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"D2E33FFB-37E7-45FA-B739-60F75FCBD819"}
+ */
+var SECURITY_TABLES_FILTER_NAME = 'com.servoy.extensions.security.data-filter';
+
+/**
  * Logs in the specified user and initializes a new {@link Session} for it.
  * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
  * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
@@ -153,6 +161,7 @@ function login(user){
  */
 function logout(){
 	closeSession();
+	removeSecurityTablesFilter();
 	security.logout();
 }
 
@@ -212,6 +221,12 @@ function getTenants(){
  * @public 
  * @param {String} [name] The name of the tenant to get. Or null to get the current tenant.
  * @return {Tenant} The tenant or null if not found / no user is logged in.
+ * 
+ * @example 
+ * //get the tenant of the current user
+ * var currentUserTenant = scopes.svySecurity.getTenant();
+ * //get a specific tenant
+ * var tenant = scopes.svySecurity.getTenant('tenantNameToGet');
  * 
  * @properties={typeid:24,uuid:"35A8C27C-1B0E-478F-95E2-B068FBF57BB4"}
  * @AllowToRunInFind
@@ -615,13 +630,25 @@ function Tenant(record){
 	 * @return {Boolean} True if the user is deleted, otherwise false.
 	 */
 	this.deleteUser = function(user){
-		var userName = user instanceof String ? user : user.getUserName();
+		var userName = null;
 		
-		if(user.getActiveSessions().length){
-			logWarning(utils.stringFormat('Could not delete user "%1$s". Has active sessions',[userName]));
-			return false;
+		if (user instanceof String) {
+		    userName = user;
 		}
-		
+		else {
+		    userName = user.getUserName();
+		    
+    		if(user.getActiveSessions().length){
+    			logWarning(utils.stringFormat('Could not delete user "%1$s". Has active sessions.',[userName]));
+    			return false;
+    		}
+    		
+    		if (user.getTenant().getName() != this.getName()) {
+    			logWarning(utils.stringFormat('Could not delete user "%1$s". The provided user instance is associated with a different tenant.',[userName]));
+    			return false;    		    
+    		}
+		}
+				
 		var fs = record.tenants_to_users.duplicateFoundSet();
 		fs.find();
 		fs.user_name = userName;
@@ -1927,7 +1954,7 @@ function saveRecord(record){
     
     try {
     	if(!databaseManager.saveData(record)){
-    		throw new Error('Failed to save record');
+    		throw new Error('Failed to save record ' + record.exception);
     	}
     	if (startedLocalTransaction) {
     	    if (!databaseManager.commitTransaction(true, true)){
@@ -2090,14 +2117,23 @@ function closeSession(){
  * @properties={typeid:24,uuid:"B9830A16-34D1-4844-937F-B873663F98F1"}
  */
 function filterSecurityTables(){
-	var filterName = 'com.servoy.extensions.security.data-filter';
 	var serverName = datasources.db.svy_security.getServerName();
-	databaseManager.removeTableFilterParam(serverName,filterName);
-	if(!databaseManager.addTableFilterParam(serverName,null,'tenant_name','=',activeTenantName,filterName)){
+	databaseManager.removeTableFilterParam(serverName, SECURITY_TABLES_FILTER_NAME);
+	if(!databaseManager.addTableFilterParam(serverName,null,'tenant_name','=',activeTenantName, SECURITY_TABLES_FILTER_NAME)){
 		logout();
 		throw 'Failed to filter security tables';	
 	}
 }
+
+/**
+ * @private 
+ * @properties={typeid:24,uuid:"222C8F50-1A78-42DF-8795-84F5FDE2E8BD"}
+ */
+function removeSecurityTablesFilter(){
+	var serverName = datasources.db.svy_security.getServerName();
+	databaseManager.removeTableFilterParam(serverName, SECURITY_TABLES_FILTER_NAME);	
+}
+
 /**
  * Check for user name bypassing any filters for current tenant
  * @private
