@@ -1034,7 +1034,17 @@ function User(record){
 		 * @type {String} 
 		 * @private
 		 */
-		var roleName = role instanceof String ? role : role.getName();
+		var roleName = null;
+		if (role instanceof String) {
+		    roleName = role;
+		}
+		else {
+		    if (role.getTenant().getName() != this.getTenant().getName()) {
+		        throw 'The specified role instance is associated with another tenant';
+		    }
+		    roleName = role.getName();
+		}
+		
 		if(!this.getTenant().getRole(roleName)){
 			throw 'Role "'+roleName+'" does not exists in tenant';
 		}
@@ -1106,7 +1116,19 @@ function User(record){
 		if(!role){
 			throw 'Role cannot be null';
 		}
-		var roleName = role instanceof String ? role : role.getName();
+		
+		var roleName = null;
+        if (role instanceof String) {
+            roleName = role;
+        }
+        else {
+            if (role.getTenant().getName() != this.getTenant().getName()) {
+                //The specified role instance is associated with another tenant
+                return false
+            }
+            roleName = role.getName();
+        }
+				
 		for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
 			var link = record.users_to_user_roles.getRecord(i);
 			if(link.role_name == roleName){
@@ -1409,7 +1431,17 @@ function Role(record){
 		 * @type {String} 
 		 * @private 
 		 */
-		var userName = user instanceof String ? user : user.getUserName();
+		var userName = null;
+        if (user instanceof String) {
+            userName = user;
+        }
+        else {
+            if (user.getTenant().getName() != this.getTenant().getName()) {
+                throw 'The specified user instance is associated with another tenant';
+            }
+            userName = user.getUserName();
+        }
+		
 		if(!this.getTenant().getUser(userName)){
 			throw 'User "'+userName+'" does not exist in tenant';
 		}
@@ -1456,7 +1488,18 @@ function Role(record){
 			throw 'User cannot be null';
 		}
 		
-		var userName = user instanceof String ? user : user.getUserName();
+		var userName = null;
+        if (user instanceof String) {
+            userName = user;
+        }
+        else {
+            if (user.getTenant().getName() != this.getTenant().getName()) {
+                //The specified user instance is associated with another tenant
+                return false;
+            }
+            userName = user.getUserName();
+        }
+		
 		for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
 			if(record.roles_to_user_roles.getRecord(i).user_name == userName){
 				return true;
