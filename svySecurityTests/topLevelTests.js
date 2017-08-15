@@ -145,32 +145,43 @@ function testDeleteTenant() {
  * @properties={typeid:24,uuid:"20843304-3C84-489C-B624-ED9C3FDEE80A"}
  */
 function testSyncPermissions() {
-    var grpName = application.getUUID().toString();
-    var perm = scopes.svySecurity.getPermission(grpName);
+    var grpName1 = application.getUUID().toString();
+    var grpName2 = application.getUUID().toString();
+    var perm = scopes.svySecurity.getPermission(grpName1);
     jsunit.assertNull('Permission should not exist', perm);
 
     try {
 
-        var mockupSecurity = scopes.sharedTestUtils.getMockupSecurity([grpName], null, true);
+        var mockupSecurity = scopes.sharedTestUtils.getMockupSecurity([grpName1, grpName2], null, true);
 
         //faking here the built-in Servoy security
         //need to use this approach because Servoy unit tests do not support login/authentication with test security settings
         scopes.sharedTestUtils.setMockupSecurity(mockupSecurity);
 
         scopes.svySecurity.syncPermissions();
-        perm = scopes.svySecurity.getPermission(grpName);
+        perm = scopes.svySecurity.getPermission(grpName1);
         jsunit.assertNotNull('syncPermissions should have added the new security group as permission', perm);
 
         //this will simulate "deleting" of a security group as getGroups will return the original dataset
         mockupSecurity = scopes.sharedTestUtils.getMockupSecurity(null, null, true);
         scopes.sharedTestUtils.setMockupSecurity(mockupSecurity);
 
+        var tenant = scopes.svySecurity.createTenant(application.getUUID().toString());
+        var role = tenant.createRole(application.getUUID().toString());
+        role.addPermission(grpName2);
+        
+        //test default non-destructive sync
         scopes.svySecurity.syncPermissions();
-        perm = scopes.svySecurity.getPermission(grpName);
-        jsunit.assertNotNull('syncPermissions should not delete existing permission records', perm);
+        perm = scopes.svySecurity.getPermission(grpName1);
+        jsunit.assertNull('syncPermissions should delete existing permission records if they are not referenced by a role', perm);
+        perm = scopes.svySecurity.getPermission(grpName2);
+        jsunit.assertNotNull('syncPermissions should not delete existing permission records if they are referenced by a role', perm);
 
-        var permissions = scopes.svySecurity.getPermissions();
-        jsunit.assertTrue('Permissions should be teturned', permissions.length > 0);
+        //test destructive sync
+        scopes.svySecurity.syncPermissions(true);
+        perm = scopes.svySecurity.getPermission(grpName2);
+        jsunit.assertNull('syncPermissions should delete existing permission records even if they are referenced by a role if forcePermissionRemoval param is true and a matching Servoy security group is not found', perm);
+        
     } finally {
         //restore back the original Servoy security
         scopes.sharedTestUtils.restoreServoySecurity();
