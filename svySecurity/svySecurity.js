@@ -1689,14 +1689,14 @@ function Permission(record){
 	 * The permission will be granted to all users that are members of the specified role.
 	 * 
 	 * @public 
-	 * @param {Role|String} role The role object or the name of the role to which the permission should be granted.
+	 * @param {Role} role The role object to which the permission should be granted.
 	 * @return {Permission} This permission for call-chaining support.
 	 */
 	this.addRole = function(role){
 		if(!role){
 			throw 'Role cannot be null';
 		}
-		var roleName = role instanceof String ? role : role.getName();
+		var roleName = role.getName();
 		
 		if(!this.hasRole(role)){
 			if(record.permissions_to_roles_permissions.newRecord() == -1){

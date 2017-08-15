@@ -151,9 +151,15 @@ function testTenantRoles() {
     jsunit.assertNull('Role should be deleted', tenant2.getRole(testRoleName1));
     jsunit.assertNotNull('Role with same name in another tenant should remain',tenant1.getRole(testRoleName1));
     
-    
+    //test deleting role which has users
     var user = tenant1.createUser(testUserName);
     user.addRole(roleT1R1);
+    tenant1.deleteRole(roleT1R1);
+    jsunit.assertNull('Role should be deleted', tenant1.getRole(testRoleName1));
+    jsunit.assertFalse('User should be removed from role', user.hasRole(testRoleName1));
+    
+    
+    
 }
 
 /**
