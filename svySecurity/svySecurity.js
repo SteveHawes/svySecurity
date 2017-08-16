@@ -85,6 +85,14 @@ var ACCESS_TOKEN_DEFAULT_VALIDITY = 30 * 60 * 1000;
 var SECURITY_TABLES_FILTER_NAME = 'com.servoy.extensions.security.data-filter';
 
 /**
+ * @private
+ * @type {Number}
+ *
+ * @properties={typeid:35,uuid:"6F6E55FB-0644-4746-9FE2-ABA60111AEE9",variableType:4}
+ */
+var MAX_NAME_LENGTH = 50;
+
+/**
  * Logs in the specified user and initializes a new {@link Session} for it.
  * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
  * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
@@ -170,18 +178,20 @@ function logout() {
  * The names of tenants must be unique in the system.
  *
  * @public
- * @param {String} name The name of the tenant. Must be unique.
+ * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
  * @return {Tenant} The tenant that is created.
  *
  * @properties={typeid:24,uuid:"2093C23A-D1E5-49D2-AA0B-428D5CB8B0FA"}
  */
 function createTenant(name) {
-
     if (!name) {
-        throw 'Name cannot be null or empty';
+        throw new Error('Name cannot be null or empty');
+    }
+    if (!nameLengthIsValid(name,MAX_NAME_LENGTH)) {
+        throw new Error(utils.stringFormat('Name must be between 1 and %1$s characters long.',[MAX_NAME_LENGTH]));
     }
     if (getTenant(name)) {
-        throw 'Tenant name "' + name + '" is not unique';
+        throw new Error(utils.stringFormat('Tenant name "%1$s" is not unique', [name]));
     }
     var fs = datasources.db.svy_security.tenants.getFoundSet();
     var rec = fs.getRecord(fs.newRecord(false, false));
@@ -553,11 +563,15 @@ function Tenant(record) {
      */
     this.createUser = function(userName, password) {
         if (!userName) {
-            throw 'User name cannot be null or empty';
+            throw new Error('User name cannot be null or empty');
         }
 
+        if (!nameLengthIsValid(userName,MAX_NAME_LENGTH)) {
+            throw new Error(utils.stringFormat('Username must be between 1 and %1$s characters long.',[MAX_NAME_LENGTH]));
+        }
+        
         if (userNameExists(userName, this.getName())) {
-            throw 'User Name "' + userName + '"is not unique to this tenant';
+            throw new Error(utils.stringFormat('User Name "%1$s"is not unique to this tenant', [userName]));
         }
 
         var userRec = record.tenants_to_users.getRecord(record.tenants_to_users.newRecord(false, false));
@@ -672,15 +686,20 @@ function Tenant(record) {
      */
     this.createRole = function(name) {
         if (!name) {
-            throw 'Role name cannot be null or empty';
+            throw new Error('Role name cannot be null or empty');
         }
+        
+        if (!nameLengthIsValid(name, MAX_NAME_LENGTH)) {
+            throw new Error(utils.stringFormat('Role name must be between 1 and %1$s characters long.',[MAX_NAME_LENGTH]));
+        }
+        
         if (this.getRole(name)) {
-            throw 'Role name "' + name + '" is not unique';
+            throw new Error(utils.stringFormat('Role name "%1$s" is not unique', [name]));
         }
 
         var roleRec = record.tenants_to_roles.getRecord(record.tenants_to_roles.newRecord(false, false));
         if (!roleRec) {
-            throw 'Could not create role record';
+            throw new Error('Could not create role record');
         }
         roleRec.role_name = name;
         roleRec.display_name = name;
@@ -2269,6 +2288,23 @@ function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions)
         throw new Error('The external DB transaction support flag can be changed only while a DB transaction is not in progress.');
     }
     supportExternalDBTransaction = mustSupportExternalTransactions;
+}
+
+/**
+ * @private 
+ * @param {String} name the name to validate
+ * @param {Number} maxLength the max length allowed for the name; default=50
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"1E5103A1-3DB0-4071-B82B-73B463062619"}
+ */
+function nameLengthIsValid(name, maxLength) {
+    if (!maxLength) {
+        maxLength = 50;
+    }
+    if (name && name.length <= maxLength) {
+        return true;
+    }
+    return false;
 }
 
 /**

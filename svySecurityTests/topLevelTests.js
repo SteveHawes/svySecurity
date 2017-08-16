@@ -21,6 +21,10 @@ function testCreateGetTenant() {
     jsunit.assertNotNull('getTenants should return an empty array if no tenants are created', tenants);
 
     scopes.sharedTestUtils.assertThrows(scopes.svySecurity.createTenant, null, null, 'Should fail if required param not provided to createTenant');
+    
+    //test with name longer than 50
+    var longName = application.getUUID().toString()+application.getUUID().toString();
+    scopes.sharedTestUtils.assertThrows(scopes.svySecurity.createTenant, [longName], null, 'Should fail if tenant name is longer than 50 characters');
 
     var tenantName = application.getUUID().toString();
     var tenant = scopes.svySecurity.createTenant(tenantName);
@@ -32,12 +36,20 @@ function testCreateGetTenant() {
             scopes.svySecurity.createTenant(tenantName);
         }, null, null, 'Should fail when trying to create tenant with duplicate name');
 
-    var tenant2 = scopes.svySecurity.createTenant(tenantName + '-2');
+    var maxLengthName = (tenantName + application.getUUID().toString()).substr(1,50);
+    var tenant2 = scopes.svySecurity.createTenant(maxLengthName);
     jsunit.assertNotNull('Should be able to create multiple tenants', tenant2);
 
     var t = scopes.svySecurity.getTenant(tenantName);
     jsunit.assertNotNull('Tenant should be returned', t);
     jsunit.assertEquals('The correct tenant should be returned', tenant.getName(), t.getName());
+    
+    t = scopes.svySecurity.getTenant(maxLengthName);
+    jsunit.assertNotNull('Tenant should be returned', t);
+    jsunit.assertEquals('The correct tenant should be returned', tenant2.getName(), t.getName());
+    
+    t = scopes.svySecurity.getTenant(maxLengthName + 'AAA');
+    jsunit.assertNull('Tenant should not be returned', t);    
 }
 
 /**

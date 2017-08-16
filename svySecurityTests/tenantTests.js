@@ -44,6 +44,7 @@ function testCreateGetDeleteUser() {
     
     scopes.sharedTestUtils.assertThrows(tenant.getUser, null, null, 'Should fail if required param not provided to tenant.getUser');
     
+    
     var u = tenant.getUser(testUserName);
     jsunit.assertNull('User should not be returned', u);
        
@@ -65,6 +66,10 @@ function testCreateGetDeleteUser() {
     scopes.sharedTestUtils.assertThrows(tenant.createUser, null, null, 'Should fail if required param not provided to tenant.createUser');
     
     scopes.sharedTestUtils.assertThrows(tenant.createUser, [testUserName], null, 'Should fail if attempting to create users with duplicate username for the same tenant');
+    
+    //test with name longer than 50
+    var longName = application.getUUID().toString()+application.getUUID().toString();
+    scopes.sharedTestUtils.assertThrows(tenant.createUser, [longName], null, 'Should fail if username is longer than 50 characters');
     
     var tenant2 = scopes.svySecurity.createTenant(testTenantName + '-2');
     var user2 = tenant2.createUser(testUserName, testPwd);
@@ -118,6 +123,10 @@ function testTenantRoles() {
     
     scopes.sharedTestUtils.assertThrows(tenant1.createRole,[testRoleName1],null,'Should not be able to create duplicate roles for the same tenant');
     scopes.sharedTestUtils.assertThrows(tenant1.createRole,null,null,'Should not be able to create role without specifying a name');
+    
+    //test with name longer than 50
+    var longName = application.getUUID().toString()+application.getUUID().toString();
+    scopes.sharedTestUtils.assertThrows(tenant1.createRole, [longName], null, 'Should fail if role name is longer than 50 characters');
     
     var roleT2R1 = tenant2.createRole(testRoleName1);
     jsunit.assertNotNull('Role with same name should be created but for different vendor', roleT2R1);
