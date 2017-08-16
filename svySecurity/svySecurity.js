@@ -321,8 +321,58 @@ function deleteTenant(tenant) {
 }
 
 /**
+ * Gets a role by the specified role name and tenant name.
+ * If tenant name is not specified will use the tenant of the user currently logged in the application, if available.
+ * @note Will fail if tenant is not specified and user is not logged in and multiple roles are found with the specified role name but associated with different tenants.
+ * 
+ * @public 
+ * @param {String} roleName The name of the role to get.
+ * @param {String} [tenantName] If not specified will use the tenant of the current logged in user (if user is not currently logged in
+ * @return {Role} The specified role or null if not found.
+ *
+ * @properties={typeid:24,uuid:"B8B832C4-7DA4-44D6-A36D-0D5BB9A7F5C0"}
+ */
+function getRole(roleName, tenantName) {
+    if (!roleName) {
+        throw new Error('Role name is not specified.');
+    }
+    
+    // tenant not specified, use active tenant
+    if (!tenantName) {
+        if (utils.hasRecords(active_tenant)) {
+            tenantName = active_tenant.tenant_name;
+        } else {
+
+        }
+    }
+
+    // get matching role
+    var fs = datasources.db.svy_security.roles.getFoundSet();
+    var qry = datasources.db.svy_security.roles.createSelect();
+    qry.where.add(qry.columns.role_name.eq(roleName));
+    if (tenantName) {
+        qry.where.add(qry.columns.tenant_name.eq(tenantName));
+    }
+    fs.loadRecords(qry);
+    
+    // no tenant and non-unique results
+    if (fs.getSize() > 1) {
+        throw 'Calling getRole with no tenant specified and no active tenant. Results are not unique.';
+    }
+
+    // No Match
+    if (fs.getSize() == 0) {
+        return null;
+    }
+
+    // cerate role object
+    return new Role(fs.getRecord(1));
+}
+
+/**
  * Gets a user by the specified username and tenant name.
  * If username is not specified will return the user currently logged in the application, if available.
+ * @note Will fail if tenant is not specified and user is not logged in and multiple users are found with the specified username but associated with different tenants.
  *
  * @public
  * @param {String} [userName] The username of the user to return. Can be null to get the current user.
