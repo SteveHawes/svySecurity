@@ -156,6 +156,11 @@ function getMockupSecurity(groupsToAdd, currentUserUID, loginResult) {
             return currentUserUID; 
         },
         
+        getClientID: function() {
+            application.output('Called mockupSecurity.getClientID');
+            return application.getUUID().toString();
+        },
+        
         login: function() {
             application.output('Called mockupSecurity.login');
             return loginResult;

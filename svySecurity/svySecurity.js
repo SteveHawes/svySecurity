@@ -551,7 +551,7 @@ function getSessionCount() {
  * Subsequent calls to consume the same token will fail.
  * Secure-access tokens are created with {@link User#generateAccessToken}
  *
- * TODO what to do if called when security tables are already filtered for another tenant ?
+ * @note An error will be thrown if this method is called from within an active user session.
  *
  * @public
  * @param {String} token The secure-access token to use.
@@ -1841,8 +1841,6 @@ function Permission(record) {
  * Use {@link getSession} to get the current session or {@link getActiveSessions} to get all active sessions.
  * Creating session objects with the new operator is reserved for internal use only.
  *
- * TODO Tie to servoy session JSClient ID and refactor isXXX methods ?
- *
  * @classdesc Security application session created by a {@link User} which starts when the user [logs in]{@link login} and ends when the user [logs out]{@link logout}.
  * @protected
  * @param {JSRecord<db:/svy_security/sessions>} record
@@ -1856,6 +1854,7 @@ function Session(record) {
 
     /**
      * Gets the internal unique ID of this session.
+     * This matches the Servoy Client ID as seen in the Servoy App Server admin page.
      *
      * @public
      * @return {String} The internal unique ID of this session.
@@ -1980,6 +1979,7 @@ function Session(record) {
      * @return {Boolean} True if the session has not been terminated and has not been inactive for longer than the session inactivity timeout period.
      */
     this.isActive = function() {
+        //TODO Change this to check against the Servoy client sessions when the ClientManagement plugin is available
         if (record.session_end) {
             return false;
         }
@@ -2012,6 +2012,7 @@ function Session(record) {
      * @protected
      */
     this.sendPing = function() {
+        //TODO This will not be needed when the ClientManagement plugin is available
         record.last_client_ping = new Date();
         saveRecord(record);
     }
@@ -2157,6 +2158,8 @@ function initSession(user) {
     // create session
     var fs = datasources.db.svy_security.sessions.getFoundSet();
     var sessionRec = fs.getRecord(fs.newRecord(false, false));
+    //using the Servoy client session ID
+    sessionRec.id = security.getClientID();
     sessionRec.user_name = user.getUserName();
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
@@ -2185,6 +2188,7 @@ function initSession(user) {
  * @properties={typeid:24,uuid:"92DCCEDD-F678-4E72-89A3-BEEE78E88958"}
  */
 function sessionClientPing() {
+    //TODO This will not be needed when the ClientManagement plugin is available
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
     sessionRec.last_client_ping = new Date();
