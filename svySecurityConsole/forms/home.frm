@@ -1,0 +1,113 @@
+customProperties:"formComponent:false,\
+methods:{\
+onShowMethodID:{\
+arguments:null,\
+parameters:null\
+}\
+}",
+extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
+items:[
+{
+anchors:9,
+formIndex:1,
+location:"530,200",
+onActionMethodID:"F1FDDFCE-8198-4C86-AEBA-691980ADA70D",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,30",
+styleClass:"small-label",
+text:"Active Sessions",
+transparent:true,
+typeid:7,
+uuid:"0EF0D821-1425-4D90-8C6C-0B03EF8EBF2C"
+},
+{
+anchors:9,
+dataProviderID:"sessionCount",
+location:"530,110",
+onActionMethodID:"F1FDDFCE-8198-4C86-AEBA-691980ADA70D",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,120",
+styleClass:"flat-button transition-medium large",
+text:"Session Count",
+typeid:7,
+uuid:"1319C3F3-FB2B-4146-B070-DF4EC1751A3B"
+},
+{
+anchors:9,
+dataProviderID:"tenantCount",
+location:"70,110",
+onActionMethodID:"17628FA9-EFC8-4091-BFE4-637266BF5B3B",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,120",
+styleClass:"flat-button transition-medium large",
+text:"Tenant Count",
+typeid:7,
+uuid:"433EC10B-C328-4AE7-AE9B-952DB97912D1"
+},
+{
+anchors:3,
+location:"650,40",
+onActionMethodID:"5DD18883-576C-4C57-BDD3-93A198767DD4",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"100,40",
+styleClass:"flat-button transition-medium",
+text:"Create Tenant",
+typeid:7,
+uuid:"874CC822-C563-4D4A-A01A-21AD378AD3A1"
+},
+{
+anchors:9,
+formIndex:1,
+location:"300,200",
+onActionMethodID:"86AD6257-8074-42FF-A15D-36470AAEAD19",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,30",
+styleClass:"small-label",
+text:"Total Users",
+transparent:true,
+typeid:7,
+uuid:"8953B999-591E-4ABC-8A55-BFC3D6B5A96D"
+},
+{
+anchors:9,
+location:"70,200",
+onActionMethodID:"17628FA9-EFC8-4091-BFE4-637266BF5B3B",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,30",
+styleClass:"small-label",
+text:"Tenants",
+transparent:true,
+typeid:7,
+uuid:"943A1322-EAF8-4B5E-8DF0-DEEA934AA1B4"
+},
+{
+anchors:9,
+dataProviderID:"userCount",
+location:"300,110",
+onActionMethodID:"86AD6257-8074-42FF-A15D-36470AAEAD19",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"200,120",
+styleClass:"flat-button transition-medium large",
+text:"User Count",
+typeid:7,
+uuid:"B139D32E-9DD5-4A39-8D71-0BE487E3C821"
+}
+],
+name:"home",
+onShowMethodID:"20C5B324-C613-46C3-96F4-5BEF04705FD5",
+typeid:3,
+uuid:"692ED3E1-4AC9-4E7C-A380-00933584B0DA"
