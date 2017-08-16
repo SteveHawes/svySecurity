@@ -44,6 +44,7 @@ function testCreateGetDeleteUser() {
     
     scopes.sharedTestUtils.assertThrows(tenant.getUser, null, null, 'Should fail if required param not provided to tenant.getUser');
     
+    
     var u = tenant.getUser(testUserName);
     jsunit.assertNull('User should not be returned', u);
        
@@ -65,6 +66,10 @@ function testCreateGetDeleteUser() {
     scopes.sharedTestUtils.assertThrows(tenant.createUser, null, null, 'Should fail if required param not provided to tenant.createUser');
     
     scopes.sharedTestUtils.assertThrows(tenant.createUser, [testUserName], null, 'Should fail if attempting to create users with duplicate username for the same tenant');
+    
+    //test with name longer than 50
+    var longName = application.getUUID().toString()+application.getUUID().toString();
+    scopes.sharedTestUtils.assertThrows(tenant.createUser, [longName], null, 'Should fail if username is longer than 50 characters');
     
     var tenant2 = scopes.svySecurity.createTenant(testTenantName + '-2');
     var user2 = tenant2.createUser(testUserName, testPwd);
@@ -119,6 +124,10 @@ function testTenantRoles() {
     scopes.sharedTestUtils.assertThrows(tenant1.createRole,[testRoleName1],null,'Should not be able to create duplicate roles for the same tenant');
     scopes.sharedTestUtils.assertThrows(tenant1.createRole,null,null,'Should not be able to create role without specifying a name');
     
+    //test with name longer than 50
+    var longName = application.getUUID().toString()+application.getUUID().toString();
+    scopes.sharedTestUtils.assertThrows(tenant1.createRole, [longName], null, 'Should fail if role name is longer than 50 characters');
+    
     var roleT2R1 = tenant2.createRole(testRoleName1);
     jsunit.assertNotNull('Role with same name should be created but for different vendor', roleT2R1);
     var roleT2R3 = tenant2.createRole(testRoleName3); //this role is only for tenant2
@@ -150,5 +159,61 @@ function testTenantRoles() {
     tenant2.deleteRole(testRoleName1);
     jsunit.assertNull('Role should be deleted', tenant2.getRole(testRoleName1));
     jsunit.assertNotNull('Role with same name in another tenant should remain',tenant1.getRole(testRoleName1));
+    
+    //test deleting role which has users
+    var user = tenant1.createUser(testUserName);
+    user.addRole(roleT1R1);
+    tenant1.deleteRole(roleT1R1);
+    jsunit.assertNull('Role should be deleted', tenant1.getRole(testRoleName1));
+    jsunit.assertFalse('User should be removed from role', user.hasRole(testRoleName1));
+    
+    
+    
+}
+
+/**
+ * @properties={typeid:24,uuid:"9B9519DB-3704-423D-8C1F-622847238CDB"}
+ */
+function testTenantLock() {
+    var testTenantName = application.getUUID().toString();
+    var testUserName = application.getUUID().toString();
+    var testReason = application.getUUID().toString();
+    var tenant = scopes.svySecurity.createTenant(testTenantName);
+    var user = tenant.createUser(testUserName);
+    
+    jsunit.assertFalse('Tenant should not be locked initially', tenant.isLocked());
+    jsunit.assertFalse('User should not be locked initially', user.isLocked());
+    
+    var res = tenant.lock();
+    jsunit.assertSame('The call-chaining result should be correct',tenant,res);
+    jsunit.assertTrue('Tenant should be locked', tenant.isLocked());
+    jsunit.assertNull('Lock reason should not be set',tenant.getLockReason());
+    jsunit.assertNull('Lock expiration should not be set',tenant.getLockExpiration());
+    
+    jsunit.assertTrue('User should be automatically "seen as locked" if the parent tenant is locked', user.isLocked());
+    
+    res = tenant.unlock();
+    jsunit.assertSame('The call-chaining result should be correct',tenant, res);
+    jsunit.assertFalse('Tenant should be unlocked', tenant.isLocked());
+    jsunit.assertFalse('User should be automatically "seen as unlocked" if the parent tenant is unlocked and the user has not been locked explicitly.', user.isLocked());
+    
+    tenant.lock(testReason);
+    jsunit.assertTrue('Tenant should be locked', tenant.isLocked());
+    jsunit.assertEquals('Lock reason should be set',testReason, tenant.getLockReason());
+    jsunit.assertNull('Lock expiration should not be set',tenant.getLockExpiration());
+    jsunit.assertTrue('User should be automatically "seen as locked" if the parent tenant is locked', user.isLocked());
+    jsunit.assertNull('Lock reason should not be propagated to user', user.getLockReason());
+    
+    tenant.lock(testReason,1000000);
+    jsunit.assertTrue('Tenant should be locked', tenant.isLocked());
+    jsunit.assertEquals('Lock reason should be set', testReason, tenant.getLockReason());
+    jsunit.assertNotNull('Lock expiration should be set', tenant.getLockExpiration());
+    jsunit.assertNull('Lock expiration should not be propagated to user', user.getLockExpiration());
+    
+    tenant.unlock();
+    jsunit.assertFalse('Tenant should be unlocked', tenant.isLocked());
+    jsunit.assertNull('Lock reason should be cleared',tenant.getLockReason());
+    jsunit.assertNull('Lock expiration should be cleared',tenant.getLockExpiration());
+    
 }
 
