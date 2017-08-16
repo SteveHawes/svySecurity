@@ -257,16 +257,17 @@ function getTenant(name) {
 
     // lookup tenant by name
     var fs = datasources.db.svy_security.tenants.getFoundSet();
-    fs.find();
-    fs.tenant_name = name;
-
+    var qry = datasources.db.svy_security.tenants.createSelect();
+    qry.where.add(qry.columns.tenant_name.eq(name));
+    fs.loadRecords(qry);
+    
     // no match
-    if (!fs.search()) {
+    if (fs.getSize() == 0) {
         return null;
     }
 
     // get matching tenant
-    return new Tenant(fs.getSelectedRecord());
+    return new Tenant(fs.getRecord(1));
 }
 
 /**
@@ -301,9 +302,11 @@ function deleteTenant(tenant) {
 
     // get foundset
     var fs = datasources.db.svy_security.tenants.getFoundSet();
-    fs.find();
-    fs.tenant_name = tenant.getName();
-    if (!fs.search()) {
+    var qry = datasources.db.svy_security.tenants.createSelect();
+    qry.where.add(qry.columns.tenant_name.eq(tenant.getName()));
+    fs.loadRecords(qry);
+    
+    if (fs.getSize() == 0) {
         logError(utils.stringFormat('Could not delete tenant. Could not find tenant "%1$s".', [tenant.getName()]));
         return false;
     }
@@ -353,23 +356,25 @@ function getUser(userName, tenantName) {
 
     // get matching user
     var fs = datasources.db.svy_security.users.getFoundSet();
-    fs.find();
-    fs.user_name = userName;
-    fs.tenant_name = tenantName;
-    var results = fs.search();
-
+    var qry = datasources.db.svy_security.users.createSelect();
+    qry.where.add(qry.columns.user_name.eq(userName));
+    if (tenantName) {
+        qry.where.add(qry.columns.tenant_name.eq(tenantName));
+    }
+    fs.loadRecords(qry);
+    
     // no tenant and non-unique results
-    if (results > 1) {
-        throw 'Calling getUser w/ no tenant supplied and no active tenant. Results may not be unique.';
+    if (fs.getSize() > 1) {
+        throw 'Calling getUser w/ no tenant supplied and no active tenant. Results are not unique.';
     }
 
     // No Match
-    if (results == 0) {
+    if (fs.getSize() == 0) {
         return null;
     }
 
     // cerate user object
-    return new User(fs.getSelectedRecord());
+    return new User(fs.getRecord(1));
 }
 
 /**
@@ -425,10 +430,12 @@ function getPermission(name) {
         throw 'Name cannot be null or empty';
     }
     var fs = datasources.db.svy_security.permissions.getFoundSet();
-    fs.find();
-    fs.permission_name = name;
-    if (fs.search()) {
-        return new Permission(fs.getSelectedRecord());
+    var qry = datasources.db.svy_security.permissions.createSelect();
+    qry.where.add(qry.columns.permission_name.eq(name));
+    fs.loadRecords(qry);
+    
+    if (fs.getSize() > 0) {
+        return new Permission(fs.getRecord(1));
     }
     return null;
 }
@@ -659,11 +666,13 @@ function Tenant(record) {
             }
         }
 
-        var fs = record.tenants_to_users.duplicateFoundSet();
-        fs.find();
-        fs.user_name = userName;
-        if (!fs.search()) {
-            logError(utils.stringFormat('Could not delete user "%1$s". Unkown error. Check log.', [userName]));
+        var fs = datasources.db.svy_security.users.getFoundSet();
+        var qry = datasources.db.svy_security.users.createSelect();
+        qry.where.add(qry.columns.user_name.eq(userName));
+        qry.where.add(qry.columns.tenant_name.eq(record.tenant_name));
+        fs.loadRecords(qry);
+        if (fs.getSize() == 0) {
+            logError(utils.stringFormat('Could not delete user "%1$s". User not found. Check log for more information.', [userName]));
             return false;
         }
 
@@ -767,17 +776,14 @@ function Tenant(record) {
             }
         }
 
-        var fs = record.tenants_to_roles.duplicateFoundSet();
-        if (!fs.find()) {
-            throw 'Role not deleted. Find failed';
-        }
-        fs.role_name = roleName;
-        if (!fs.search()) {
+        var fs = datasources.db.svy_security.roles.getFoundSet();// record.tenants_to_roles.duplicateFoundSet();
+        var qry = datasources.db.svy_security.roles.createSelect();
+        qry.where.add(qry.columns.role_name.eq(roleName));
+        qry.where.add(qry.columns.tenant_name.eq(record.tenant_name));
+        if (fs.getSize() == 0) {
             throw 'Role ' + roleName + ' not found in tenant';
         }
-        if (!fs.deleteRecord()) {
-            throw 'Role ' + roleName + ' could not be deleted. Check log for details';
-        }
+        deleteRecord(fs.getRecord(1));
         return this;
     }
 
@@ -1090,11 +1096,9 @@ function User(record) {
         }
         var roleName = role instanceof String ? role : role.getName();
         for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
-            var link = record.users_to_user_roles.getRecord(i);
-            if (link.role_name == roleName) {
-                if (!record.users_to_user_roles.deleteRecord(link)) {
-                    throw 'failed to delete record'
-                }
+            var linkRec = record.users_to_user_roles.getRecord(i);
+            if (linkRec.role_name == roleName) {
+                deleteRecord(linkRec);                
                 break;
             }
         }
@@ -1504,9 +1508,7 @@ function Role(record) {
         var userName = user instanceof String ? user : user.getUserName();
         for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
             if (record.roles_to_user_roles.getRecord(i).user_name == userName) {
-                if (!record.roles_to_user_roles.deleteRecord(i)) {
-                    throw 'Failed to delete record';
-                }
+                deleteRecord(record.roles_to_user_roles.getRecord(i));
                 break;
             }
         }
@@ -1601,9 +1603,7 @@ function Role(record) {
         var permissionName = permission instanceof String ? permission : permission.getName();
         for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
             if (record.roles_to_roles_permissions.getRecord(i).permission_name == permissionName) {
-                if (!record.roles_to_roles_permissions.deleteRecord(i)) {
-                    throw 'Delete record failed';
-                }
+                deleteRecord(record.roles_to_roles_permissions.getRecord(i));
                 break;
             }
         }
@@ -1744,9 +1744,7 @@ function Permission(record) {
 
         for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
             if (record.permissions_to_roles_permissions.getRecord(i).role_name == roleName) {
-                if (!record.permissions_to_roles_permissions.deleteRecord(i)) {
-                    throw 'Failed to delete record';
-                }
+                deleteRecord(record.permissions_to_roles_permissions.getRecord(i));
                 break;
             }
         }
