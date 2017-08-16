@@ -1366,29 +1366,6 @@ function Role(record) {
     }
 
     /**
-     * Sets the name of this role. The role name must be unique to the associated tenant.
-     *
-     * @public
-     * @param {String} name The role name to use.
-     * @return {Role} This role for call-chaining support.
-     */
-    this.setName = function(name) {
-        if (!name) {
-            throw 'Name cannot be null or empty';
-        }
-        // no change
-        if (name == this.getName()) {
-            return this;
-        }
-        if (this.getTenant().getRole(name)) {
-            throw 'Role name "' + name + '" is not unique';
-        }
-        record.role_name = name;
-        saveRecord(record);
-        return this;
-    }
-
-    /**
      * Gets the display name of this role.
      * @public
      * @return {String} The display name of this role. Can be null.
@@ -1697,20 +1674,21 @@ function Permission(record) {
      */
     this.addRole = function(role) {
         if (!role) {
-            throw 'Role cannot be null';
+            throw new Error('Role cannot be null');
         }
         var roleName = role.getName();
 
         if (!this.hasRole(role)) {
-            if (record.permissions_to_roles_permissions.newRecord() == -1) {
-                throw 'New record failed';
+            var rolePermRec = record.permissions_to_roles_permissions.getRecord(record.permissions_to_roles_permissions.newRecord(false, false));            
+            if (!rolePermRec) {
+                throw new Error('Failed to create new roles_permissions record');
             }
-            record.permissions_to_roles_permissions.tenant_name = role.getTenant().getName();
-            record.permissions_to_roles_permissions.role_name = roleName;
-            if (!record.permissions_to_roles_permissions.creation_user_name) {
-                record.permissions_to_roles_permissions.creation_user_name = SYSTEM_USER;
+            rolePermRec.tenant_name = role.getTenant().getName();
+            rolePermRec.role_name = roleName;
+            if (!rolePermRec.creation_user_name) {
+                rolePermRec.creation_user_name = SYSTEM_USER;
             }
-            saveRecord(record)
+            saveRecord(rolePermRec);
         }
         return this;
     }

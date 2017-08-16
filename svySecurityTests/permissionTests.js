@@ -1,4 +1,18 @@
 /**
+ * @properties={typeid:24,uuid:"75993F7D-53D4-4CC0-9B5A-F2B047B5D049"}
+ */
+function setUp() {
+    scopes.sharedTestUtils.setUp();
+}
+
+/**
+ * @properties={typeid:24,uuid:"5C9D71D5-EE6D-495E-A113-E68BFE8C98DD"}
+ */
+function tearDown() {
+    scopes.sharedTestUtils.tearDown();
+}
+
+/**
  * @properties={typeid:24,uuid:"CA824CAE-E660-4931-981C-1180E904F9EB"}
  */
 function testPermissionRoles() {
