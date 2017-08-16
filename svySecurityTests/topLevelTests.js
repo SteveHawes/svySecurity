@@ -52,8 +52,8 @@ function testCreateGetTenant() {
     var searchName = maxLengthName + 'AAA';
     jsunit.assertTrue(searchName != tenant2.getName());
     t = scopes.svySecurity.getTenant(searchName);
-    //TODO: this is a Servoy bug!!!
-    jsunit.assertNull('Tenant should not be returned - this is a Servoy bug', t);    
+    //TODO: this is a Servoy bug - see https://support.servoy.com/browse/SVY-11470!!!
+    jsunit.assertNull('Tenant should not be returned - this is a Servoy bug "SVY-11470"', t);    
 }
 
 /**

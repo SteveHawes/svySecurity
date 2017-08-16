@@ -511,11 +511,18 @@ function getSessionCount() {
  */
 function consumeAccessToken(token) {
     if (!token) {
-        throw 'token cannot be null';
+        throw new Error('Token is not specified');
     }
+    
+    if (activeUserName) {
+        throw new Error('Cannot call consumeAccessToken from within an active user session');
+    }
+    
+    //just in case the security filters where applied
+    removeSecurityTablesFilter();
+    
     var expiration = new Date();
     var q = datasources.db.svy_security.users.createSelect();
-    q.result.addPk();
     q.where.add(q.columns.access_token.eq(token)).add(q.columns.access_token_expiration.gt(expiration));
     var fs = datasources.db.svy_security.users.getFoundSet();
     fs.loadRecords(q);
@@ -780,6 +787,7 @@ function Tenant(record) {
         var qry = datasources.db.svy_security.roles.createSelect();
         qry.where.add(qry.columns.role_name.eq(roleName));
         qry.where.add(qry.columns.tenant_name.eq(record.tenant_name));
+        fs.loadRecords(qry);
         if (fs.getSize() == 0) {
             throw 'Role ' + roleName + ' not found in tenant';
         }
@@ -2145,6 +2153,8 @@ function closeSession() {
     sessionRec.session_end = new Date();
     saveRecord(sessionRec);
     sessionID = null;
+    activeUserName = null;
+    activeTenantName = null;
 }
 
 /**
@@ -2155,6 +2165,7 @@ function filterSecurityTables() {
     var serverName = datasources.db.svy_security.getServerName();
     databaseManager.removeTableFilterParam(serverName, SECURITY_TABLES_FILTER_NAME);
     if (!databaseManager.addTableFilterParam(serverName, null, 'tenant_name', '=', activeTenantName, SECURITY_TABLES_FILTER_NAME)) {
+        logError('Failed to filter security tables');
         logout();
         throw 'Failed to filter security tables';
     }
