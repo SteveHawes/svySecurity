@@ -31,7 +31,6 @@ function testRole() {
         scopes.svySecurity.syncPermissions();
 
         var tenant = scopes.svySecurity.createTenant(application.getUUID().toString());
-        var tenant2 = scopes.svySecurity.createTenant(application.getUUID().toString());
         var roleName = application.getUUID().toString();
         var role = tenant.createRole(roleName);
         var user1 = tenant.createUser(application.getUUID().toString());
