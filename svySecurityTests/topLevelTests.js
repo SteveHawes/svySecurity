@@ -48,8 +48,12 @@ function testCreateGetTenant() {
     jsunit.assertNotNull('Tenant should be returned', t);
     jsunit.assertEquals('The correct tenant should be returned', tenant2.getName(), t.getName());
     
-    t = scopes.svySecurity.getTenant(maxLengthName + 'AAA');
-    jsunit.assertNull('Tenant should not be returned', t);    
+    //test with a search value exceeding the max length of the storage column
+    var searchName = maxLengthName + 'AAA';
+    jsunit.assertTrue(searchName != tenant2.getName());
+    t = scopes.svySecurity.getTenant(searchName);
+    //TODO: this is a Servoy bug - see https://support.servoy.com/browse/SVY-11470!!!
+    jsunit.assertNull('Tenant should not be returned - this is a Servoy bug "SVY-11470"', t);    
 }
 
 /**

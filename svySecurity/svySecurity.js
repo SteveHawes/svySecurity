@@ -257,16 +257,17 @@ function getTenant(name) {
 
     // lookup tenant by name
     var fs = datasources.db.svy_security.tenants.getFoundSet();
-    fs.find();
-    fs.tenant_name = name;
-
+    var qry = datasources.db.svy_security.tenants.createSelect();
+    qry.where.add(qry.columns.tenant_name.eq(name));
+    fs.loadRecords(qry);
+    
     // no match
-    if (!fs.search()) {
+    if (fs.getSize() == 0) {
         return null;
     }
 
     // get matching tenant
-    return new Tenant(fs.getSelectedRecord());
+    return new Tenant(fs.getRecord(1));
 }
 
 /**
@@ -301,9 +302,11 @@ function deleteTenant(tenant) {
 
     // get foundset
     var fs = datasources.db.svy_security.tenants.getFoundSet();
-    fs.find();
-    fs.tenant_name = tenant.getName();
-    if (!fs.search()) {
+    var qry = datasources.db.svy_security.tenants.createSelect();
+    qry.where.add(qry.columns.tenant_name.eq(tenant.getName()));
+    fs.loadRecords(qry);
+    
+    if (fs.getSize() == 0) {
         logError(utils.stringFormat('Could not delete tenant. Could not find tenant "%1$s".', [tenant.getName()]));
         return false;
     }
@@ -318,8 +321,58 @@ function deleteTenant(tenant) {
 }
 
 /**
+ * Gets a role by the specified role name and tenant name.
+ * If tenant name is not specified will use the tenant of the user currently logged in the application, if available.
+ * @note Will fail if tenant is not specified and user is not logged in and multiple roles are found with the specified role name but associated with different tenants.
+ * 
+ * @public 
+ * @param {String} roleName The name of the role to get.
+ * @param {String} [tenantName] If not specified will use the tenant of the current logged in user (if user is not currently logged in
+ * @return {Role} The specified role or null if not found.
+ *
+ * @properties={typeid:24,uuid:"B8B832C4-7DA4-44D6-A36D-0D5BB9A7F5C0"}
+ */
+function getRole(roleName, tenantName) {
+    if (!roleName) {
+        throw new Error('Role name is not specified.');
+    }
+    
+    // tenant not specified, use active tenant
+    if (!tenantName) {
+        if (utils.hasRecords(active_tenant)) {
+            tenantName = active_tenant.tenant_name;
+        } else {
+
+        }
+    }
+
+    // get matching role
+    var fs = datasources.db.svy_security.roles.getFoundSet();
+    var qry = datasources.db.svy_security.roles.createSelect();
+    qry.where.add(qry.columns.role_name.eq(roleName));
+    if (tenantName) {
+        qry.where.add(qry.columns.tenant_name.eq(tenantName));
+    }
+    fs.loadRecords(qry);
+    
+    // no tenant and non-unique results
+    if (fs.getSize() > 1) {
+        throw 'Calling getRole with no tenant specified and no active tenant. Results are not unique.';
+    }
+
+    // No Match
+    if (fs.getSize() == 0) {
+        return null;
+    }
+
+    // cerate role object
+    return new Role(fs.getRecord(1));
+}
+
+/**
  * Gets a user by the specified username and tenant name.
  * If username is not specified will return the user currently logged in the application, if available.
+ * @note Will fail if tenant is not specified and user is not logged in and multiple users are found with the specified username but associated with different tenants.
  *
  * @public
  * @param {String} [userName] The username of the user to return. Can be null to get the current user.
@@ -353,23 +406,25 @@ function getUser(userName, tenantName) {
 
     // get matching user
     var fs = datasources.db.svy_security.users.getFoundSet();
-    fs.find();
-    fs.user_name = userName;
-    fs.tenant_name = tenantName;
-    var results = fs.search();
-
+    var qry = datasources.db.svy_security.users.createSelect();
+    qry.where.add(qry.columns.user_name.eq(userName));
+    if (tenantName) {
+        qry.where.add(qry.columns.tenant_name.eq(tenantName));
+    }
+    fs.loadRecords(qry);
+    
     // no tenant and non-unique results
-    if (results > 1) {
-        throw 'Calling getUser w/ no tenant supplied and no active tenant. Results may not be unique.';
+    if (fs.getSize() > 1) {
+        throw 'Calling getUser w/ no tenant supplied and no active tenant. Results are not unique.';
     }
 
     // No Match
-    if (results == 0) {
+    if (fs.getSize() == 0) {
         return null;
     }
 
     // cerate user object
-    return new User(fs.getSelectedRecord());
+    return new User(fs.getRecord(1));
 }
 
 /**
@@ -425,10 +480,12 @@ function getPermission(name) {
         throw 'Name cannot be null or empty';
     }
     var fs = datasources.db.svy_security.permissions.getFoundSet();
-    fs.find();
-    fs.permission_name = name;
-    if (fs.search()) {
-        return new Permission(fs.getSelectedRecord());
+    var qry = datasources.db.svy_security.permissions.createSelect();
+    qry.where.add(qry.columns.permission_name.eq(name));
+    fs.loadRecords(qry);
+    
+    if (fs.getSize() > 0) {
+        return new Permission(fs.getRecord(1));
     }
     return null;
 }
@@ -494,7 +551,7 @@ function getSessionCount() {
  * Subsequent calls to consume the same token will fail.
  * Secure-access tokens are created with {@link User#generateAccessToken}
  *
- * TODO what to do if called when security tables are already filtered for another tenant ?
+ * @note An error will be thrown if this method is called from within an active user session.
  *
  * @public
  * @param {String} token The secure-access token to use.
@@ -504,11 +561,18 @@ function getSessionCount() {
  */
 function consumeAccessToken(token) {
     if (!token) {
-        throw 'token cannot be null';
+        throw new Error('Token is not specified');
     }
+    
+    if (activeUserName) {
+        throw new Error('Cannot call consumeAccessToken from within an active user session');
+    }
+    
+    //just in case the security filters where applied
+    removeSecurityTablesFilter();
+    
     var expiration = new Date();
     var q = datasources.db.svy_security.users.createSelect();
-    q.result.addPk();
     q.where.add(q.columns.access_token.eq(token)).add(q.columns.access_token_expiration.gt(expiration));
     var fs = datasources.db.svy_security.users.getFoundSet();
     fs.loadRecords(q);
@@ -659,11 +723,13 @@ function Tenant(record) {
             }
         }
 
-        var fs = record.tenants_to_users.duplicateFoundSet();
-        fs.find();
-        fs.user_name = userName;
-        if (!fs.search()) {
-            logError(utils.stringFormat('Could not delete user "%1$s". Unkown error. Check log.', [userName]));
+        var fs = datasources.db.svy_security.users.getFoundSet();
+        var qry = datasources.db.svy_security.users.createSelect();
+        qry.where.add(qry.columns.user_name.eq(userName));
+        qry.where.add(qry.columns.tenant_name.eq(record.tenant_name));
+        fs.loadRecords(qry);
+        if (fs.getSize() == 0) {
+            logError(utils.stringFormat('Could not delete user "%1$s". User not found. Check log for more information.', [userName]));
             return false;
         }
 
@@ -767,17 +833,15 @@ function Tenant(record) {
             }
         }
 
-        var fs = record.tenants_to_roles.duplicateFoundSet();
-        if (!fs.find()) {
-            throw 'Role not deleted. Find failed';
-        }
-        fs.role_name = roleName;
-        if (!fs.search()) {
+        var fs = datasources.db.svy_security.roles.getFoundSet();// record.tenants_to_roles.duplicateFoundSet();
+        var qry = datasources.db.svy_security.roles.createSelect();
+        qry.where.add(qry.columns.role_name.eq(roleName));
+        qry.where.add(qry.columns.tenant_name.eq(record.tenant_name));
+        fs.loadRecords(qry);
+        if (fs.getSize() == 0) {
             throw 'Role ' + roleName + ' not found in tenant';
         }
-        if (!fs.deleteRecord()) {
-            throw 'Role ' + roleName + ' could not be deleted. Check log for details';
-        }
+        deleteRecord(fs.getRecord(1));
         return this;
     }
 
@@ -1090,11 +1154,9 @@ function User(record) {
         }
         var roleName = role instanceof String ? role : role.getName();
         for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
-            var link = record.users_to_user_roles.getRecord(i);
-            if (link.role_name == roleName) {
-                if (!record.users_to_user_roles.deleteRecord(link)) {
-                    throw 'failed to delete record'
-                }
+            var linkRec = record.users_to_user_roles.getRecord(i);
+            if (linkRec.role_name == roleName) {
+                deleteRecord(linkRec);                
                 break;
             }
         }
@@ -1504,9 +1566,7 @@ function Role(record) {
         var userName = user instanceof String ? user : user.getUserName();
         for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
             if (record.roles_to_user_roles.getRecord(i).user_name == userName) {
-                if (!record.roles_to_user_roles.deleteRecord(i)) {
-                    throw 'Failed to delete record';
-                }
+                deleteRecord(record.roles_to_user_roles.getRecord(i));
                 break;
             }
         }
@@ -1601,9 +1661,7 @@ function Role(record) {
         var permissionName = permission instanceof String ? permission : permission.getName();
         for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
             if (record.roles_to_roles_permissions.getRecord(i).permission_name == permissionName) {
-                if (!record.roles_to_roles_permissions.deleteRecord(i)) {
-                    throw 'Delete record failed';
-                }
+                deleteRecord(record.roles_to_roles_permissions.getRecord(i));
                 break;
             }
         }
@@ -1744,9 +1802,7 @@ function Permission(record) {
 
         for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
             if (record.permissions_to_roles_permissions.getRecord(i).role_name == roleName) {
-                if (!record.permissions_to_roles_permissions.deleteRecord(i)) {
-                    throw 'Failed to delete record';
-                }
+                deleteRecord(record.permissions_to_roles_permissions.getRecord(i));
                 break;
             }
         }
@@ -1785,8 +1841,6 @@ function Permission(record) {
  * Use {@link getSession} to get the current session or {@link getActiveSessions} to get all active sessions.
  * Creating session objects with the new operator is reserved for internal use only.
  *
- * TODO Tie to servoy session JSClient ID and refactor isXXX methods ?
- *
  * @classdesc Security application session created by a {@link User} which starts when the user [logs in]{@link login} and ends when the user [logs out]{@link logout}.
  * @protected
  * @param {JSRecord<db:/svy_security/sessions>} record
@@ -1800,6 +1854,7 @@ function Session(record) {
 
     /**
      * Gets the internal unique ID of this session.
+     * This matches the Servoy Client ID as seen in the Servoy App Server admin page.
      *
      * @public
      * @return {String} The internal unique ID of this session.
@@ -1924,6 +1979,7 @@ function Session(record) {
      * @return {Boolean} True if the session has not been terminated and has not been inactive for longer than the session inactivity timeout period.
      */
     this.isActive = function() {
+        //TODO Change this to check against the Servoy client sessions when the ClientManagement plugin is available
         if (record.session_end) {
             return false;
         }
@@ -1956,6 +2012,7 @@ function Session(record) {
      * @protected
      */
     this.sendPing = function() {
+        //TODO This will not be needed when the ClientManagement plugin is available
         record.last_client_ping = new Date();
         saveRecord(record);
     }
@@ -2101,6 +2158,8 @@ function initSession(user) {
     // create session
     var fs = datasources.db.svy_security.sessions.getFoundSet();
     var sessionRec = fs.getRecord(fs.newRecord(false, false));
+    //using the Servoy client session ID
+    sessionRec.id = security.getClientID();
     sessionRec.user_name = user.getUserName();
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
@@ -2129,6 +2188,7 @@ function initSession(user) {
  * @properties={typeid:24,uuid:"92DCCEDD-F678-4E72-89A3-BEEE78E88958"}
  */
 function sessionClientPing() {
+    //TODO This will not be needed when the ClientManagement plugin is available
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
     sessionRec.last_client_ping = new Date();
@@ -2147,6 +2207,8 @@ function closeSession() {
     sessionRec.session_end = new Date();
     saveRecord(sessionRec);
     sessionID = null;
+    activeUserName = null;
+    activeTenantName = null;
 }
 
 /**
@@ -2157,6 +2219,7 @@ function filterSecurityTables() {
     var serverName = datasources.db.svy_security.getServerName();
     databaseManager.removeTableFilterParam(serverName, SECURITY_TABLES_FILTER_NAME);
     if (!databaseManager.addTableFilterParam(serverName, null, 'tenant_name', '=', activeTenantName, SECURITY_TABLES_FILTER_NAME)) {
+        logError('Failed to filter security tables');
         logout();
         throw 'Failed to filter security tables';
     }
