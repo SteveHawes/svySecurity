@@ -79,7 +79,7 @@ function show(tenantName) {
  */
 function onShow(firstShow, event) {
     if (tenant_name) {
-        setHeaderText(utils.stringFormat('<span class="fa fa-shield"/> Tenant "%1$s"', [tenant_name]));
+        setHeaderText(utils.stringFormat('<span class="fa fa-shield"></span> Tenant "%1$s"', [tenant_name]));
     } else {
         setHeaderText('No Tenant To Display');
     }
@@ -94,7 +94,7 @@ function refreshTenantInfo() {
     if (tenant_name) {
         tenant = scopes.svySecurity.getTenant(tenant_name);
     }
-    
+
     if (tenant) {
         m_TenantUserCount = tenant.getUsers().length;
         m_ActiveSessionsCount = tenant.getActiveSessions().length;
@@ -103,9 +103,8 @@ function refreshTenantInfo() {
         if (isLocked) {
             var m_LockExp = tenant.getLockExpiration();
             if (m_LockExp) {
-                m_LockStausText = utils.stringFormat('Account is <b>Locked</b> - the lock expires on %1$tc ',[m_LockExp]);
-            }
-            else {
+                m_LockStausText = utils.stringFormat('Account is <b>Locked</b> - the lock expires on %1$tc ', [m_LockExp]);
+            } else {
                 m_LockStausText = 'Account is <b>Locked</b>';
             }
             m_LockReasonText = tenant.getLockReason();
@@ -123,7 +122,7 @@ function refreshTenantInfo() {
         m_LockReasonText = null;
         elements.btnLock.text = 'Lock';
     }
-    
+
     m_LastRefreshDate = new Date();
 }
 
@@ -185,19 +184,18 @@ function onActionRefresh(event) {
  * @properties={typeid:24,uuid:"E12D8A07-584B-485B-B5D7-95F10378B2BF"}
  */
 function onActionLockUnlock(event) {
-    if (!tenant_name){
+    if (!tenant_name) {
         return;
     }
     var tenant = scopes.svySecurity.getTenant(tenant_name);
-    if (!tenant){
+    if (!tenant) {
         return;
     }
-    
+
     if (tenant.isLocked()) {
         tenant.unlock();
-    }
-    else {
-        tenant.lock('Some reason for the lock',5 * 24 * 60 * 60 * 1000);
+    } else {
+        tenant.lock('Some reason for the lock', 5 * 24 * 60 * 60 * 1000);
     }
     refreshTenantInfo();
 }
@@ -212,22 +210,21 @@ function onActionLockUnlock(event) {
  * @properties={typeid:24,uuid:"27239A8F-2183-4640-A17B-889F6934739C"}
  */
 function onActionDelete(event) {
-    if (!tenant_name){
+    if (!tenant_name) {
         return;
     }
     var tenant = scopes.svySecurity.getTenant(tenant_name);
-    if (!tenant){
+    if (!tenant) {
         return;
     }
     var btnDelete = 'Delete';
     var btnCancel = 'Cancel';
-    var res = plugins.dialogs.showWarningDialog('Confirm Delete', utils.stringFormat('You are about to delete the account for tenant "%1$s" and all users associated with it.<br>There is no undo for this operation.<br>Do you want to continue?', [tenant_name]), btnCancel, btnDelete); 
+    var res = plugins.dialogs.showWarningDialog('Confirm Delete', utils.stringFormat('You are about to delete the account for tenant "%1$s" and all users associated with it.<br>There is no undo for this operation.<br>Do you want to continue?', [tenant_name]), btnCancel, btnDelete);
     if (res == btnDelete) {
         res = scopes.svySecurity.deleteTenant(tenant);
         if (res) {
             nav(forms.tenantList);
-        }
-        else {
+        } else {
             plugins.dialogs.showWarningDialog('Delete Not Successful', 'Could not delete tenant.');
         }
     }
@@ -245,5 +242,20 @@ function onActionDelete(event) {
 function onActionShowTenantUsers(event) {
     if (tenant_name) {
         forms.tenantUsersList.show(tenant_name);
+    }
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"9CB0887B-BE71-4DEC-81EB-5AC4F3A7DD30"}
+ */
+function onActionCreateUser(event) {
+    if (tenant_name) {
+        scopes.svySecurityConsole.addNewUser(tenant_name);
     }
 }

@@ -91,7 +91,7 @@ function show(userName, tenantName) {
  */
 function onShow(firstShow, event) {
     if (user_name) {
-        setHeaderText(utils.stringFormat('<span class="fa fa-user"/> User "%1$s"', [user_name]));
+        setHeaderText(utils.stringFormat('<span class="fa fa-user"></span> User "%1$s"', [user_name]));
     } else {
         setHeaderText('No User To Display');
     }

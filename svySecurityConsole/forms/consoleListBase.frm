@@ -33,13 +33,13 @@ y:160
 },
 onCellClick:"7551DD44-6DB7-4F85-B96C-A14D8949D1D9",
 size:{
-height:420,
-width:770
+height:429,
+width:779
 }
 },
 location:"10,160",
 name:"grid",
-size:"770,420",
+size:"779,429",
 typeName:"servoyextra-table",
 typeid:47,
 uuid:"904AF726-ED01-443E-A94B-4F28A5F4D28D"
