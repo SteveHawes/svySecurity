@@ -302,6 +302,8 @@ function testLoginLogout() {
         currentSession = scopes.svySecurity.getSession();
         jsunit.assertNotNull('There should be current session after successful login', currentSession);
         jsunit.assertEquals('The current session should be for the test user (same as user\'s active session)', activeSessionID, currentSession.getID());
+        jsunit.assertNotNull('The Servoy Client ID should be set',currentSession.getServoyClientID());
+        jsunit.assertTrue('The Servoy Client ID should be set',currentSession.getServoyClientID().length > 0);
 
         var t = scopes.svySecurity.getTenant();
         jsunit.assertNotNull('Should return tenant of current logged in user', t);

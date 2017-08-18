@@ -7,14 +7,6 @@
 var m_TenantName = null;
 
 /**
- * @private
- * @type {String}
- *
- * @properties={typeid:35,uuid:"5F595589-C157-45DF-B656-1F486D2D99CB"}
- */
-var FS_FILTER_NAME = 'svySecurityConsole_TenantUsersFilter';
-
-/**
  * @override
  * @protected
  * @return {Array<String>}
@@ -34,19 +26,9 @@ function getSearchProviders() {
  */
 function show(tenantName) {
     foundset.clear();
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME);
-    m_TenantName = null;
-
-    if (tenantName) {
-        m_TenantName = tenantName;
-
-        foundset.addFoundSetFilterParam('tenant_name', '=', m_TenantName, FS_FILTER_NAME);
-
-        if (!foundset.loadAllRecords()) {
-            throw new Error(utils.stringFormat('Cannot load users for tenant "%1$s".', [tenantName]));
-        }
-    }
-
+    m_TenantName = tenantName;
+    onSearch();
+    
     application.getWindow().show(this);
 }
 
@@ -104,4 +86,27 @@ function onActionShowTenant(event) {
     if (m_TenantName) {
         forms.tenantDetail.show(m_TenantName);
     }
+}
+
+/**
+ * @override 
+ * @protected 
+ * @properties={typeid:24,uuid:"EEEEBE6B-120B-4C79-860C-8BE37863DFAE"}
+ */
+function onSearch(){
+        
+    var search = scopes.svySearch.createSimpleSearch(foundset);    
+    search.setSearchText(getSearchText());
+    var providers = getSearchProviders();
+    for(var i in providers){
+        search.addSearchProvider(providers[i]);
+    }
+    /** @type {QBSelect<db:/svy_security/users>} */
+    var qry = search.getQuery();
+        
+    if (m_TenantName) {
+        qry.where.add(qry.and.add(qry.columns.tenant_name.eq(m_TenantName)));
+    }
+        
+    foundset.loadRecords(qry);
 }

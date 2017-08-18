@@ -17,11 +17,20 @@ function getSearchProviders(){
 
 /**
  * @protected 
+ * @return {String}
+ * @properties={typeid:24,uuid:"12859F84-5E7B-497D-84AB-8E83FB6CB40E"}
+ */
+function getSearchText(){
+    return searchText + '';
+}
+
+/**
+ * @protected 
  * @properties={typeid:24,uuid:"E478A932-86D4-440B-86A4-8630D1EA0A52"}
  */
 function onSearch(){
 	var search = scopes.svySearch.createSimpleSearch(foundset);
-	search.setSearchText(searchText);
+	search.setSearchText(getSearchText());
 	var providers = getSearchProviders();
 	for(var i in providers){
 		search.addSearchProvider(providers[i]);
@@ -45,8 +54,8 @@ function setSearchText(searchTextStr) {
  * @properties={typeid:24,uuid:"A25C24A7-4167-4649-AF5E-9C34C226B448"}
  */
 function showAll(){
-	foundset.loadAllRecords();
-	searchText = null;
+	setSearchText(null);
+	onSearch();
 }
 /**
  * Callback method for when form is shown.

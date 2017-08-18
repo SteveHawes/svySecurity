@@ -19,7 +19,7 @@ headerText:"User",
 svyUUID:"140E2E6D-F164-4A17-9495-FB1087E66BFD"
 },
 {
-dataprovider:"session_end",
+dataprovider:"session_start",
 format:"yyyy-MM-dd HH:mm",
 headerText:"Start",
 svyUUID:"13C72F2F-D782-4E9C-8755-F08E46D3DCB3"
@@ -34,12 +34,6 @@ svyUUID:"F2623B8B-4382-4532-AA98-39058F0BFFD4"
 dataprovider:"ip_address",
 headerText:"IP Address",
 svyUUID:"6324D9B0-A03B-48C3-AB32-F32D9722A90E"
-},
-{
-autoResize:true,
-dataprovider:"id",
-headerText:"Session ID",
-svyUUID:"FC2529F1-D391-4522-AA7D-E2F9C1A638C1"
 }
 ],
 foundset:{

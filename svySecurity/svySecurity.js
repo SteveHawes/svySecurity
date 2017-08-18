@@ -187,8 +187,8 @@ function createTenant(name) {
     if (!name) {
         throw new Error('Name cannot be null or empty');
     }
-    if (!nameLengthIsValid(name,MAX_NAME_LENGTH)) {
-        throw new Error(utils.stringFormat('Name must be between 1 and %1$s characters long.',[MAX_NAME_LENGTH]));
+    if (!nameLengthIsValid(name, MAX_NAME_LENGTH)) {
+        throw new Error(utils.stringFormat('Name must be between 1 and %1$s characters long.', [MAX_NAME_LENGTH]));
     }
     if (getTenant(name)) {
         throw new Error(utils.stringFormat('Tenant name "%1$s" is not unique', [name]));
@@ -260,7 +260,7 @@ function getTenant(name) {
     var qry = datasources.db.svy_security.tenants.createSelect();
     qry.where.add(qry.columns.tenant_name.eq(name));
     fs.loadRecords(qry);
-    
+
     // no match
     if (fs.getSize() == 0) {
         return null;
@@ -305,7 +305,7 @@ function deleteTenant(tenant) {
     var qry = datasources.db.svy_security.tenants.createSelect();
     qry.where.add(qry.columns.tenant_name.eq(tenant.getName()));
     fs.loadRecords(qry);
-    
+
     if (fs.getSize() == 0) {
         logError(utils.stringFormat('Could not delete tenant. Could not find tenant "%1$s".', [tenant.getName()]));
         return false;
@@ -324,8 +324,8 @@ function deleteTenant(tenant) {
  * Gets a role by the specified role name and tenant name.
  * If tenant name is not specified will use the tenant of the user currently logged in the application, if available.
  * @note Will fail if tenant is not specified and user is not logged in and multiple roles are found with the specified role name but associated with different tenants.
- * 
- * @public 
+ *
+ * @public
  * @param {String} roleName The name of the role to get.
  * @param {String} [tenantName] If not specified will use the tenant of the current logged in user (if user is not currently logged in
  * @return {Role} The specified role or null if not found.
@@ -336,7 +336,7 @@ function getRole(roleName, tenantName) {
     if (!roleName) {
         throw new Error('Role name is not specified.');
     }
-    
+
     // tenant not specified, use active tenant
     if (!tenantName) {
         if (utils.hasRecords(active_tenant)) {
@@ -354,7 +354,7 @@ function getRole(roleName, tenantName) {
         qry.where.add(qry.columns.tenant_name.eq(tenantName));
     }
     fs.loadRecords(qry);
-    
+
     // no tenant and non-unique results
     if (fs.getSize() > 1) {
         throw 'Calling getRole with no tenant specified and no active tenant. Results are not unique.';
@@ -412,7 +412,7 @@ function getUser(userName, tenantName) {
         qry.where.add(qry.columns.tenant_name.eq(tenantName));
     }
     fs.loadRecords(qry);
-    
+
     // no tenant and non-unique results
     if (fs.getSize() > 1) {
         throw 'Calling getUser w/ no tenant supplied and no active tenant. Results are not unique.';
@@ -483,7 +483,7 @@ function getPermission(name) {
     var qry = datasources.db.svy_security.permissions.createSelect();
     qry.where.add(qry.columns.permission_name.eq(name));
     fs.loadRecords(qry);
-    
+
     if (fs.getSize() > 0) {
         return new Permission(fs.getRecord(1));
     }
@@ -515,10 +515,8 @@ function getSession() {
  * @properties={typeid:24,uuid:"D3256103-0741-498E-9CA9-0E34E9D530E2"}
  */
 function getActiveSessions() {
-    var expiration = new Date();
-    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
     var q = datasources.db.svy_security.sessions.createSelect();
-    q.where.add(q.columns.session_end.isNull).add(q.columns.last_client_ping.gt(expiration))
+    addActiveSessionSearchCriteria(q);
     var fs = datasources.db.svy_security.sessions.getFoundSet();
     fs.loadRecords(q);
     var sessions = [];
@@ -563,15 +561,15 @@ function consumeAccessToken(token) {
     if (!token) {
         throw new Error('Token is not specified');
     }
-    
+
     if (activeUserName) {
         throw new Error('Cannot call consumeAccessToken from within an active user session');
     }
-    
+
     //just in case the security filters where applied
     removeSecurityTablesFilter();
-    
-    var expiration = new Date();
+
+    var expiration = application.getServerTimeStamp();
     var q = datasources.db.svy_security.users.createSelect();
     q.where.add(q.columns.access_token.eq(token)).add(q.columns.access_token_expiration.gt(expiration));
     var fs = datasources.db.svy_security.users.getFoundSet();
@@ -630,10 +628,10 @@ function Tenant(record) {
             throw new Error('User name cannot be null or empty');
         }
 
-        if (!nameLengthIsValid(userName,MAX_NAME_LENGTH)) {
-            throw new Error(utils.stringFormat('Username must be between 1 and %1$s characters long.',[MAX_NAME_LENGTH]));
+        if (!nameLengthIsValid(userName, MAX_NAME_LENGTH)) {
+            throw new Error(utils.stringFormat('Username must be between 1 and %1$s characters long.', [MAX_NAME_LENGTH]));
         }
-        
+
         if (userNameExists(userName, this.getName())) {
             throw new Error(utils.stringFormat('User Name "%1$s"is not unique to this tenant', [userName]));
         }
@@ -754,11 +752,11 @@ function Tenant(record) {
         if (!name) {
             throw new Error('Role name cannot be null or empty');
         }
-        
+
         if (!nameLengthIsValid(name, MAX_NAME_LENGTH)) {
-            throw new Error(utils.stringFormat('Role name must be between 1 and %1$s characters long.',[MAX_NAME_LENGTH]));
+            throw new Error(utils.stringFormat('Role name must be between 1 and %1$s characters long.', [MAX_NAME_LENGTH]));
         }
-        
+
         if (this.getRole(name)) {
             throw new Error(utils.stringFormat('Role name "%1$s" is not unique', [name]));
         }
@@ -888,10 +886,8 @@ function Tenant(record) {
      * @return {Array<Session>} An array with all active sessions for users associated with this tenant or an empty array if the are no active sessions.
      */
     this.getActiveSessions = function() {
-        var expiration = new Date();
-        expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
         var q = record.tenants_to_sessions.getQuery();
-        q.where.add(q.columns.session_end.isNull).add(q.columns.last_client_ping.gt(expiration))
+        addActiveSessionSearchCriteria(q);
         var fs = datasources.db.svy_security.sessions.getFoundSet();
         fs.loadRecords(q);
         var sessions = [];
@@ -929,7 +925,7 @@ function Tenant(record) {
         record.lock_flag = 1;
         record.lock_reason = reason;
         if (duration) {
-            var expiration = new Date();
+            var expiration = application.getServerTimeStamp();
             expiration.setTime(expiration.getTime() + duration);
         }
         record.lock_expiration = expiration;
@@ -961,7 +957,7 @@ function Tenant(record) {
     this.isLocked = function() {
         if (record.lock_flag == 1) {
             if (record.lock_expiration) {
-                var now = new Date();
+                var now = application.getServerTimeStamp();
                 return now < record.lock_expiration;
             }
             return true;
@@ -1156,7 +1152,7 @@ function User(record) {
         for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
             var linkRec = record.users_to_user_roles.getRecord(i);
             if (linkRec.role_name == roleName) {
-                deleteRecord(linkRec);                
+                deleteRecord(linkRec);
                 break;
             }
         }
@@ -1287,10 +1283,8 @@ function User(record) {
      * @return {Array<Session>} An array with all active sessions for this user or an empty array if the are no active sessions.
      */
     this.getActiveSessions = function() {
-        var expiration = new Date();
-        expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
         var q = record.users_to_sessions.getQuery();
-        q.where.add(q.columns.session_end.isNull).add(q.columns.last_client_ping.gt(expiration))
+        addActiveSessionSearchCriteria(q);
         var fs = datasources.db.svy_security.sessions.getFoundSet();
         fs.loadRecords(q);
         var sessions = [];
@@ -1316,7 +1310,7 @@ function User(record) {
         record.lock_flag = 1;
         record.lock_reason = reason;
         if (duration) {
-            var expiration = new Date();
+            var expiration = application.getServerTimeStamp();
             expiration.setTime(expiration.getTime() + duration);
         }
         record.lock_expiration = expiration;
@@ -1348,7 +1342,7 @@ function User(record) {
     this.isLocked = function() {
         if (record.lock_flag == 1) {
             if (record.lock_expiration) {
-                var now = new Date();
+                var now = application.getServerTimeStamp();
                 return now < record.lock_expiration;
             }
             return true;
@@ -1392,7 +1386,7 @@ function User(record) {
         if (!duration) {
             duration = ACCESS_TOKEN_DEFAULT_VALIDITY;
         }
-        var expiration = new Date();
+        var expiration = application.getServerTimeStamp();
         expiration.setTime(expiration.getTime() + duration);
         record.access_token_expiration = expiration;
         saveRecord(record);
@@ -1737,7 +1731,7 @@ function Permission(record) {
         var roleName = role.getName();
 
         if (!this.hasRole(role)) {
-            var rolePermRec = record.permissions_to_roles_permissions.getRecord(record.permissions_to_roles_permissions.newRecord(false, false));            
+            var rolePermRec = record.permissions_to_roles_permissions.getRecord(record.permissions_to_roles_permissions.newRecord(false, false));
             if (!rolePermRec) {
                 throw new Error('Failed to create new roles_permissions record');
             }
@@ -1973,6 +1967,17 @@ function Session(record) {
     }
 
     /**
+     * Gets the Servoy Client ID associated with the session (as shown on the Servoy app server admin page).
+     * @note Multiple user sessions can have the same Servoy Client ID if the client is not closed between different logins (for NG/Web clients this requires complete closing of the browser and not just a tab).
+     *
+     * @public
+     * @return {String} The Servoy Client ID associated with the session.
+     */
+    this.getServoyClientID = function() {
+        return record.servoy_client_id;
+    }
+
+    /**
      * Indicates if this session is still active.
      *
      * @public
@@ -1983,7 +1988,7 @@ function Session(record) {
         if (record.session_end) {
             return false;
         }
-        return record.last_client_ping.getTime() + SESSION_TIMEOUT > new Date().getTime();
+        return record.last_client_ping.getTime() + SESSION_TIMEOUT > application.getServerTimeStamp().getTime();
 
     }
 
@@ -2013,7 +2018,7 @@ function Session(record) {
      */
     this.sendPing = function() {
         //TODO This will not be needed when the ClientManagement plugin is available
-        record.last_client_ping = new Date();
+        record.last_client_ping = application.getServerTimeStamp();
         saveRecord(record);
     }
 }
@@ -2132,10 +2137,10 @@ function syncPermissions(forcePermissionRemoval) {
 
     // look for removed permissions
     var qry = datasources.db.svy_security.permissions.createSelect();
-    qry.where.add(qry.columns.permission_name.not.isin(groups));    
+    qry.where.add(qry.columns.permission_name.not.isin(groups));
     permissionFS.loadRecords(qry);
     var cnt = databaseManager.getFoundSetCount(permissionFS);
-    for (i = cnt; i > 0; i--){
+    for (i = cnt; i > 0; i--) {
         var record = permissionFS.getRecord(i);
         if (forcePermissionRemoval || !databaseManager.hasRecords(record.permissions_to_roles_permissions)) {
             logInfo(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings and will be deleted.', [record.permission_name]));
@@ -2143,7 +2148,7 @@ function syncPermissions(forcePermissionRemoval) {
         } else {
             logWarning(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings.', [record.permission_name]));
         }
-    }    
+    }
 }
 
 /**
@@ -2161,11 +2166,11 @@ function initSession(user) {
     var fs = datasources.db.svy_security.sessions.getFoundSet();
     var sessionRec = fs.getRecord(fs.newRecord(false, false));
     //using the Servoy client session ID
-    sessionRec.id = security.getClientID();
+    sessionRec.servoy_client_id = security.getClientID();
     sessionRec.user_name = user.getUserName();
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
-    sessionRec.last_client_ping = new Date();
+    sessionRec.last_client_ping = application.getServerTimeStamp();
     if (application.getApplicationType() == APPLICATION_TYPES.NG_CLIENT) {
         sessionRec.user_agent_string = plugins.ngclientutils.getUserAgent();
     }
@@ -2174,7 +2179,7 @@ function initSession(user) {
     // create ping job
     var jobName = 'com.servoy.extensions.security.sessionUpdater';
     plugins.scheduler.removeJob(jobName);
-    plugins.scheduler.addJob(jobName, new Date(), sessionClientPing, SESSION_PING_INTERVAL);
+    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
 
     // store session id
     activeUserName = user.getUserName();
@@ -2193,7 +2198,7 @@ function sessionClientPing() {
     //TODO This will not be needed when the ClientManagement plugin is available
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
-    sessionRec.last_client_ping = new Date();
+    sessionRec.last_client_ping = application.getServerTimeStamp();
     //intentionally not using saveRecord and not checking result
     //this is called very often and if some updates fail we try again X seconds later anyway
     databaseManager.saveData(sessionRec);
@@ -2206,7 +2211,7 @@ function sessionClientPing() {
 function closeSession() {
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
-    sessionRec.session_end = new Date();
+    sessionRec.session_end = application.getServerTimeStamp();
     saveRecord(sessionRec);
     sessionID = null;
     activeUserName = null;
@@ -2334,7 +2339,7 @@ function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions)
 }
 
 /**
- * @private 
+ * @private
  * @param {String} name the name to validate
  * @param {Number} maxLength the max length allowed for the name; default=50
  * @return {Boolean}
@@ -2351,13 +2356,21 @@ function nameLengthIsValid(name, maxLength) {
 }
 
 /**
- * Gets the period of time (in milliseconds) of inactivity after which a user session will be considered abandoned
- * @public 
- * @return {Number} The inactive session timeout in milliseconds
- * @properties={typeid:24,uuid:"80F536AE-B99C-42AD-92B3-0A7948169CFA"}
+ * Adds the necessary search criteria for active sessions to the WHERE clause of the provided QBSelect
+ * @private 
+ * @param {QBSelect<db:/svy_security/sessions>|QBSelect<tenants_to_sessions>|QBSelect<users_to_sessions>} qbSelect
+ *
+ * @properties={typeid:24,uuid:"9100D50E-8FC1-4466-9E94-3730E6B18783"}
  */
-function getInactiveSessionTimeout() {
-    return SESSION_TIMEOUT;
+function addActiveSessionSearchCriteria(qbSelect) {
+    if (!qbSelect) {
+        throw new Error('QBSelect is not specified');
+    }
+    var expiration = application.getServerTimeStamp();
+    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
+    var andActiveCriteria = qbSelect.and;
+    andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
+    qbSelect.where.add(andActiveCriteria);
 }
 
 /**

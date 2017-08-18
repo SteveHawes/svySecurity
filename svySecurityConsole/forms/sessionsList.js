@@ -21,38 +21,6 @@ var m_UserName = null;
 var m_ActiveSessionsOnly = false;
 
 /**
- * @private
- * @type {String}
- *
- * @properties={typeid:35,uuid:"55F80A5C-4BF3-4B6A-B3AB-CECB78604CDF"}
- */
-var FS_FILTER_NAME_TENANT = 'svySecurityConsole_SessionsTenantFilter';
-
-/**
- * @private 
- * @type {String}
- *
- * @properties={typeid:35,uuid:"D7C7C55F-EA27-4BEC-A0A1-5654CE877AFD"}
- */
-var FS_FILTER_NAME_USER = 'svySecurityConsole_SessionsUserFilter';
-
-/**
- * @private 
- * @type {String}
- *
- * @properties={typeid:35,uuid:"7B2FC026-3BDD-45C8-B470-1666197BAF08"}
- */
-var FS_FILTER_NAME_SESSION_END = 'svySecurityConsole_SessionsEndFilter';
-
-/**
- * @private
- * @type {String}
- *
- * @properties={typeid:35,uuid:"9E46308F-ACE6-4FF0-8617-4DE12389B707"}
- */
-var FS_FILTER_NAME_SESSION_LAST_PING = 'svySecurityConsole_SessionsLastPingFilter';
-
-/**
  * @override
  * @protected
  * @return {Array<String>}
@@ -73,8 +41,6 @@ function showTenantActiveSessions(tenantName) {
     m_TenantName = tenantName;    
     m_UserName = null;
     m_ActiveSessionsOnly = true;
-    clearFilters();
-    
     onSearch();
 
     application.getWindow().show(this);
@@ -90,8 +56,6 @@ function showTenantSessions(tenantName) {
     m_TenantName = tenantName;    
     m_UserName = null;
     m_ActiveSessionsOnly = false;
-    clearFilters();
-    
     onSearch();
 
     application.getWindow().show(this);
@@ -108,7 +72,6 @@ function showUserActiveSessions(tenantName, userName) {
     m_TenantName = tenantName;    
     m_UserName = userName;
     m_ActiveSessionsOnly = true;
-    clearFilters();    
     onSearch();
 
     application.getWindow().show(this);
@@ -125,7 +88,6 @@ function showUserSessions(tenantName, userName) {
     m_TenantName = tenantName;    
     m_UserName = userName;
     m_ActiveSessionsOnly = false;
-    clearFilters();    
     onSearch();
 
     application.getWindow().show(this);
@@ -140,7 +102,6 @@ function showAllActiveSessions() {
     m_TenantName = null;    
     m_UserName = null;
     m_ActiveSessionsOnly = true;
-    clearFilters();    
     onSearch();
 
     application.getWindow().show(this);
@@ -155,22 +116,9 @@ function showAllSessions() {
     m_TenantName = null;    
     m_UserName = null;
     m_ActiveSessionsOnly = false;
-    clearFilters();    
     onSearch();
 
     application.getWindow().show(this);
-}
-
-/**
- * @private
- * @properties={typeid:24,uuid:"3BDE6298-7DF0-4C5F-9AF8-CD30AE6F5041"}
- */
-function clearFilters() {
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_TENANT);
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_USER);
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_SESSION_END);
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_SESSION_LAST_PING);
-    setSearchText('');
 }
 
 /**
@@ -179,29 +127,32 @@ function clearFilters() {
  * @properties={typeid:24,uuid:"BF62CE20-5402-4AEA-A849-6B83A038F09E"}
  */
 function onSearch(){
+        
+    var search = scopes.svySearch.createSimpleSearch(foundset);    
+    search.setSearchText(getSearchText());
+    var providers = getSearchProviders();
+    for(var i in providers){
+        search.addSearchProvider(providers[i]);
+    }
+    /** @type {QBSelect<db:/svy_security/sessions>} */
+    var qry = search.getQuery();
     
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_TENANT);
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_USER);
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_SESSION_END);
-    foundset.removeFoundSetFilterParam(FS_FILTER_NAME_SESSION_LAST_PING);
+    var and = qry.and;
     
     if (m_TenantName) {
-
-        foundset.addFoundSetFilterParam('tenant_name', '=', m_TenantName, FS_FILTER_NAME_TENANT);
+        and.add(qry.columns.tenant_name.eq(m_TenantName));        
     }
     
     if (m_UserName) {
-        foundset.addFoundSetFilterParam('user_name', '=', m_UserName, FS_FILTER_NAME_USER);
-        
+        and.add(qry.columns.user_name.eq(m_UserName));
     }
+    qry.where.add(and);
     
     if (m_ActiveSessionsOnly) {
-        foundset.addFoundSetFilterParam('session_end', '^||=', null, FS_FILTER_NAME_SESSION_END);
-        var expiration = new Date();        
-        expiration.setTime(expiration.getTime() - scopes.svySecurity.getInactiveSessionTimeout());
-        foundset.addFoundSetFilterParam('last_client_ping', '>', utils.dateFormat(expiration, 'yyyy-MM-dd HH:mm:ss') + '|yyyy-MM-dd HH:mm:ss' , FS_FILTER_NAME_SESSION_LAST_PING);                
+        //TODO: here using a private method of svySecurity
+        scopes.svySecurity['addActiveSession'+'SearchCriteria'](qry);
     }
-    _super.onSearch();
+    foundset.loadRecords(qry);
 }
 
 /**
