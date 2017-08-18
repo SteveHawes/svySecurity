@@ -43,6 +43,9 @@ svyUUID:"6324D9B0-A03B-48C3-AB32-F32D9722A90E"
 ],
 foundset:{
 foundsetSelector:""
+},
+performanceSettings:{
+svyUUID:"B4FB01F8-BDB9-4ED5-89BB-C47F691072BD"
 }
 },
 typeid:47,

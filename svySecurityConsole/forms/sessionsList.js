@@ -161,9 +161,9 @@ function onSearch(){
  * @properties={typeid:24,uuid:"35395224-50BE-4E31-B91C-14A758B05628"}
  */
 function showDetail() {
-//    if (user_name && tenant_name) {
-//        forms.userDetail.show(user_name, tenant_name);
-//    }
+    if (foundset.getSize() > 0) {
+        forms.sessionDetail.show(foundset,m_TenantName,m_UserName,m_ActiveSessionsOnly);
+    }
 }
 
 /**
