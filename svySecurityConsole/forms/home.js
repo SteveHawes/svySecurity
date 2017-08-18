@@ -33,6 +33,14 @@ function addTenant(event) {
 }
 
 /**
+ * @public
+ * @properties={typeid:24,uuid:"D0EE65D0-4348-4617-8090-C9F02EBE3AF1"}
+ */
+function show(){
+    application.getWindow().show(this);
+}
+
+/**
  * Perform the element default action.
  *
  * @param {JSEvent} event the event that triggered the action
@@ -42,7 +50,7 @@ function addTenant(event) {
  * @properties={typeid:24,uuid:"17628FA9-EFC8-4091-BFE4-637266BF5B3B"}
  */
 function navTenantList(event) {
-	nav(forms.tenantList);
+	forms.tenantList.show();
 }
 
 /**
@@ -55,7 +63,7 @@ function navTenantList(event) {
  * @properties={typeid:24,uuid:"86AD6257-8074-42FF-A15D-36470AAEAD19"}
  */
 function navUserList(event) {
-	// TODO Auto-generated method stub
+	forms.usersList.show();
 }
 
 /**
@@ -68,7 +76,7 @@ function navUserList(event) {
  * @properties={typeid:24,uuid:"F1FDDFCE-8198-4C86-AEBA-691980ADA70D"}
  */
 function navSessionList(event) {
-	// TODO Auto-generated method stub
+	forms.sessionsList.showAllActiveSessions();
 }
 
 /**

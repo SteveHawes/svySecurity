@@ -66,7 +66,7 @@ var m_TenantName = '';
 function show(userName, tenantName) {
     if (tenantName && userName) {
         m_TenantName = tenantName;
-        if (!foundset.loadRecords(databaseManager.convertToDataSet([{tenant: tenantName, user: userName}], ['tenant', 'user']))) {
+        if (!foundset.loadRecords(databaseManager.convertToDataSet([{ tenant: tenantName, user: userName }], ['tenant', 'user']))) {
             throw new Error(utils.stringFormat('User "%1$s" was not found in tenant "%2$s".', [userName, tenantName]));
         }
 
@@ -91,7 +91,7 @@ function show(userName, tenantName) {
  */
 function onShow(firstShow, event) {
     if (user_name) {
-        setHeaderText(utils.stringFormat('<span class="fa fa-user"></span> User "%1$s"', [user_name]));
+        setHeaderText(utils.stringFormat('<span class="fa fa-user"></span> User [%1$s]', [user_name]));
     } else {
         setHeaderText('No User To Display');
     }
@@ -106,7 +106,7 @@ function refreshUserInfo() {
     if (tenant_name && user_name) {
         user = scopes.svySecurity.getUser(user_name, tenant_name);
     }
-    
+
     if (user) {
         m_TotalSessionsCount = user.getSessionCount();
         m_TotalSessionsHours = user.getSessionCount(); //TODO: calculate total session hours for user
@@ -115,9 +115,8 @@ function refreshUserInfo() {
         if (isLocked) {
             var m_LockExp = user.getLockExpiration();
             if (m_LockExp) {
-                m_LockStausText = utils.stringFormat('Account is <b>Locked</b> - the lock expires on %1$tc ',[m_LockExp]);
-            }
-            else {
+                m_LockStausText = utils.stringFormat('Account is <b>Locked</b> - the lock expires on %1$tc ', [m_LockExp]);
+            } else {
                 m_LockStausText = 'Account is <b>Locked</b>';
             }
             m_LockReasonText = user.getLockReason();
@@ -135,7 +134,7 @@ function refreshUserInfo() {
         m_LockReasonText = null;
         elements.btnLock.text = 'Lock';
     }
-    
+
     m_LastRefreshDate = new Date();
 }
 
@@ -184,19 +183,18 @@ function onActionRefresh(event) {
  * @properties={typeid:24,uuid:"409C050E-BF1D-4B67-81E4-FF6430402EB9"}
  */
 function onActionLockUnlock(event) {
-    if (!tenant_name || !user_name){
+    if (!tenant_name || !user_name) {
         return;
     }
     var user = scopes.svySecurity.getUser(user_name, tenant_name);
-    if (!user){
+    if (!user) {
         return;
     }
-    
+
     if (user.isLocked()) {
         user.unlock();
-    }
-    else {
-        user.lock('Some reason for the lock',5 * 24 * 60 * 60 * 1000);
+    } else {
+        user.lock('Some reason for the lock', 5 * 24 * 60 * 60 * 1000);
     }
     refreshUserInfo();
 }
@@ -211,22 +209,21 @@ function onActionLockUnlock(event) {
  * @properties={typeid:24,uuid:"D4BFA73C-6618-4645-B967-75D99619D9F2"}
  */
 function onActionDelete(event) {
-    if (!tenant_name || !user_name){
+    if (!tenant_name || !user_name) {
         return;
     }
     var tenant = scopes.svySecurity.getTenant(tenant_name);
-    if (!tenant){
+    if (!tenant) {
         return;
     }
     var btnDelete = 'Delete';
     var btnCancel = 'Cancel';
-    var res = plugins.dialogs.showWarningDialog('Confirm Delete', utils.stringFormat('You are about to delete the account for user "%1$s" from tenant "%2$s".<br>There is no undo for this operation.<br>Do you want to continue?', [user_name, tenant_name]), btnCancel, btnDelete); 
-    if (res == btnDelete) {        
+    var res = plugins.dialogs.showWarningDialog('Confirm Delete', utils.stringFormat('You are about to delete the account for user "%1$s" from tenant "%2$s".<br>There is no undo for this operation.<br>Do you want to continue?', [user_name, tenant_name]), btnCancel, btnDelete);
+    if (res == btnDelete) {
         res = tenant.deleteUser(user_name);
         if (res) {
             forms.tenantUsersList.show(m_TenantName);
-        }
-        else {
+        } else {
             plugins.dialogs.showWarningDialog('Delete Not Successful', 'Could not delete user.');
         }
     }
@@ -241,9 +238,9 @@ function onActionDelete(event) {
  *
  * @properties={typeid:24,uuid:"0FC75D64-796F-45B0-8D69-5DFCFE264C69"}
  */
-function onActionShowTenantUsers(event) {
-    if (tenant_name) {
-        forms.tenantUsersList.show(tenant_name);
+function onActionShowAllSessions(event) {
+    if (tenant_name && user_name) {
+        forms.sessionsList.showUserSessions(tenant_name, user_name);
     }
 }
 
@@ -261,16 +258,31 @@ function onActionResetPassword(event) {
     if (!user_name || !tenant_name) {
         return;
     }
-    
-    var user = scopes.svySecurity.getUser(user_name,tenant_name);
-    if (!user){
+
+    var user = scopes.svySecurity.getUser(user_name, tenant_name);
+    if (!user) {
         return;
     }
-    
+
     var newPwd = '';
-    while(!newPwd || (newPwd.search(/[\/\+]/) != -1)) {
+    while (!newPwd || (newPwd.search(/[\/\+]/) != -1)) {
         newPwd = utils.stringMD5HashBase64(application.getUUID().toString()).substr(2, 8);
     }
     user.setPassword(newPwd);
-    plugins.dialogs.showInfoDialog('User password has been reset',utils.stringFormat('The password for user <b>"%1$s"</b> from tenant <b>"%2$s"</b> has been reset.<br>The new auto-generated password is:<br><br><b>%3$s</b><br><br>Provide the new password to the user.',[user_name, tenant_name, newPwd]));
+    plugins.dialogs.showInfoDialog('User password has been reset', utils.stringFormat('The password for user <b>"%1$s"</b> from tenant <b>"%2$s"</b> has been reset.<br>The new auto-generated password is:<br><br><b>%3$s</b><br><br>Provide the new password to the user.', [user_name, tenant_name, newPwd]));
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"FCB90A0D-1B7A-4495-AEE0-6F913E59B08D"}
+ */
+function onActionShowActiveSessions(event) {
+    if (tenant_name && user_name) {
+        forms.sessionsList.showUserActiveSessions(tenant_name, user_name);
+    }
 }

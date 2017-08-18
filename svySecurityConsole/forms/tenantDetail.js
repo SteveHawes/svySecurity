@@ -79,7 +79,7 @@ function show(tenantName) {
  */
 function onShow(firstShow, event) {
     if (tenant_name) {
-        setHeaderText(utils.stringFormat('<span class="fa fa-shield"></span> Tenant "%1$s"', [tenant_name]));
+        setHeaderText(utils.stringFormat('<span class="fa fa-shield"></span> Tenant [%1$s]', [tenant_name]));
     } else {
         setHeaderText('No Tenant To Display');
     }
@@ -158,7 +158,7 @@ function onActionEditDisplayName(event) {
  * @properties={typeid:24,uuid:"3DEEB6F0-353F-4B6E-9DBD-D33C65296E00"}
  */
 function onActionShowTenants(event) {
-    nav(forms.tenantList);
+    forms.tenantList.show();
 }
 
 /**
@@ -223,7 +223,7 @@ function onActionDelete(event) {
     if (res == btnDelete) {
         res = scopes.svySecurity.deleteTenant(tenant);
         if (res) {
-            nav(forms.tenantList);
+            forms.tenantList.show();
         } else {
             plugins.dialogs.showWarningDialog('Delete Not Successful', 'Could not delete tenant.');
         }
@@ -257,5 +257,35 @@ function onActionShowTenantUsers(event) {
 function onActionCreateUser(event) {
     if (tenant_name) {
         scopes.svySecurityConsole.addNewUser(tenant_name);
+    }
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"2560E870-E4FB-469D-B7AA-222295D6CADB"}
+ */
+function onActionAllSessions(event) {
+    if (tenant_name) {
+        forms.sessionsList.showTenantSessions(tenant_name);
+    }
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"22A2B524-FEE2-4E80-85D4-B3079783396A"}
+ */
+function onActionShowActiveSessions(event) {
+    if (tenant_name) {
+        forms.sessionsList.showTenantActiveSessions(tenant_name);
     }
 }

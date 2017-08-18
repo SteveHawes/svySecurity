@@ -73,7 +73,7 @@ function showDetail() {
  */
 function onShow(firstShow, event) {
     _super.onShow(firstShow, event);
-    setHeaderText(utils.stringFormat('<span class="fa fa-users"></span> Users For Tenant "%1$s"', [m_TenantName]));
+    setHeaderText(utils.stringFormat('<span class="fa fa-users"></span> Users For Tenant [%1$s]', [m_TenantName]));
 }
 
 /**

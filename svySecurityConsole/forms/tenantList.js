@@ -50,3 +50,11 @@ function onShow(firstShow, event) {
 function onActionCreateTenant(event) {
     scopes.svySecurityConsole.addNewTenant();
 }
+
+/**
+ * @public 
+ * @properties={typeid:24,uuid:"45D3644E-9404-4144-9DA8-891BBE27899F"}
+ */
+function show() {
+    application.getWindow().show(this);
+}

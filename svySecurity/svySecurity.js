@@ -2351,6 +2351,16 @@ function nameLengthIsValid(name, maxLength) {
 }
 
 /**
+ * Gets the period of time (in milliseconds) of inactivity after which a user session will be considered abandoned
+ * @public 
+ * @return {Number} The inactive session timeout in milliseconds
+ * @properties={typeid:24,uuid:"80F536AE-B99C-42AD-92B3-0A7948169CFA"}
+ */
+function getInactiveSessionTimeout() {
+    return SESSION_TIMEOUT;
+}
+
+/**
  * Initializes the module.
  * NOTE: This var must remain at the BOTTOM of the file.
  * @private

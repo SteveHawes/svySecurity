@@ -10,7 +10,7 @@ anchors:0,
 columns:[
 {
 dataprovider:"user_name",
-headerText:"Username",
+headerText:"User",
 svyUUID:"3E316DEF-C147-499D-ABD1-77A0E1F12FCF"
 },
 {
