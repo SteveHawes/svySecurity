@@ -30,6 +30,20 @@ foundsetSelector:""
 },
 typeid:47,
 uuid:"977AD6AF-8D39-4EE3-B245-ADD77FDBAC3B"
+},
+{
+anchors:3,
+location:"690,40",
+name:"btnCreateTenant",
+onActionMethodID:"8A300CEF-68CA-4426-8996-A7207FDDA5F9",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"100,40",
+styleClass:"flat-button transition-medium",
+text:"New Tenant",
+typeid:7,
+uuid:"A3003031-9BD0-4F9F-93E6-A8A9117762C6"
 }
 ],
 name:"tenantList",

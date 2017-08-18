@@ -9,7 +9,7 @@ body
 
 .svy-label
 {
-	font-size: 10px;
+	font-size: 12px;
 }
 .body_main
 {
@@ -52,7 +52,7 @@ body
 }
 .small-label
 {
-	text-align: center;
+	text-align: center;	
 	font-size: 12px;
 	font-weight: bold;
 	color: #666;
@@ -61,6 +61,14 @@ body
 .center
 {
 	text-align: center;
+}
+.left
+{
+    text-align: left;
+}
+.right
+{
+    text-align: right;
 }
 .font-icon
 {
@@ -72,6 +80,10 @@ body
 .font-icon.large
 {
 	font-size: 24px;
+}
+.font-icon.small
+{
+    font-size: 12px;
 }
 .font-icon.inverted
 {

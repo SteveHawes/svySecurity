@@ -16,6 +16,7 @@ function getSearchProviders(){
 }
 
 /**
+ * @protected 
  * @properties={typeid:24,uuid:"E478A932-86D4-440B-86A4-8630D1EA0A52"}
  */
 function onSearch(){
@@ -26,6 +27,17 @@ function onSearch(){
 		search.addSearchProvider(providers[i]);
 	}
 	search.loadRecords(foundset);
+}
+
+/**
+ * @protected 
+ * @param {String} searchTextStr
+ *
+ * @properties={typeid:24,uuid:"CD093920-3688-472F-99BF-3C1D7420AEA1"}
+ */
+function setSearchText(searchTextStr) {
+    searchText = searchTextStr;
+    onSearch();
 }
 
 /**
@@ -69,6 +81,7 @@ function onCellClick(foundsetindex, columnindex, record, event) {
 }
 
 /**
+ * @protected 
  * @properties={typeid:24,uuid:"A38C16DD-2902-4598-B249-982DA2E826B1"}
  */
 function showDetail(){

@@ -29,19 +29,7 @@ var sessionCount = 0;
  * @properties={typeid:24,uuid:"5DD18883-576C-4C57-BDD3-93A198767DD4"}
  */
 function addTenant(event) {
-	var name = plugins.dialogs.showInputDialog('Create Tenant','Enter a name for the new tenant');
-	if(!name){
-		return;
-	}
-	if(scopes.svySecurity.getTenant(name)){
-		plugins.dialogs.showErrorDialog('Could Not Create Tenant','The specified tenant name "'+name+'" is already in use.');
-		return;
-	}
-	var tenant = scopes.svySecurity.createTenant(name);
-	if(!tenant){
-		plugins.dialogs.showErrorDialog('Could not create tenant','There was an unknown error. Please check server logs');
-	}
-	forms.tenantDetail.show(name);
+	scopes.svySecurityConsole.addNewTenant();
 }
 
 /**

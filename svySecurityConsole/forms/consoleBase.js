@@ -21,3 +21,16 @@ function navHome(event) {
 function nav(form){
 	application.getWindow().show(form);
 }
+
+/**
+ * @protected 
+ * @param {String} text
+ *
+ * @properties={typeid:24,uuid:"9A7430D7-3924-4110-90ED-FC34650241C4"}
+ */
+function setHeaderText(text) {
+    if (!text) {
+        text = 'Security Management Console';
+    }
+    elements.lblHeader.text = text;
+}

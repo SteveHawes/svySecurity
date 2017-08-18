@@ -4,6 +4,7 @@ items:[
 {
 formIndex:1,
 location:"10,40",
+name:"btnHome",
 onActionMethodID:"71438FEA-B66A-4BA7-BC3D-CB6BE8102EE6",
 rolloverCursor:12,
 showClick:false,
@@ -25,6 +26,7 @@ uuid:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733"
 {
 anchors:11,
 location:"0,30",
+name:"lblHeader",
 size:"800,60",
 styleClass:"banner",
 text:"Security Management Console",

@@ -2028,13 +2028,13 @@ function saveRecord(record) {
     var startedLocalTransaction = false;
 
     if (databaseManager.hasTransaction()) {
-        logDebug('Detected external database transaction');
+        logDebug('Detected external database transaction.');
         if (!supportExternalDBTransaction) {
             throw new Error('External database transactions are not allowed.');
         }
     } else {
         startedLocalTransaction = true;
-        logDebug('Starting internal database transaction');
+        logDebug('Starting internal database transaction.');
         databaseManager.startTransaction();
     }
 
@@ -2043,12 +2043,13 @@ function saveRecord(record) {
             throw new Error('Failed to save record ' + record.exception);
         }
         if (startedLocalTransaction) {
+            logDebug('Committing internal database transaction.');
             if (!databaseManager.commitTransaction(true, true)) {
-                throw new Error('Failed to commit database transaction');
+                throw new Error('Failed to commit database transaction.');
             }
         }
     } catch (e) {
-        logError(utils.stringFormat('Record could not be saved due to the following: %1$s', [e.message]));
+        logError(utils.stringFormat('Record could not be saved due to the following: "%1$s" Rolling back database transaction.', [e.message]));
         databaseManager.rollbackTransaction();
         record.revertChanges();
         throw e;
@@ -2066,27 +2067,28 @@ function deleteRecord(record) {
     var startedLocalTransaction = false;
 
     if (databaseManager.hasTransaction()) {
-        logDebug('Detected external database transaction');
+        logDebug('Detected external database transaction.');
         if (!supportExternalDBTransaction) {
             throw new Error('External database transactions are not allowed.');
         }
     } else {
         startedLocalTransaction = true;
-        logDebug('Starting internal database transaction');
+        logDebug('Starting internal database transaction.');
         databaseManager.startTransaction();
     }
 
     try {
         if (!record.foundset.deleteRecord(record)) {
-            throw new Error('Failed to delete record');
+            throw new Error('Failed to delete record.');
         }
         if (startedLocalTransaction) {
+            logDebug('Committing internal database transaction.');
             if (!databaseManager.commitTransaction(true, true)) {
-                throw new Error('Failed to commit database transaction');
+                throw new Error('Failed to commit database transaction.');
             }
         }
     } catch (e) {
-        logError(utils.stringFormat('Record could not be deleted due to the following: %1$s', [e.message]));
+        logError(utils.stringFormat('Record could not be deleted due to the following: "%1$s" Rolling back database transaction.', [e.message]));
         databaseManager.rollbackTransaction();
         throw e;
     }
