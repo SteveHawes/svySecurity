@@ -109,7 +109,7 @@ function refreshUserInfo() {
 
     if (user) {
         m_TotalSessionsCount = user.getSessionCount();
-        m_TotalSessionsHours = user.getSessionCount(); //TODO: calculate total session hours for user
+        m_TotalSessionsHours = getTotalSessionHours(user_name, tenant_name);
         m_ActiveSessionsCount = user.getActiveSessions().length;
         var isLocked = user.isLocked();
         if (isLocked) {
@@ -136,6 +136,22 @@ function refreshUserInfo() {
     }
 
     m_LastRefreshDate = new Date();
+}
+
+/**
+ * @private
+ * @param {String} userName
+ * @param {String} tenantName
+ * @return {Number}
+ * @properties={typeid:24,uuid:"3D90AB26-DE58-494D-99BA-733D2DDE56F5"}
+ */
+function getTotalSessionHours(userName, tenantName){
+    var qry = datasources.db.svy_security.sessions.createSelect();
+    qry.where.add(qry.columns.tenant_name.eq(tenantName)).add(qry.columns.user_name.eq(userName));
+    qry.result.add(qry.columns.session_duration.sum);    
+    var ds = databaseManager.getDataSetByQuery(qry,1);
+    var res = ds.getValue(1, 1) || 0;
+    return res / (1000 * 60 * 60);
 }
 
 /**
@@ -284,5 +300,20 @@ function onActionResetPassword(event) {
 function onActionShowActiveSessions(event) {
     if (tenant_name && user_name) {
         forms.sessionsList.showUserActiveSessions(tenant_name, user_name);
+    }
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"6DFA0254-EAF1-46C8-9FCF-2685FF61176D"}
+ */
+function onActionTenantUsersList(event) {
+    if (tenant_name && user_name) {
+        forms.tenantUsersList.show(tenant_name);
     }
 }

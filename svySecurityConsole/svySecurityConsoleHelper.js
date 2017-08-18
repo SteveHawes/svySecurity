@@ -141,3 +141,30 @@ function getFailedRecordsErrors() {
     }
     return null;
 }
+
+
+/**
+ * @public 
+ * @param {Number} duration in milliseconds
+ * @return {String}
+ *
+ * @properties={typeid:24,uuid:"BFACA190-DC4B-468A-8F27-38468E1934D1"}
+ */
+function convertDurationToStr(duration) {
+    //return duration in format like "5h 15m 43s"
+    duration = duration || 0;
+    var durationHrs = Math.floor(duration / 3600000);
+    var durationMin = Math.floor((duration - (durationHrs * 3600000)) / 60000);
+    var durationSec = Math.floor((duration - (durationHrs * 3600000) - (durationMin * 60000)) / 1000);
+    var res = null;
+    if (durationSec || (!durationHrs && !durationMin)) {
+        res = durationSec + 's';
+    }
+    if (durationMin || (durationSec && durationHrs)) {
+        res = durationMin + 'm' + (res ? ' ' + res : ''); 
+    }
+    if (durationHrs) {
+        res = durationHrs + 'h' + (res ? ' ' + res : ''); 
+    }
+    return res;
+}

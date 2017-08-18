@@ -1,23 +1,32 @@
 /**
+ * @protected 
  * @type {Number}
  *
  * @properties={typeid:35,uuid:"EA6EFC2C-B5A7-4C47-AE38-1D39E085B714",variableType:4}
  */
-var tenantCount = 0;
+var m_TenantCount = 0;
 
 /**
  * @type {Number}
  *
  * @properties={typeid:35,uuid:"400BAABE-752A-4016-978A-F5F7956FB127",variableType:4}
  */
-var userCount = 0;
+var m_UserCount = 0;
 
 /**
+ * @protected 
  * @type {Number}
  *
  * @properties={typeid:35,uuid:"F815E0A0-23A6-4F2F-B636-2DBEA5E660BC",variableType:4}
  */
-var sessionCount = 0;
+var m_SessionCount = 0;
+
+/**
+ * @type {Date}
+ *
+ * @properties={typeid:35,uuid:"8003CA54-5B5F-4C9B-8F7A-055DCCDA6216",variableType:93}
+ */
+var m_LastRefreshDate = new Date();
 
 /**
  * Perform the element default action.
@@ -80,24 +89,27 @@ function navSessionList(event) {
 }
 
 /**
+ * @private 
  * @properties={typeid:24,uuid:"1B00F1D6-9303-4988-8962-8125A010B5CB"}
  */
 function updateTenantCount(){
 	var q = datasources.db.svy_security.tenants.createSelect();
 	q.result.add(q.columns.tenant_name.count);
-	tenantCount = databaseManager.getDataSetByQuery(q,1).getValue(1,1);
+	m_TenantCount = databaseManager.getDataSetByQuery(q,1).getValue(1,1);
 }
 
 /**
+ * @private 
  * @properties={typeid:24,uuid:"B4FC6F5D-1E1B-4746-AFC6-748D5F6D7BBD"}
  */
 function updateUserCount(){
 	var q = datasources.db.svy_security.users.createSelect();
 	q.result.add(q.columns.user_name.count);
-	userCount = databaseManager.getDataSetByQuery(q,1).getValue(1,1);
+	m_UserCount = databaseManager.getDataSetByQuery(q,1).getValue(1,1);
 }
 
 /**
+ * @private
  * @properties={typeid:24,uuid:"27EDBB2B-55C6-4F4E-847A-D8E8E6286523"}
  */
 function updateSessionCount(){
@@ -109,10 +121,11 @@ function updateSessionCount(){
 	q.where
 		.add(q.columns.session_end.isNull)
 		.add(q.columns.last_client_ping.gt(expiration))
-	sessionCount = databaseManager.getDataSetByQuery(q,1).getValue(1,1);
+	m_SessionCount = databaseManager.getDataSetByQuery(q,1).getValue(1,1);
 }
 
 /**
+ * @private 
  * @properties={typeid:24,uuid:"043B4DF5-1736-4A87-B690-850F01BBAC39"}
  */
 function updateKPIs(){
@@ -132,5 +145,27 @@ function updateKPIs(){
  * @properties={typeid:24,uuid:"20C5B324-C613-46C3-96F4-5BEF04705FD5"}
  */
 function onShow(firstShow, event) {
-	updateKPIs();
+	refreshInfo();
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"33C61AE7-7207-4F23-8310-784DF7A7F394"}
+ */
+function onActionRefresh(event) {
+    refreshInfo();
+}
+
+/**
+ * @private 
+ * @properties={typeid:24,uuid:"4877EE0E-D50E-4FE4-B9FD-C90EB7CD4E24"}
+ */
+function refreshInfo() {
+    updateKPIs();
+    m_LastRefreshDate = new Date();
 }

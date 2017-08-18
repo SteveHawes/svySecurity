@@ -296,6 +296,7 @@ function testLoginLogout() {
         jsunit.assertEquals('The active session should be for the correct tenant', testTenantName, activeSessions[0].getTenantName());
         jsunit.assertNotNull('The active session should have a start datetime', activeSessions[0].getStart());
         jsunit.assertNull('The active session should not have an end datetime', activeSessions[0].getEnd());
+        jsunit.assertEquals('The active session should have 0ms duration', 0, activeSessions[0].getDuration());
         var activeSessionID = activeSessions[0].getID();
 
         //check the session
@@ -329,6 +330,7 @@ function testLoginLogout() {
         fs.loadRecords(qry);
         jsunit.assertTrue('The session record should be available', fs.getSize() == 1);
         jsunit.assertNotNull('The session end datetime should be set after logout', fs.session_end);
+        jsunit.assertTrue('The session duration should be set after logout', fs.session_duration > 0);
 
         //test calling svySecurity.login with no argument
         scopes.sharedTestUtils.assertThrows(scopes.svySecurity.login, null, null, 'svySecurity.login should throw error if required user parameter is not specified');

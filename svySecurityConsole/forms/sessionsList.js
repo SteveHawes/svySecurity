@@ -184,11 +184,13 @@ function onShow(firstShow, event) {
     if (m_UserName) {
         elements.btnShowParentScreen.visible = true;
         elements.btnShowParentScreen.text = '<span class="fa fa-user" />';
+        elements.btnShowParentScreen.toolTipText = 'Show user';
         headerText = utils.stringFormat('%1$s For User [%2$s]', [activeSessionsText, m_UserName]);
     }
     else if (m_TenantName) {
         elements.btnShowParentScreen.visible = true;
         elements.btnShowParentScreen.text = '<span class="fa fa-shield" />';
+        elements.btnShowParentScreen.toolTipText = 'Show tenant';
         headerText = utils.stringFormat('%1$s For Tenant [%2$s]', [activeSessionsText, m_TenantName]);
     }
     else {

@@ -10,7 +10,7 @@ items:[
 {
 anchors:9,
 formIndex:1,
-location:"530,200",
+location:"540,210",
 name:"btnSessionsText",
 onActionMethodID:"F1FDDFCE-8198-4C86-AEBA-691980ADA70D",
 rolloverCursor:12,
@@ -25,8 +25,8 @@ uuid:"0EF0D821-1425-4D90-8C6C-0B03EF8EBF2C"
 },
 {
 anchors:9,
-dataProviderID:"sessionCount",
-location:"530,110",
+dataProviderID:"m_SessionCount",
+location:"540,120",
 name:"btnSessionsCount",
 onActionMethodID:"F1FDDFCE-8198-4C86-AEBA-691980ADA70D",
 rolloverCursor:12,
@@ -40,8 +40,8 @@ uuid:"1319C3F3-FB2B-4146-B070-DF4EC1751A3B"
 },
 {
 anchors:9,
-dataProviderID:"tenantCount",
-location:"70,110",
+dataProviderID:"m_TenantCount",
+location:"60,120",
 name:"btnTenantsCount",
 onActionMethodID:"17628FA9-EFC8-4091-BFE4-637266BF5B3B",
 rolloverCursor:12,
@@ -70,7 +70,7 @@ uuid:"874CC822-C563-4D4A-A01A-21AD378AD3A1"
 {
 anchors:9,
 formIndex:1,
-location:"300,200",
+location:"300,210",
 name:"btnUsersText",
 onActionMethodID:"86AD6257-8074-42FF-A15D-36470AAEAD19",
 rolloverCursor:12,
@@ -85,7 +85,7 @@ uuid:"8953B999-591E-4ABC-8A55-BFC3D6B5A96D"
 },
 {
 anchors:9,
-location:"70,200",
+location:"60,210",
 name:"btnTenantsText",
 onActionMethodID:"17628FA9-EFC8-4091-BFE4-637266BF5B3B",
 rolloverCursor:12,
@@ -100,8 +100,8 @@ uuid:"943A1322-EAF8-4B5E-8DF0-DEEA934AA1B4"
 },
 {
 anchors:9,
-dataProviderID:"userCount",
-location:"300,110",
+dataProviderID:"m_UserCount",
+location:"300,120",
 name:"btnUsersCount",
 onActionMethodID:"86AD6257-8074-42FF-A15D-36470AAEAD19",
 rolloverCursor:12,
@@ -112,6 +112,23 @@ styleClass:"flat-button transition-medium large",
 text:"User Count",
 typeid:7,
 uuid:"B139D32E-9DD5-4A39-8D71-0BE487E3C821"
+},
+{
+displaysTags:true,
+horizontalAlignment:4,
+location:"474,91",
+mediaOptions:14,
+name:"btnRefreshKpi",
+onActionMethodID:"33C61AE7-7207-4F23-8310-784DF7A7F394",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"320,20",
+styleClass:"left font-icon small",
+text:"Information as of  <b>%%m_LastRefreshDate%%<\/b> <span class=\"fa fa-refresh\"/>",
+transparent:true,
+typeid:7,
+uuid:"EF4AFD36-B60B-4610-8BA2-64D6B952CD3B"
 }
 ],
 name:"home",

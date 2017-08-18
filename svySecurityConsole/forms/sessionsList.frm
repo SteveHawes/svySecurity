@@ -19,6 +19,11 @@ headerText:"User",
 svyUUID:"140E2E6D-F164-4A17-9495-FB1087E66BFD"
 },
 {
+dataprovider:"ip_address",
+headerText:"IP Address",
+svyUUID:"9214663A-1FF1-45D1-AC0E-4ECEE9DCBC2C"
+},
+{
 dataprovider:"session_start",
 format:"yyyy-MM-dd HH:mm",
 headerText:"Start",
@@ -31,8 +36,8 @@ headerText:"End",
 svyUUID:"F2623B8B-4382-4532-AA98-39058F0BFFD4"
 },
 {
-dataprovider:"ip_address",
-headerText:"IP Address",
+dataprovider:"duration_text",
+headerText:"Duration",
 svyUUID:"6324D9B0-A03B-48C3-AB32-F32D9722A90E"
 }
 ],

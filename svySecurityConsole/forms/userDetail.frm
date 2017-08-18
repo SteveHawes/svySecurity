@@ -98,7 +98,7 @@ uuid:"38BFBAD5-FC52-4811-BA36-B3F9C3195B5B"
 {
 location:"60,40",
 name:"btnShowTenantUsersList",
-onActionMethodID:"0FC75D64-796F-45B0-8D69-5DFCFE264C69",
+onActionMethodID:"6DFA0254-EAF1-46C8-9FCF-2685FF61176D",
 rolloverCursor:12,
 showClick:false,
 showFocus:false,

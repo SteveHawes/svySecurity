@@ -1976,6 +1976,17 @@ function Session(record) {
     this.getServoyClientID = function() {
         return record.servoy_client_id;
     }
+    
+    /**
+     * Gets the session duration in milliseconds (as updated in the database)
+     * @note The session duration is updated on each "client ping" which by default is once per minute
+     *
+     * @public
+     * @return {Number} The Servoy Client ID associated with the session.
+     */
+    this.getDuration = function() {
+        return record.session_duration;
+    }
 
     /**
      * Indicates if this session is still active.
@@ -2017,8 +2028,7 @@ function Session(record) {
      * @protected
      */
     this.sendPing = function() {
-        //TODO This will not be needed when the ClientManagement plugin is available
-        record.last_client_ping = application.getServerTimeStamp();
+        setSessionLastPingAndDuration(record);
         saveRecord(record);
     }
 }
@@ -2194,11 +2204,10 @@ function initSession(user) {
  * @private
  * @properties={typeid:24,uuid:"92DCCEDD-F678-4E72-89A3-BEEE78E88958"}
  */
-function sessionClientPing() {
-    //TODO This will not be needed when the ClientManagement plugin is available
+function sessionClientPing() {    
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
-    sessionRec.last_client_ping = application.getServerTimeStamp();
+    setSessionLastPingAndDuration(sessionRec);
     //intentionally not using saveRecord and not checking result
     //this is called very often and if some updates fail we try again X seconds later anyway
     databaseManager.saveData(sessionRec);
@@ -2211,11 +2220,34 @@ function sessionClientPing() {
 function closeSession() {
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
-    sessionRec.session_end = application.getServerTimeStamp();
+    setSessionLastPingAndDuration(sessionRec, true);
     saveRecord(sessionRec);
     sessionID = null;
     activeUserName = null;
     activeTenantName = null;
+}
+
+/**
+ * @private
+ * @param {JSRecord<db:/svy_security/sessions>} sessionRec
+ * @param {Boolean} [setEndDate] if true will set also the session_end
+ *
+ * @properties={typeid:24,uuid:"28C3443D-9537-436C-828E-40250687FCF4"}
+ */
+function setSessionLastPingAndDuration(sessionRec, setEndDate) {
+    if (!sessionRec) {
+        return;
+    }
+    var now = application.getServerTimeStamp();
+    sessionRec.last_client_ping = now;
+    var duration = now.getTime() - sessionRec.session_start.getTime();
+    if (duration < 0) {
+        duration = 0;
+    }
+    sessionRec.session_duration = duration;
+    if (setEndDate) {
+        sessionRec.session_end = now;
+    }
 }
 
 /**
