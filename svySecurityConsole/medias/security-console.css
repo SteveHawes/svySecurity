@@ -50,6 +50,14 @@ body
 {
 	font-size: 60px;
 }
+.map
+{
+    background-color: #fafafa;
+    color: #666;
+    box-shadow: 2px 2px 5px #ddd;
+    border: 1px solid #ddd;
+    text-align: center;
+}
 .small-label
 {
 	text-align: center;	

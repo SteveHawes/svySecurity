@@ -49,6 +49,15 @@ typeid:4,
 uuid:"1A76B143-80DC-4FBC-B97E-83AB24292185"
 },
 {
+location:"14,335",
+name:"lblMap",
+size:"350,250",
+styleClass:"map",
+text:"MAP",
+typeid:7,
+uuid:"4876F2F5-464A-49DF-AD34-C2CDC537EA96"
+},
+{
 dataProviderID:"session_start",
 editable:false,
 location:"630,113",

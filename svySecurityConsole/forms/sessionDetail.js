@@ -35,6 +35,9 @@ function show(fs, tenantName, userName, activeSessionsOnly) {
     m_CallerUserName = userName;
     m_CallerActiveSessionsOnly = activeSessionsOnly;
     controller.loadRecords(fs);
+    
+    showIPGeolocation(foundset.ip_address);
+    
     application.getWindow().show(this);
 }
 
@@ -85,4 +88,45 @@ function onActionShowSessionsList(event) {
             forms.sessionsList.showAllSessions();
         }
     }
+}
+
+/**
+ * @private 
+ * @param {String} ipAddress
+ *
+ * @properties={typeid:24,uuid:"6FFB3A93-B89E-41EC-8B43-34B1BA1A5E01"}
+ */
+function showIPGeolocation(ipAddress){
+    var lat, lon;
+    var mapHtml = 'Cannot resolve IP location';
+    try {
+        //var dataStr = plugins.http.getPageData(utils.stringFormat('http://freegeoip.net/json/%1$s', [ipAddress]));
+        ///** @type {{latitude: String, longitude: String}} */
+        //var data = JSON.parse(dataStr);
+        //lat = data.latitude;
+        //lon = data.longitude;
+        
+        var dataStr = plugins.http.getPageData(utils.stringFormat('http://ip-api.com/json/%1$s', [ipAddress]));
+        /** @type {{lat: String, lon: String}} */
+        var data = JSON.parse(dataStr);
+        lat = data.lat;
+        lon = data.lon;
+        
+        if ((lat != null) && (lon != null)){
+            var apiKey = application.getUserProperty('GoogleAPIKey');
+            if (!apiKey) {
+                mapHtml = 'Property "user.GoogleAPYKey" is not set.';
+            }
+            else {
+                mapHtml = utils.stringFormat('<iframe width="%4$s" height="%5$s" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=%1$s,%2$s&zoom=10&key=%3$s" allowfullscreen></iframe>', [lat, lon, apiKey, elements.lblMap.getWidth(), elements.lblMap.getHeight()]);
+            }
+        }
+    }
+    catch(ex){
+        application.output('IP geolocation request failed: ' + ex);
+        mapHtml = 'IP geolocation request failed.'
+    }
+   
+    elements.lblMap.putClientProperty(APP_UI_PROPERTY.TRUST_DATA_AS_HTML, true);
+    elements.lblMap.text = mapHtml;    
 }
