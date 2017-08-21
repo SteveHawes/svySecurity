@@ -3,6 +3,16 @@
  */
 
 /**
+ * Login cookie name
+ *
+ * @private
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"01D4B01F-28A6-4F84-89DD-DCF78890D669"}
+ */
+var LOGIN_COOKIE = 'com.servoy.extensions.security.admin_console.login';
+
+/**
  * @private
  * @param {String} message
  * @param {Number} level - one of the LOGGINGLEVEL constants
@@ -57,7 +67,7 @@ function logError(message) {
  * @properties={typeid:24,uuid:"F714380F-B277-4A12-8054-95A2D6C9698F"}
  */
 function logException(context, exception) {
-    var exceptionText = scopes.svySecurityConsoleHelper.getExceptionText(exception); 
+    var exceptionText = scopes.svySecurityConsoleHelper.getExceptionText(exception);
     var errorInfo = [exceptionText];
     if (exception instanceof ServoyException) {
         /** @type {ServoyException} */
@@ -67,7 +77,7 @@ function logException(context, exception) {
         errorInfo.push('The error is ServoyException');
         errorInfo.push('Error Code: ' + servoyException.getErrorCode());
 
-        if (servoyException.getStackTrace) {            
+        if (servoyException.getStackTrace) {
             errorInfo.push('Stack Trace: ' + servoyException.getStackTrace());
         }
 
@@ -79,7 +89,7 @@ function logException(context, exception) {
         }
     }
 
-    logError(utils.stringFormat('[context: %1$s] %2$s',[context, errorInfo.join('\n')]));
+    logError(utils.stringFormat('[context: %1$s] %2$s', [context, errorInfo.join('\n')]));
 }
 
 /**
@@ -142,9 +152,8 @@ function getFailedRecordsErrors() {
     return null;
 }
 
-
 /**
- * @public 
+ * @public
  * @param {Number} duration in milliseconds
  * @return {String}
  *
@@ -154,17 +163,55 @@ function convertDurationToStr(duration) {
     //return duration in format like "5h 15m 43s"
     duration = duration || 0;
     var durationHrs = Math.floor(duration / 3600000);
-    var durationMin = Math.floor((duration - (durationHrs * 3600000)) / 60000);
-    var durationSec = Math.floor((duration - (durationHrs * 3600000) - (durationMin * 60000)) / 1000);
+    var durationMin = Math.floor( (duration - (durationHrs * 3600000)) / 60000);
+    var durationSec = Math.floor( (duration - (durationHrs * 3600000) - (durationMin * 60000)) / 1000);
     var res = null;
     if (durationSec || (!durationHrs && !durationMin)) {
         res = durationSec + 's';
     }
     if (durationMin || (durationSec && durationHrs)) {
-        res = durationMin + 'm' + (res ? ' ' + res : ''); 
+        res = durationMin + 'm' + (res ? ' ' + res : '');
     }
     if (durationHrs) {
-        res = durationHrs + 'h' + (res ? ' ' + res : ''); 
+        res = durationHrs + 'h' + (res ? ' ' + res : '');
     }
     return res;
+}
+
+/**
+ * Saves the login settings in the cookie
+ * @public
+ * @properties={typeid:24,uuid:"7D909034-434A-4C5E-AF92-422CEBF97FD2"}
+ */
+function setLoginCookie(userName) {
+    application.setUserProperty(LOGIN_COOKIE, JSON.stringify({ userName: userName }));
+}
+
+/**
+ * Clears the login settings from the cookie
+ * @public
+ * @properties={typeid:24,uuid:"82B1B30D-1692-4DC5-8511-C62B54147769"}
+ */
+function clearLoginCookie() {
+    application.setUserProperty(LOGIN_COOKIE, null);
+}
+
+/**
+ * Loads login settings from cookie
+ * @public
+ * @return {String}
+ * @properties={typeid:24,uuid:"C23DAFA2-AD5C-48D1-AD24-554FA5FC6441"}
+ */
+function readLoginCookie() {
+    var str = application.getUserProperty(LOGIN_COOKIE);
+    if (str) {
+        try {
+            /** @type {{userName:String}} */
+            var value = JSON.parse(str);
+            return value.userName;
+        } catch (e) {
+            clearLoginCookie();
+        }
+    }
+    return null;
 }

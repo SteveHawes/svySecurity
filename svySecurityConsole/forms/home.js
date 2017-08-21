@@ -145,6 +145,7 @@ function updateKPIs(){
  * @properties={typeid:24,uuid:"20C5B324-C613-46C3-96F4-5BEF04705FD5"}
  */
 function onShow(firstShow, event) {
+    setHeaderText('<span class="fa fa-home"></span> Security Management Console');
 	refreshInfo();
 }
 
@@ -168,4 +169,17 @@ function onActionRefresh(event) {
 function refreshInfo() {
     updateKPIs();
     m_LastRefreshDate = new Date();
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"1F2312A4-1749-4420-85A8-A4E56BA93D17"}
+ */
+function onActionSignOut(event) {
+    security.logout();
 }

@@ -1,5 +1,5 @@
 fileVersion:48,
-mustAuthenticate:false,
+mustAuthenticate:true,
 name:"svySecurityConsole",
 solutionType:1024,
 typeid:43,

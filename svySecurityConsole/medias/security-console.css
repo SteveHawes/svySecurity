@@ -43,12 +43,41 @@ body
 .flat-button:HOVER
 {
 	color: #444;
-	background-color: #f4f4f4;
+	background-color: #d5eaff;
 	box-shadow: 3px 3px 5px #bbb;
+}
+.flat-button:FOCUS
+{
+    color: #444;
+    background-color: #d5eaff;
+    box-shadow: 3px 3px 5px #bbb;
 }
 .flat-button.large
 {
 	font-size: 60px;
+}
+.main-btn
+{
+    background-color: #5197ff;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 2px 2px 5px #ddd;
+}
+.main-btn:HOVER
+{
+    background-color: #ff8040;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 3px 3px 5px #bbb;
+}
+.main-btn:FOCUS
+{
+    background-color: #ff8040;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 3px 3px 5px #bbb;
 }
 .map
 {
@@ -101,7 +130,16 @@ body
 {
 	color: #e77509;
 }
-
+.font-icon:FOCUS
+{
+    color: #e77509;
+}
+.label-error
+{
+    color: red;    
+    border: 1px solid red;
+    text-align: center;
+}
 .label-info:HOVER {
 	background-color: #5a96e1;
 }

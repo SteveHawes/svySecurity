@@ -92,6 +92,11 @@ function addNewUser(tenantName) {
  * @properties={typeid:24,uuid:"A76E93DE-E1E1-4109-A42A-1EE271D75F2F"}
  */
 function onSolutionOpen(arg, queryParams) {
+    if (!security.isUserMemberOfGroup('Administrators')) {
+        scopes.svySecurityConsoleHelper.logWarning(utils.stringFormat('Attempt to access the Security Management Console by unauthorized user [%1$s] from IP address [%2$s]',[security.getUserName(), application.getIPAddress()]));
+        plugins.dialogs.showWarningDialog('Access Denied', 'You do not have permission to access this application.');
+        security.logout();
+    }
     databaseManager.setAutoSave(false);
     databaseManager.setCreateEmptyFormFoundsets();
 }

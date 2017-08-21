@@ -54,12 +54,26 @@ typeid:7,
 uuid:"433EC10B-C328-4AE7-AE9B-952DB97912D1"
 },
 {
+location:"10,40",
+name:"btnLogout",
+onActionMethodID:"1F2312A4-1749-4420-85A8-A4E56BA93D17",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"40,40",
+styleClass:"font-icon large transition-medium",
+text:"<span class=\"fa fa-sign-out\"/>",
+toolTipText:"Sign Out",
+transparent:true,
+typeid:7,
+uuid:"80F341B2-1DD4-4F72-AA6A-7923D2055159"
+},
+{
 anchors:3,
 location:"690,40",
 name:"btnCreateTenant",
 onActionMethodID:"5DD18883-576C-4C57-BDD3-93A198767DD4",
 rolloverCursor:12,
-showClick:false,
 showFocus:false,
 size:"100,40",
 styleClass:"flat-button transition-medium",
@@ -112,6 +126,14 @@ styleClass:"flat-button transition-medium large",
 text:"User Count",
 typeid:7,
 uuid:"B139D32E-9DD5-4A39-8D71-0BE487E3C821"
+},
+{
+extendsID:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0",
+showClick:true,
+showFocus:false,
+typeid:7,
+uuid:"BFA53EA1-58A2-47B5-B2F7-4C314444D9AC",
+visible:false
 },
 {
 displaysTags:true,

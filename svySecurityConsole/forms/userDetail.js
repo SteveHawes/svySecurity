@@ -280,6 +280,11 @@ function onActionResetPassword(event) {
         return;
     }
 
+    var resetBtn = 'Reset';
+    if (resetBtn != plugins.dialogs.showWarningDialog('Confirm password reset',utils.stringFormat('Do you want to reset the password for user <b>"%1$s"</b> from tenant <b>"%2$s"</b> with a new auto-generated password?', [user_name, tenant_name]), 'Cancel', resetBtn)){
+        return;
+    }
+    
     var newPwd = '';
     while (!newPwd || (newPwd.search(/[\/\+]/) != -1)) {
         newPwd = utils.stringMD5HashBase64(application.getUUID().toString()).substr(2, 8);

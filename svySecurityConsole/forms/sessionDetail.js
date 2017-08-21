@@ -115,7 +115,7 @@ function showIPGeolocation(ipAddress){
         if ((lat != null) && (lon != null)){
             var apiKey = application.getUserProperty('GoogleAPIKey');
             if (!apiKey) {
-                mapHtml = 'Property "user.GoogleAPYKey" is not set.';
+                mapHtml = 'Property "user.GoogleAPIKey" is not set.';
             }
             else {
                 mapHtml = utils.stringFormat('<iframe width="%4$s" height="%5$s" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=%1$s,%2$s&zoom=10&key=%3$s" allowfullscreen></iframe>', [lat, lon, apiKey, elements.lblMap.getWidth(), elements.lblMap.getHeight()]);
