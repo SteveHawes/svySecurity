@@ -1085,7 +1085,7 @@ function User(record) {
             return this;
         }
 
-        record.user_password = utils.stringPBKDF2Hash(password);
+        record.user_password = utils.stringPBKDF2Hash(password, 10000);
         saveRecord(record);
         return this;
     }

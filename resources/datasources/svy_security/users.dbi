@@ -89,7 +89,7 @@ titleText:"Modified"
 allowNull:true,
 creationOrderIndex:1,
 dataType:12,
-length:50,
+length:64,
 name:"user_password",
 titleText:"Password"
 }
