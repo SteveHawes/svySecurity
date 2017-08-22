@@ -216,6 +216,7 @@ function restoreServoySecurity() {
  */
 function onSolutionClose(force) {
     application.output('Closing unit test solution...');
+    scopes.codeCoverageReporting.storeCoverageData();
     //just in case something was forgotten to be cleaned up
     tearDown();
     restoreServoySecurity();
