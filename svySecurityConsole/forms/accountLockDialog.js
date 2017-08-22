@@ -23,17 +23,16 @@ var m_IsCanceled = true;
 
 /**
  * @public 
- * @param {String} headerText
+ * @param {String} titleText
  * @return {{reason: String, duration: Number}}
  * @properties={typeid:24,uuid:"F4654E0B-BDF6-42C2-9151-1F7199742FC6"}
  */
-function showDialog(headerText){
-    elements.lblHeader.text = headerText;
+function showDialog(titleText){
     m_LockReason = null;
     m_LockDurationMinutes = null;
     m_IsCanceled = true;
     var win = application.createWindow(controller.getName(), JSWindow.MODAL_DIALOG, application.getWindow());
-    win.title = 'Lock Account';
+    win.title = titleText;
     controller.show(win);
     if (m_IsCanceled) {
         return null;
