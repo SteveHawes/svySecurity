@@ -8,8 +8,10 @@ parameters:null\
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
+anchors:3,
 dataProviderID:"searchText",
-location:"10,110",
+formIndex:1,
+location:"475,95",
 name:"searchText",
 onActionMethodID:"E478A932-86D4-440B-86A4-8630D1EA0A52",
 placeholderText:"Enter Search Text",
@@ -45,7 +47,20 @@ typeid:47,
 uuid:"904AF726-ED01-443E-A94B-4F28A5F4D28D"
 },
 {
-location:"300,110",
+anchors:11,
+formIndex:-5,
+location:"0,90",
+name:"lblToolbar",
+size:"800,42",
+styleClass:"toolbar",
+text:"label",
+typeid:7,
+uuid:"9442A769-F83F-4A16-BEDF-1E64F70F8603"
+},
+{
+anchors:3,
+formIndex:2,
+location:"764,95",
 name:"btnShowAll",
 onActionMethodID:"A25C24A7-4167-4649-AF5E-9C34C226B448",
 rolloverCursor:12,

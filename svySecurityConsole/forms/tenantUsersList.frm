@@ -49,15 +49,14 @@ uuid:"509B7884-EB0C-4B95-A25C-0DA5F993D8C8"
 },
 {
 anchors:3,
-location:"690,40",
+location:"1,90",
 name:"btnCreateUser",
 onActionMethodID:"A53EB1AC-ADE7-4691-9F2A-8A55C8A14EEB",
 rolloverCursor:12,
-showClick:false,
 showFocus:false,
-size:"100,40",
+size:"130,40",
 styleClass:"flat-button transition-medium",
-text:"New User",
+text:"Create New User",
 typeid:7,
 uuid:"B8B722AE-4FF5-4659-8F41-3673549CE298"
 }

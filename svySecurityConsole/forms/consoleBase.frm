@@ -17,6 +17,21 @@ typeid:7,
 uuid:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0"
 },
 {
+location:"749,40",
+name:"btnLogout",
+onActionMethodID:"5BBDFB2F-37E7-43FC-8AF2-F2153EE1F754",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"40,40",
+styleClass:"font-icon large transition-medium",
+text:"<span class=\"fa fa-sign-out\"/>",
+toolTipText:"Sign Out",
+transparent:true,
+typeid:7,
+uuid:"59AF4633-2848-4C74-85F2-6C7923BB7F82"
+},
+{
 height:600,
 partType:5,
 styleClass:"body_main",

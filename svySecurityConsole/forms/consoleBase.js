@@ -24,3 +24,16 @@ function setHeaderText(text) {
     }
     elements.lblHeader.text = text;
 }
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"5BBDFB2F-37E7-43FC-8AF2-F2153EE1F754"}
+ */
+function onActionSignOut(event) {
+    security.logout();
+}

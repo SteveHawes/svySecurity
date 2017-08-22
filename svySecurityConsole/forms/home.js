@@ -170,16 +170,3 @@ function refreshInfo() {
     updateKPIs();
     m_LastRefreshDate = new Date();
 }
-
-/**
- * Perform the element default action.
- *
- * @param {JSEvent} event the event that triggered the action
- *
- * @private
- *
- * @properties={typeid:24,uuid:"1F2312A4-1749-4420-85A8-A4E56BA93D17"}
- */
-function onActionSignOut(event) {
-    security.logout();
-}

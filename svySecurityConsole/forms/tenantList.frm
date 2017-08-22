@@ -3,6 +3,13 @@ dataSource:"db:/svy_security/tenants",
 extendsID:"EAE3DC77-8EEA-41E2-8564-F52829D98C82",
 items:[
 {
+extendsID:"B20C04CC-B11B-43A5-86DD-99754C83F78C",
+showClick:false,
+showFocus:false,
+typeid:7,
+uuid:"05FE5305-D446-40A1-AAB4-3413872EEA09"
+},
+{
 customProperties:"",
 extendsID:"904AF726-ED01-443E-A94B-4F28A5F4D28D",
 json:{
@@ -33,15 +40,13 @@ uuid:"977AD6AF-8D39-4EE3-B245-ADD77FDBAC3B"
 },
 {
 anchors:3,
-location:"690,40",
+location:"1,90",
 name:"btnCreateTenant",
 onActionMethodID:"8A300CEF-68CA-4426-8996-A7207FDDA5F9",
 rolloverCursor:12,
-showClick:false,
-showFocus:false,
-size:"100,40",
+size:"130,40",
 styleClass:"flat-button transition-medium",
-text:"New Tenant",
+text:"Create New Tenant",
 typeid:7,
 uuid:"A3003031-9BD0-4F9F-93E6-A8A9117762C6"
 }

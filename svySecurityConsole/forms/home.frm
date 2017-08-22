@@ -8,9 +8,20 @@ parameters:null\
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
+anchors:11,
+formIndex:-5,
+location:"0,90",
+name:"lblToolbar",
+size:"800,42",
+styleClass:"toolbar",
+text:"label",
+typeid:7,
+uuid:"0EEE1D2C-17B4-439B-B13D-E8EB1E8ADA79"
+},
+{
 anchors:9,
 formIndex:1,
-location:"540,210",
+location:"540,267",
 name:"btnSessionsText",
 onActionMethodID:"F1FDDFCE-8198-4C86-AEBA-691980ADA70D",
 rolloverCursor:12,
@@ -26,7 +37,7 @@ uuid:"0EF0D821-1425-4D90-8C6C-0B03EF8EBF2C"
 {
 anchors:9,
 dataProviderID:"m_SessionCount",
-location:"540,120",
+location:"540,177",
 name:"btnSessionsCount",
 onActionMethodID:"F1FDDFCE-8198-4C86-AEBA-691980ADA70D",
 rolloverCursor:12,
@@ -41,7 +52,7 @@ uuid:"1319C3F3-FB2B-4146-B070-DF4EC1751A3B"
 {
 anchors:9,
 dataProviderID:"m_TenantCount",
-location:"60,120",
+location:"60,177",
 name:"btnTenantsCount",
 onActionMethodID:"17628FA9-EFC8-4091-BFE4-637266BF5B3B",
 rolloverCursor:12,
@@ -54,37 +65,41 @@ typeid:7,
 uuid:"433EC10B-C328-4AE7-AE9B-952DB97912D1"
 },
 {
-location:"10,40",
-name:"btnLogout",
-onActionMethodID:"1F2312A4-1749-4420-85A8-A4E56BA93D17",
-rolloverCursor:12,
-showClick:false,
-showFocus:false,
-size:"40,40",
-styleClass:"font-icon large transition-medium",
-text:"<span class=\"fa fa-sign-out\"/>",
-toolTipText:"Sign Out",
-transparent:true,
-typeid:7,
-uuid:"80F341B2-1DD4-4F72-AA6A-7923D2055159"
+json:{
+location:{
+x:57,
+y:341
+},
+size:{
+height:186,
+width:328
+},
+type:"bar"
+},
+location:"57,341",
+name:"chart_1",
+size:"328,186",
+typeName:"svychartjs-chart",
+typeid:47,
+uuid:"76BA0369-123D-425F-BAE6-83D92021AF7A"
 },
 {
 anchors:3,
-location:"690,40",
+formIndex:1,
+location:"1,90",
 name:"btnCreateTenant",
 onActionMethodID:"5DD18883-576C-4C57-BDD3-93A198767DD4",
 rolloverCursor:12,
-showFocus:false,
-size:"100,40",
+size:"130,40",
 styleClass:"flat-button transition-medium",
-text:"New Tenant",
+text:"Create New Tenant",
 typeid:7,
 uuid:"874CC822-C563-4D4A-A01A-21AD378AD3A1"
 },
 {
 anchors:9,
 formIndex:1,
-location:"300,210",
+location:"300,267",
 name:"btnUsersText",
 onActionMethodID:"86AD6257-8074-42FF-A15D-36470AAEAD19",
 rolloverCursor:12,
@@ -99,7 +114,7 @@ uuid:"8953B999-591E-4ABC-8A55-BFC3D6B5A96D"
 },
 {
 anchors:9,
-location:"60,210",
+location:"60,267",
 name:"btnTenantsText",
 onActionMethodID:"17628FA9-EFC8-4091-BFE4-637266BF5B3B",
 rolloverCursor:12,
@@ -115,7 +130,7 @@ uuid:"943A1322-EAF8-4B5E-8DF0-DEEA934AA1B4"
 {
 anchors:9,
 dataProviderID:"m_UserCount",
-location:"300,120",
+location:"300,177",
 name:"btnUsersCount",
 onActionMethodID:"86AD6257-8074-42FF-A15D-36470AAEAD19",
 rolloverCursor:12,
@@ -137,15 +152,16 @@ visible:false
 },
 {
 displaysTags:true,
+formIndex:1,
 horizontalAlignment:4,
-location:"474,91",
+location:"473,91",
 mediaOptions:14,
 name:"btnRefreshKpi",
 onActionMethodID:"33C61AE7-7207-4F23-8310-784DF7A7F394",
 rolloverCursor:12,
 showClick:false,
 showFocus:false,
-size:"320,20",
+size:"320,40",
 styleClass:"left font-icon small",
 text:"Information as of  <b>%%m_LastRefreshDate%%<\/b> <span class=\"fa fa-refresh\"/>",
 transparent:true,

@@ -105,6 +105,7 @@ function onActionCreateRole(event) {
         return;
     }
     tenant.createRole(newRoleName);
+    scopes.svySecurityConsole.svySecConsole_TenantRoleFilter = newRoleName;
 }
 
 /**
@@ -126,7 +127,7 @@ function onActionDeleteRole(event) {
         return;
     }
     
-    var response = plugins.dialogs.showQuestionDialog('Confirm Delete','Do you want to delete the selected role?', 'No', 'Yes');
+    var response = plugins.dialogs.showWarningDialog('Confirm Delete','Do you want to delete the selected role?', 'No', 'Yes');
     if (response != 'Yes') {
         return;
     }
@@ -196,7 +197,7 @@ function onActionRemoveRoleMember(event) {
     }
 
     var confirmBtn = 'Remove';
-    var response = plugins.dialogs.showQuestionDialog('Confirm Role Member Removal', utils.stringFormat('Do you want to remove user <b>%1$s</b> from the role <b>%2$s</b>?', [m_SelectedRoleUserMember, scopes.svySecurityConsole.svySecConsole_TenantRoleFilter]), 'No', confirmBtn);
+    var response = plugins.dialogs.showWarningDialog('Confirm Role Member Removal', utils.stringFormat('Do you want to remove user <b>%1$s</b> from the role <b>%2$s</b>?', [m_SelectedRoleUserMember, scopes.svySecurityConsole.svySecConsole_TenantRoleFilter]), 'No', confirmBtn);
     if (response != confirmBtn) {
         return;
     }
@@ -273,7 +274,7 @@ function onActionRemoveRolePermission(event) {
         return;
     }
     
-    var response = plugins.dialogs.showQuestionDialog('Confirm Role Permission Removal', 'Do you want to remove the selected permission from the selected role?', 'No', 'Yes');
+    var response = plugins.dialogs.showWarningDialog('Confirm Role Permission Removal', 'Do you want to remove the selected permission from the selected role?', 'No', 'Yes');
     if (response != 'Yes') {
         return;
     }

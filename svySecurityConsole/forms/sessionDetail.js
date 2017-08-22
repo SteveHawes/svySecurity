@@ -1,5 +1,5 @@
 /**
- * @private 
+ * @private
  * @type {String}
  *
  * @properties={typeid:35,uuid:"5DA4ABDB-2F94-4C45-B838-0F7643B6C876"}
@@ -7,7 +7,7 @@
 var m_CallerTenantName = '';
 
 /**
- * @private 
+ * @private
  * @type {String}
  *
  * @properties={typeid:35,uuid:"86C76458-755F-4727-BE17-DF5640C6D76F"}
@@ -15,11 +15,19 @@ var m_CallerTenantName = '';
 var m_CallerUserName = '';
 
 /**
- * @private 
+ * @private
  * @type {Boolean}
  * @properties={typeid:35,uuid:"A044625B-250F-44F4-B601-423AA7519C55",variableType:-4}
  */
 var m_CallerActiveSessionsOnly = false;
+
+/**
+ * @protected
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"F4BB9733-9A45-46DA-BBCE-BD9A14614A48"}
+ */
+var m_GoogleAPIKey = null;
 
 /**
  * @public
@@ -35,9 +43,9 @@ function show(fs, tenantName, userName, activeSessionsOnly) {
     m_CallerUserName = userName;
     m_CallerActiveSessionsOnly = activeSessionsOnly;
     controller.loadRecords(fs);
-    
+
     showIPGeolocation(foundset.ip_address);
-    
+
     application.getWindow().show(this);
 }
 
@@ -55,7 +63,6 @@ function onShow(firstShow, event) {
     setHeaderText(utils.stringFormat('<span class="fa fa-info-circle"></span> Session Information For User [%1$s]', [user_name]));
 }
 
-
 /**
  * Perform the element default action.
  *
@@ -66,67 +73,69 @@ function onShow(firstShow, event) {
  * @properties={typeid:24,uuid:"9E331313-2F3F-4810-8CE1-DE213202DBE9"}
  */
 function onActionShowSessionsList(event) {
-    if (m_CallerActiveSessionsOnly){
+    if (m_CallerActiveSessionsOnly) {
         if (m_CallerUserName) {
-            forms.sessionsList.showUserActiveSessions(m_CallerTenantName,m_CallerUserName);
-        }
-        else if (m_CallerTenantName){
+            forms.sessionsList.showUserActiveSessions(m_CallerTenantName, m_CallerUserName);
+        } else if (m_CallerTenantName) {
             forms.sessionsList.showTenantActiveSessions(m_CallerTenantName);
-        }
-        else {
+        } else {
             forms.sessionsList.showAllActiveSessions();
         }
-    }
-    else {
+    } else {
         if (m_CallerUserName) {
-            forms.sessionsList.showUserSessions(m_CallerTenantName,m_CallerUserName);
-        }
-        else if (m_CallerTenantName){
+            forms.sessionsList.showUserSessions(m_CallerTenantName, m_CallerUserName);
+        } else if (m_CallerTenantName) {
             forms.sessionsList.showTenantSessions(m_CallerTenantName);
-        }
-        else {
+        } else {
             forms.sessionsList.showAllSessions();
         }
     }
 }
 
 /**
- * @private 
+ * @private
  * @param {String} ipAddress
  *
  * @properties={typeid:24,uuid:"6FFB3A93-B89E-41EC-8B43-34B1BA1A5E01"}
  */
-function showIPGeolocation(ipAddress){
+function showIPGeolocation(ipAddress) {
     var lat, lon;
-    var mapHtml = 'Cannot resolve IP location';
+    var mapInfo = 'Cannot resolve IP location';
+    m_GoogleAPIKey = application.getUserProperty('GoogleAPIKey');
+
+    elements.svyGMap.latitude = null;
+    elements.svyGMap.longitude = null;
     try {
         //var dataStr = plugins.http.getPageData(utils.stringFormat('http://freegeoip.net/json/%1$s', [ipAddress]));
         ///** @type {{latitude: String, longitude: String}} */
         //var data = JSON.parse(dataStr);
         //lat = data.latitude;
         //lon = data.longitude;
-        
+
         var dataStr = plugins.http.getPageData(utils.stringFormat('http://ip-api.com/json/%1$s', [ipAddress]));
         /** @type {{lat: String, lon: String}} */
         var data = JSON.parse(dataStr);
         lat = data.lat;
         lon = data.lon;
-        
-        if ((lat != null) && (lon != null)){
-            var apiKey = application.getUserProperty('GoogleAPIKey');
-            if (!apiKey) {
-                mapHtml = 'Property "user.GoogleAPIKey" is not set.';
-            }
-            else {
-                mapHtml = utils.stringFormat('<iframe width="%4$s" height="%5$s" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=%1$s,%2$s&zoom=10&key=%3$s" allowfullscreen></iframe>', [lat, lon, apiKey, elements.lblMap.getWidth(), elements.lblMap.getHeight()]);
+
+        if ( (lat != null) && (lon != null)) {
+            elements.svyGMap.latitude = lat;
+            elements.svyGMap.longitude = lon;
+            if (!m_GoogleAPIKey) {
+                mapInfo = 'Property "user.GoogleAPIKey" is not set.';
+            } else {
+                mapInfo = null;
             }
         }
-    }
-    catch(ex){
+    } catch (ex) {
         application.output('IP geolocation request failed: ' + ex);
-        mapHtml = 'IP geolocation request failed.'
+        mapInfo = 'IP geolocation request failed.'
     }
-   
-    elements.lblMap.putClientProperty(APP_UI_PROPERTY.TRUST_DATA_AS_HTML, true);
-    elements.lblMap.text = mapHtml;    
+
+    if (mapInfo) {
+        elements.lblMapInfo.text = mapInfo;
+        elements.lblMapInfo.visible = true;
+    } else {
+        elements.lblMapInfo.visible = false;
+    }
 }
