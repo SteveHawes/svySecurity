@@ -215,3 +215,24 @@ function readLoginCookie() {
     }
     return null;
 }
+
+/**
+ * @public 
+ * @param {Number} numberOfDataElements
+ * @return {Array<String>}
+ *
+ * @properties={typeid:24,uuid:"D48F01D7-3513-4C93-ACAA-B73A1690D003"}
+ */
+function getColors(numberOfDataElements) {
+    var colors6 = ['#0D3C55','#1395BA','#A2B86C','#EBC844','#F16C20','#C02E1D']; 
+    var colors12 = ['#15516B','#1395BA','#5CA793','#EBC844','#EF8B2C','#D94E1F','#117899','#1395BA','#A2B86C','#ECAA38','#F16C20','#C02E1D']; 
+    if (numberOfDataElements <= 6) {
+        return colors6;
+    }
+    else if (numberOfDataElements <= 12) {
+        return colors12
+    }
+    else {
+        return colors12.concat(colors6);
+    }
+}

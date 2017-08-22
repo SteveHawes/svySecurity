@@ -167,6 +167,86 @@ function onActionRefresh(event) {
  * @properties={typeid:24,uuid:"4877EE0E-D50E-4FE4-B9FD-C90EB7CD4E24"}
  */
 function refreshInfo() {
-    updateKPIs();
     m_LastRefreshDate = new Date();
+    updateKPIs();
+    refreshLeftChart();
+    refreshRightChart();
+}
+
+/**
+ * @private
+ * @properties={typeid:24,uuid:"1C1E3136-4785-498A-AE8D-FB5B97B9706A"}
+ */
+function refreshLeftChart(){
+    //get top 12 tenants with most users
+    var qry = datasources.db.svy_security.users.createSelect();
+    qry.result.add(qry.columns.tenant_name,'tenant');
+    qry.result.add(qry.columns.user_name.count,'number_of_users');
+    qry.groupBy.add(qry.columns.tenant_name);
+    qry.sort.add(qry.columns.user_name.count.desc);
+    var ds = databaseManager.getDataSetByQuery(qry,12);
+    
+    var data = {
+        type: 'doughnut',
+        data: {
+            labels: ds.getColumnAsArray(1),
+        datasets: [{
+            data: ds.getColumnAsArray(2),
+            backgroundColor: scopes.svySecurityConsoleHelper.getColors(ds.getMaxRowIndex())
+            }]
+        }
+    };
+    
+    var options = {
+        title: {
+            display: true,
+            text: 'Top 12 tenants with most users'
+        }
+    };
+    elements.chartLeft.setData(data);
+    elements.chartLeft.setOptions(options);
+}
+
+/**
+ * @private
+ * @properties={typeid:24,uuid:"1DE56846-EFA3-4C42-B2E4-8F824E5BFAE9"}
+ */
+function refreshRightChart(){
+  //get top 12 tenants with most users
+    var qry = datasources.db.svy_security.users.createSelect();
+    qry.result.add(qry.columns.tenant_name,'tenant');
+    qry.result.add(qry.columns.user_name.count,'number_of_users');
+    qry.groupBy.add(qry.columns.tenant_name);
+    qry.sort.add(qry.columns.tenant_name.asc);
+    var ds = databaseManager.getDataSetByQuery(qry,12);
+    
+    var data = {
+        type: 'bar',
+        data: {
+            labels: ds.getColumnAsArray(1),
+        datasets: [{
+            data: ds.getColumnAsArray(2),
+            backgroundColor: scopes.svySecurityConsoleHelper.getColors(ds.getMaxRowIndex())
+            }]
+        }
+    };
+    
+    var options = {
+        title: {
+            display: true,
+            text: 'Top 12 tenants with most users'
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    };
+    elements.chartRight.setData(data);
+    elements.chartRight.setOptions(options);
 }
