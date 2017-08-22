@@ -1,0 +1,12 @@
+allowCreationRelatedRecords:true,
+foreignDataSource:"db:/svy_security/roles_permissions",
+initialSort:"permission_name asc",
+items:[
+{foreignColumnName:"role_name",primaryDataProviderID:"scopes.svySecurityConsole.svySecConsole_TenantRoleFilter",typeid:23,uuid:"59EFBAD4-8730-4D81-8407-7053BA131627"},
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"79EDF236-E092-4C08-8E75-D531AB89C0B2"}
+],
+joinType:1,
+name:"svy_sec_console_tenant_roles_permissions",
+primaryDataSource:"db:/svy_security/tenants",
+typeid:22,
+uuid:"D2F227F7-2436-41CC-9C7D-65B9DF691666"

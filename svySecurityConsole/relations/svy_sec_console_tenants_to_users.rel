@@ -1,0 +1,11 @@
+allowCreationRelatedRecords:true,
+foreignDataSource:"db:/svy_security/users",
+initialSort:"user_name asc",
+items:[
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"85E4BC0A-B0E1-4346-8529-A7A65CEA29CB"}
+],
+joinType:1,
+name:"svy_sec_console_tenants_to_users",
+primaryDataSource:"db:/svy_security/tenants",
+typeid:22,
+uuid:"6EDD0DA4-570E-4954-8BAD-C453E88EE0B2"

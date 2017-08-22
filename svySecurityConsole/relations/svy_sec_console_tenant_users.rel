@@ -1,0 +1,11 @@
+allowCreationRelatedRecords:true,
+foreignDataSource:"db:/svy_security/users",
+initialSort:"user_name asc",
+items:[
+{foreignColumnName:"tenant_name",primaryDataProviderID:"scopes.svySecurityConsole.svySecConsole_TenantFilter",typeid:23,uuid:"ECBC6DE3-663B-4C6D-951F-630B1DA33EC5"}
+],
+joinType:1,
+name:"svy_sec_console_tenant_users",
+primaryDataSource:"db:/svy_security/users",
+typeid:22,
+uuid:"B40832B1-80B2-47CB-B881-DFAD682CE456"

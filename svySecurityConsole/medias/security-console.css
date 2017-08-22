@@ -144,11 +144,15 @@ body
 	background-color: #5a96e1;
 }
 *:FOCUS
- {
- 	/* remove outline on focused elements */
- 	outline: none;
- }
-
+{
+    /* remove outline on focused elements */
+    outline: none;
+}
+.wrap-white-space
+{
+    white-space: pre-line;
+    padding-right: 5px;
+}
 /* ***************
 *  TRANSITION SPEEDS
 *  ***************/

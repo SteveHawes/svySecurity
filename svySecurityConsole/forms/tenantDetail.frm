@@ -134,6 +134,20 @@ typeid:7,
 uuid:"AB402498-05A0-4F8B-A65D-212832252318"
 },
 {
+anchors:3,
+location:"194,469",
+name:"btnViewRoles",
+onActionMethodID:"EBB65C46-D9C9-4614-82C3-149B99DF2ADE",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"128,40",
+styleClass:"flat-button transition-medium",
+text:"View Roles",
+typeid:7,
+uuid:"AB51AA12-1EF3-4479-AE55-8683FDB726B4"
+},
+{
 anchors:9,
 dataProviderID:"m_ActiveSessionsCount",
 groupID:"kpi_button1",
@@ -197,7 +211,7 @@ uuid:"CB7DAE5F-4B7C-4123-881F-634F931CD68B"
 },
 {
 anchors:3,
-location:"194,469",
+location:"351,469",
 name:"btnLock",
 onActionMethodID:"E12D8A07-584B-485B-B5D7-95F10378B2BF",
 rolloverCursor:12,
@@ -205,7 +219,7 @@ showClick:false,
 showFocus:false,
 size:"130,40",
 styleClass:"flat-button transition-medium",
-text:"Lock",
+text:"Lock Tenant",
 typeid:7,
 uuid:"D2A45E55-3E11-4416-9500-3D42F37C6C11"
 },

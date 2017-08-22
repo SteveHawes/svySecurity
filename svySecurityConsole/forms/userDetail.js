@@ -120,11 +120,11 @@ function refreshUserInfo() {
                 m_LockStausText = 'Account is <b>Locked</b>';
             }
             m_LockReasonText = user.getLockReason();
-            elements.btnLock.text = 'Unlock';
+            elements.btnLock.text = 'Unlock User';
         } else {
             m_LockStausText = 'Account is <b>Active</b>';
             m_LockReasonText = null;
-            elements.btnLock.text = 'Lock';
+            elements.btnLock.text = 'Lock User';
         }
     } else {
         m_TotalSessionsCount = 0;
@@ -210,7 +210,10 @@ function onActionLockUnlock(event) {
     if (user.isLocked()) {
         user.unlock();
     } else {
-        user.lock('Some reason for the lock', 5 * 24 * 60 * 60 * 1000);
+        var res = forms.accountLockDialog.showDialog('Lock User Account');
+        if (res) {
+            user.lock(res.reason, res.duration);
+        }
     }
     refreshUserInfo();
 }
@@ -321,4 +324,17 @@ function onActionTenantUsersList(event) {
     if (tenant_name && user_name) {
         forms.tenantUsersList.show(tenant_name);
     }
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"471E17BA-9C30-450D-B13F-FB3A3F06C7FD"}
+ */
+function onActionViewRoles(event) {
+    forms.userRoles.show(foundset);
 }

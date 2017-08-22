@@ -1,0 +1,11 @@
+allowCreationRelatedRecords:true,
+foreignDataSource:"db:/svy_security/roles",
+items:[
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"23757371-C9A5-412D-A919-31E2431B22E2"},
+{foreignColumnName:"role_name",primaryDataProviderID:"role_name",typeid:23,uuid:"FF798CDD-D0BE-4D20-8F7A-749D5A0414AA"}
+],
+joinType:1,
+name:"svy_sec_console_user_roles_to_roles",
+primaryDataSource:"db:/svy_security/user_roles",
+typeid:22,
+uuid:"DCF50B29-6147-4B6A-9D2A-1B41AF2F0F14"

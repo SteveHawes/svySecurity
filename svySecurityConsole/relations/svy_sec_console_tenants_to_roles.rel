@@ -1,0 +1,12 @@
+allowCreationRelatedRecords:true,
+encapsulation:2,
+foreignDataSource:"db:/svy_security/roles",
+initialSort:"role_name asc",
+items:[
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"AE56B0B9-4FD3-47DF-B1C3-85534E34682A"}
+],
+joinType:1,
+name:"svy_sec_console_tenants_to_roles",
+primaryDataSource:"db:/svy_security/tenants",
+typeid:22,
+uuid:"BF815341-2843-4167-AA50-CE8FFD1BB23B"

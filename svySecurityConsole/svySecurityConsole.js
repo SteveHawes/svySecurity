@@ -1,5 +1,27 @@
 /**
  * @public 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"6659A5E4-6531-4B3A-8362-12689570902B"}
+ */
+var svySecConsole_TenantRoleFilter = null;
+
+/**
+ * @public 
+ * @type {String}
+ * @properties={typeid:35,uuid:"076174EB-B48F-40D3-A824-EA858C0D1764"}
+ */
+var svySecConsole_TenantFilter = null;
+
+/**
+ * @public 
+ * @type {String}
+ * @properties={typeid:35,uuid:"D8CA7469-78B7-400E-97A1-FF5D0743B1B5"}
+ */
+var svySecConsole_UserFilter = null;
+
+/**
+ * @public 
  * @return {Number}
  * @properties={typeid:24,uuid:"83E1C40D-6EB5-4168-8ABD-A32BF2053776"}
  */

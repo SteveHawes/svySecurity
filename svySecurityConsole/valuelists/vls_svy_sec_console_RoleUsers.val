@@ -1,0 +1,11 @@
+addEmptyValue:1,
+dataProviderID1:"user_name",
+dataProviderID2:"user_display_name",
+name:"vls_svy_sec_console_RoleUsers",
+relationName:"svy_sec_console_tenants_user_roles",
+returnDataProviders:1,
+separator:" - ",
+showDataProviders:3,
+typeid:34,
+uuid:"CDC6282E-F41E-4389-9EED-2708CD1E1D11",
+valueListType:1

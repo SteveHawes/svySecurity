@@ -1,0 +1,9 @@
+addEmptyValue:1,
+dataProviderID1:"permission_name",
+name:"vls_svy_sec_console_RolePermissions",
+relationName:"svy_sec_console_tenant_roles_permissions",
+returnDataProviders:1,
+showDataProviders:1,
+typeid:34,
+uuid:"C301C7A1-7609-4759-A274-BEA4B9BCE04E",
+valueListType:1

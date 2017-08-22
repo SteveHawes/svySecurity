@@ -1,0 +1,10 @@
+addEmptyValue:1,
+dataProviderID1:"permission_name",
+dataSource:"db:/svy_security/permissions",
+name:"vls_sys_sec_console_Permissions",
+returnDataProviders:1,
+showDataProviders:1,
+sortOptions:"permission_name asc",
+typeid:34,
+uuid:"3C7C3103-809C-43FF-820B-EE9F7BDBC88B",
+valueListType:1

@@ -67,6 +67,7 @@ function show(tenantName) {
     refreshTenantInfo();
     application.getWindow().show(this);
 }
+
 /**
  * Callback method for when form is shown.
  *
@@ -108,11 +109,11 @@ function refreshTenantInfo() {
                 m_LockStausText = 'Account is <b>Locked</b>';
             }
             m_LockReasonText = tenant.getLockReason();
-            elements.btnLock.text = 'Unlock';
+            elements.btnLock.text = 'Unlock Tenant';
         } else {
             m_LockStausText = 'Account is <b>Active</b>';
             m_LockReasonText = null;
-            elements.btnLock.text = 'Lock';
+            elements.btnLock.text = 'Lock Tenant';
         }
     } else {
         m_TenantUserCount = 0;
@@ -195,7 +196,10 @@ function onActionLockUnlock(event) {
     if (tenant.isLocked()) {
         tenant.unlock();
     } else {
-        tenant.lock('Some reason for the lock', 5 * 24 * 60 * 60 * 1000);
+        var res = forms.accountLockDialog.showDialog('Lock Tenant Account');
+        if (res) {
+            tenant.lock(res.reason, res.duration);
+        }
     }
     refreshTenantInfo();
 }
@@ -288,4 +292,17 @@ function onActionShowActiveSessions(event) {
     if (tenant_name) {
         forms.sessionsList.showTenantActiveSessions(tenant_name);
     }
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"EBB65C46-D9C9-4614-82C3-149B99DF2ADE"}
+ */
+function onActionViewRoles(event) {
+    forms.tenantRoles.show(foundset);
 }
