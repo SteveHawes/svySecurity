@@ -2,7 +2,7 @@ customProperties:"formComponent:false",
 encapsulation:60,
 items:[
 {
-location:"169,203",
+location:"169,159",
 name:"lblLockDurationInfo",
 size:"378,63",
 text:"<span class=\"wrap-white-space\">The lock will automatically expire after the specified duration in minutes. Leave empty if you do not want the lock to expire automatically.<\/span>",
@@ -11,7 +11,7 @@ uuid:"0E1F8F89-27AF-4590-87A4-130A6D8A6A70"
 },
 {
 labelFor:"fldLockDuration",
-location:"398,177",
+location:"398,133",
 name:"lblLockDurationMinutes",
 size:"80,20",
 text:"minutes",
@@ -19,7 +19,7 @@ typeid:7,
 uuid:"4305F70A-B763-4056-8688-93B034D0FEEB"
 },
 {
-location:"335,305",
+location:"335,261",
 name:"btnLock",
 onActionMethodID:"A75DBCBE-D228-4191-BF4E-26BCA0CC6349",
 size:"125,40",
@@ -30,7 +30,7 @@ uuid:"5C112033-31AA-4AFD-A74F-F42FAFD4EB8A"
 },
 {
 dataProviderID:"m_LockDurationMinutes",
-location:"167,172",
+location:"167,128",
 name:"fldLockDuration",
 placeholderText:"Enter lock duration (optional)",
 size:"223,30",
@@ -39,7 +39,7 @@ uuid:"7A71E875-4822-4A17-9E3D-87341A4BFEB8"
 },
 {
 labelFor:"fldLockDuration",
-location:"54,177",
+location:"54,133",
 name:"lblLockDuration",
 size:"137,20",
 styleClass:"large",
@@ -48,7 +48,7 @@ typeid:7,
 uuid:"94065C50-CCC0-49B1-B0D0-48978CFD9C16"
 },
 {
-location:"148,304",
+location:"148,260",
 name:"btnCancel",
 onActionMethodID:"F1D74EAA-5219-4F86-BD63-621C0A9265AC",
 size:"125,40",
@@ -58,24 +58,15 @@ typeid:7,
 uuid:"A50F0F07-198A-455E-A7ED-D03D291ECA7A"
 },
 {
-height:393,
+height:353,
 partType:5,
 typeid:19,
 uuid:"BF591FBB-42F2-469B-9FF9-475E41A7F517"
 },
 {
-location:"30,28",
-name:"lblHeader",
-size:"540,40",
-styleClass:"banner",
-text:"Lock Account",
-typeid:7,
-uuid:"DCE4B4B2-39B3-4347-8484-8E8CFDB03A5A"
-},
-{
 dataProviderID:"m_LockReason",
 format:"|#(50)",
-location:"167,101",
+location:"167,57",
 name:"fldLockReason",
 placeholderText:"Enter lock reason (optional)",
 size:"376,30",
@@ -84,7 +75,7 @@ uuid:"F954C091-6F99-4537-93CA-08735F1D0C68"
 },
 {
 labelFor:"fldLockReason",
-location:"56,106",
+location:"56,62",
 name:"lblLockReason",
 size:"130,20",
 styleClass:"large",
@@ -97,6 +88,6 @@ name:"accountLockDialog",
 navigatorID:"-1",
 onShowMethodID:"1B8EC592-0ED2-4294-867B-F5C232E2A7DE",
 showInMenu:true,
-size:"600,378",
+size:"600,361",
 typeid:3,
 uuid:"EABE3917-76FC-4EDB-B424-FAB8E2AD45A9"
