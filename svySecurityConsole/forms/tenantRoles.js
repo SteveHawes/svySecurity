@@ -117,9 +117,15 @@ function onActionCreateRole(event) {
  * @properties={typeid:24,uuid:"F1B18E9E-4C67-40DF-AB67-45355EBE7B26"}
  */
 function onActionDeleteRole(event) {
-    if (!tenant_name || !scopes.svySecurityConsole.svySecConsole_TenantRoleFilter) {
+    if (!tenant_name) {
         return;
     }
+    
+    if (!scopes.svySecurityConsole.svySecConsole_TenantRoleFilter) {
+        plugins.dialogs.showInfoDialog('Selection Required','Please, select a role first.');
+        return;
+    }
+    
     var response = plugins.dialogs.showQuestionDialog('Confirm Delete','Do you want to delete the selected role?', 'No', 'Yes');
     if (response != 'Yes') {
         return;
@@ -142,7 +148,12 @@ function onActionDeleteRole(event) {
  * @properties={typeid:24,uuid:"89864AD8-AD6B-4269-B660-8F1DDA0FA822"}
  */
 function onActionAddRoleMember(event) {
-    if (!tenant_name || !scopes.svySecurityConsole.svySecConsole_TenantRoleFilter) {
+    if (!tenant_name) {
+        return;
+    }
+    
+    if (!scopes.svySecurityConsole.svySecConsole_TenantRoleFilter) {
+        plugins.dialogs.showInfoDialog('Selection Required','Please, select a role first.');
         return;
     }
 
@@ -175,7 +186,12 @@ function onActionAddRoleMember(event) {
  * @properties={typeid:24,uuid:"BEEDF439-0669-404E-8B85-21AC380D7A17"}
  */
 function onActionRemoveRoleMember(event) {
-    if (!tenant_name || !scopes.svySecurityConsole.svySecConsole_TenantRoleFilter || !m_SelectedRoleUserMember) {
+    if (!tenant_name) {
+        return;
+    }
+    
+    if (!scopes.svySecurityConsole.svySecConsole_TenantRoleFilter || !m_SelectedRoleUserMember) {
+        plugins.dialogs.showInfoDialog('Selection Required','Please, select a role and a role user member first.');
         return;
     }
 
@@ -208,7 +224,12 @@ function onActionRemoveRoleMember(event) {
  * @properties={typeid:24,uuid:"7AC50E01-69CD-4055-BA7A-6B79A8C628D7"}
  */
 function onActionGrantRolePermission(event) {
-    if (!tenant_name || !scopes.svySecurityConsole.svySecConsole_TenantRoleFilter) {
+    if (!tenant_name) {
+        return;
+    }
+    
+    if (!scopes.svySecurityConsole.svySecConsole_TenantRoleFilter) {
+        plugins.dialogs.showInfoDialog('Selection Required','Please, select a role first.');
         return;
     }
 
@@ -243,7 +264,12 @@ function onActionGrantRolePermission(event) {
  * @properties={typeid:24,uuid:"A2C40FC3-2C26-4261-B207-AC3425C41225"}
  */
 function onActionRemoveRolePermission(event) {
-    if (!tenant_name || !scopes.svySecurityConsole.svySecConsole_TenantRoleFilter || !m_SelectedRolePermission) {
+    if (!tenant_name) {
+        return;
+    }
+    
+    if (!scopes.svySecurityConsole.svySecConsole_TenantRoleFilter || !m_SelectedRolePermission) {
+        plugins.dialogs.showInfoDialog('Selection Required','Please, select a role and a role permission first.');
         return;
     }
     

@@ -147,7 +147,12 @@ function onActionAddRole(event) {
  * @properties={typeid:24,uuid:"374BFE86-5EF8-4877-95FD-1C09435C5770"}
  */
 function onActionRemoveRole(event) {
-    if (!tenant_name || !user_name || !m_SelectedRole) {
+    if (!tenant_name || !user_name) {
+        return;
+    }
+    
+    if (!m_SelectedRole) {
+        plugins.dialogs.showInfoDialog('Selection Required','Please, select a role first.');
         return;
     }
 
