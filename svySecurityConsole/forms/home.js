@@ -287,12 +287,22 @@ function refreshRightChart(){
         dsData.setValue(tenantIndx+1, valueIndx + 2, value);
     }
     
+    var colors = scopes.svySecurityConsoleHelper.getColors(tenantsToInclude.length);
     var chartDatasets = [];
     for (index = 0; index < tenantsToInclude.length; index++) {
         chartDatasets.push({
             label: tenantsToInclude[index],
-            data: [dsData.getRowAsArray(index+1).splice(1,monthsWindow)],
-            backgroundColor: scopes.svySecurityConsoleHelper.getColors(tenantsToInclude.length)
+            fill: false,
+            data: dsData.getRowAsArray(index+1).splice(1,monthsWindow),
+            borderColor: colors[index],            
+            pointBorderColor: colors[index],
+            pointBackgroundColor: colors[index],
+            pointBorderWidth: 1,
+            pointHoverRadius: 3,
+            pointHoverBackgroundColor: colors[index],
+            pointHoverBorderColor: 'orange',
+            pointHoverBorderWidth: 2,
+            tension: 0.1
         });
     }
     
@@ -307,7 +317,7 @@ function refreshRightChart(){
     var options = {
         title: {
             display: true,
-            text: utils.stringFormat('Usage for last %1$.0f months by tenant', [monthsWindow])
+            text: utils.stringFormat('Usage for last %1$.0f months by tenant (top %2$.0f)', [monthsWindow, maxTenants])
         },
         legend: {
             display: false
@@ -317,7 +327,10 @@ function refreshRightChart(){
                 ticks: {
                     beginAtZero: true
                 },
-                labelString: 'Usage Hours'
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Usage Hours'
+                }
             }]
         }
     };
