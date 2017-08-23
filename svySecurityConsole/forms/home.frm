@@ -65,6 +65,15 @@ typeid:7,
 uuid:"433EC10B-C328-4AE7-AE9B-952DB97912D1"
 },
 {
+location:"553,6",
+name:"lblVersionInfo",
+size:"240,19",
+styleClass:"right",
+text:"Using svySecurity version: X",
+typeid:7,
+uuid:"48B3F412-3D42-4ED3-A3AA-638B48E608F0"
+},
+{
 json:{
 legendLabel:"Users by tenant",
 location:{

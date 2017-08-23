@@ -146,6 +146,7 @@ function updateKPIs(){
  */
 function onShow(firstShow, event) {
     setHeaderText('<span class="fa fa-home"></span> Security Management Console');
+    elements.lblVersionInfo.text = 'Using svySecurity version: ' + scopes.svySecurity.getVersion();
 	refreshInfo();
 }
 
@@ -201,6 +202,10 @@ function refreshLeftChart(){
         title: {
             display: true,
             text: 'Top 12 tenants with most users'
+        },
+        legend: {
+            display: true,
+            position: 'left'
         }
     };
     elements.chartLeft.setData(data);
@@ -320,7 +325,8 @@ function refreshRightChart(){
             text: utils.stringFormat('Usage for last %1$.0f months by tenant (top %2$.0f)', [monthsWindow, maxTenants])
         },
         legend: {
-            display: false
+            display: true,
+            position: 'bottom'
         },
         scales: {
             yAxes: [{
