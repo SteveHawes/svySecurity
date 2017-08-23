@@ -1,4 +1,12 @@
 /**
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"7BA2289C-A59D-4F51-9D13-8DE45506D750"}
+ */
+var SVY_SECURITY_VERSION = '1.0.0-b1';
+
+/**
  * @protected
  * @type {String}
  * @ignore
@@ -2403,6 +2411,16 @@ function addActiveSessionSearchCriteria(qbSelect) {
     var andActiveCriteria = qbSelect.and;
     andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
     qbSelect.where.add(andActiveCriteria);
+}
+
+/**
+ * Gets the version of this module
+ * @public 
+ * @return {String} the version of the module using the format Major.Minor.Revision
+ * @properties={typeid:24,uuid:"D9AFB31E-2B51-43A7-98AC-29F3D12BB22E"}
+ */
+function getVersion() {
+    return SVY_SECURITY_VERSION;
 }
 
 /**
