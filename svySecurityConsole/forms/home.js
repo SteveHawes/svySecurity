@@ -254,7 +254,7 @@ function refreshRightChart(){
     qry.sort.add(qry.columns.tenant_name.asc);
     qry.sort.add(yearMonthCol);
     
-    //TODO: there appears to be a Servoy bug which causes the valid generated SQL to fail with [column "sessions.session_start" must appear in the GROUP BY clause or be used in an aggregate function]
+    //TODO: there appears to be a Servoy bug - see https://support.servoy.com/browse/SVY-11480
     //var ds = databaseManager.getDataSetByQuery(qry, maxTenants * monthsWindow);
     
     //until the bug is resolved we simply pass the raw generated SQL (with slight modification because cannot pass array value as parameter to SQL for "...tenant_name in ?...")
