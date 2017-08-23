@@ -147,11 +147,15 @@ function onSearch(){
         and.add(qry.columns.user_name.eq(m_UserName));
     }
     qry.where.add(and);
+    qry.sort.add(qry.columns.tenant_name.asc);
+    qry.sort.add(qry.columns.user_name.asc);
+    qry.sort.add(qry.columns.session_start.desc);
     
     if (m_ActiveSessionsOnly) {
         //TODO: here using a private method of svySecurity
         scopes.svySecurity['addActiveSession'+'SearchCriteria'](qry);
     }
+    
     foundset.loadRecords(qry);
 }
 
