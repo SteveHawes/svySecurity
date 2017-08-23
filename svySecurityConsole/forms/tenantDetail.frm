@@ -9,6 +9,12 @@ dataSource:"db:/svy_security/tenants",
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
+extendsID:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733",
+height:800,
+typeid:19,
+uuid:"05D59C8C-8BB2-4CC5-A66C-2885B1677F3A"
+},
+{
 location:"60,40",
 name:"btnShowTenantsList",
 onActionMethodID:"3DEEB6F0-353F-4B6E-9DBD-D33C65296E00",
@@ -24,9 +30,28 @@ typeid:7,
 uuid:"101D6D08-1914-4574-BB37-4CFB006748D1"
 },
 {
+json:{
+location:{
+x:15,
+y:326
+},
+size:{
+height:250,
+width:770
+},
+type:"bar"
+},
+location:"15,326",
+name:"chart",
+size:"770,250",
+typeName:"svychartjs-chart",
+typeid:47,
+uuid:"17D30CC6-8327-4A3E-9A4D-921248A4AA13"
+},
+{
 dataProviderID:"display_name",
 editable:false,
-location:"194,382",
+location:"194,638",
 name:"fldDisplayName",
 size:"445,30",
 typeid:4,
@@ -34,7 +59,7 @@ uuid:"2D96E7D8-2A5B-498B-AA1E-085B4BF5D229"
 },
 {
 displaysTags:true,
-location:"194,434",
+location:"194,690",
 name:"lblCreationInfo",
 size:"445,26",
 text:"Created on  <b>%%creation_datetime%%<\/b>  by  <b>%%creation_user_name%%<\/b>",
@@ -73,7 +98,7 @@ uuid:"4B64A149-18C0-424B-94B0-7B05F07835FB"
 },
 {
 dataProviderID:"m_LockStausText",
-location:"194,463",
+location:"194,719",
 name:"lblLockInfo",
 size:"445,26",
 typeid:7,
@@ -81,7 +106,7 @@ uuid:"5511CA78-9428-4FCF-8EAF-CC3ACFC79989"
 },
 {
 labelFor:"fldDisplayName",
-location:"56,387",
+location:"56,643",
 name:"lblDisplayName",
 size:"133,20",
 text:"Tenant Display Name",
@@ -107,7 +132,7 @@ uuid:"961A0FB2-9597-437B-8820-A9E1C60C48F5"
 },
 {
 labelFor:"fldName",
-location:"56,351",
+location:"56,607",
 name:"lblName",
 size:"133,20",
 styleClass:"large",
@@ -175,7 +200,7 @@ typeid:7,
 uuid:"BE286A54-1EF9-4FFD-B54E-5C97C0D14FD6"
 },
 {
-location:"654,382",
+location:"654,638",
 name:"btnEditDisplayName",
 onActionMethodID:"C8A67467-349D-456B-B51C-E1EA0DE8E8D1",
 rolloverCursor:12,
@@ -267,7 +292,7 @@ uuid:"E3F4FEB0-7726-4F22-9788-8E42E36996E8"
 },
 {
 labelFor:"",
-location:"56,438",
+location:"56,694",
 name:"lblStatus",
 size:"133,20",
 text:"Account Status",
@@ -278,7 +303,7 @@ uuid:"E8FE06EA-92AD-4FAD-A69F-F06A52F743CE"
 {
 dataProviderID:"tenant_name",
 editable:false,
-location:"194,346",
+location:"194,602",
 name:"fldName",
 size:"445,30",
 text:"Name",
@@ -287,7 +312,7 @@ uuid:"F190E1C1-65B3-4684-8D24-EF5A2EB8A048"
 },
 {
 dataProviderID:"m_LockReasonText",
-location:"194,492",
+location:"194,748",
 name:"lblLockReason",
 size:"445,26",
 typeid:7,
