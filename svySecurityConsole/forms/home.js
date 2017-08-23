@@ -212,29 +212,102 @@ function refreshLeftChart(){
  * @properties={typeid:24,uuid:"1DE56846-EFA3-4C42-B2E4-8F824E5BFAE9"}
  */
 function refreshRightChart(){
-  //get top 12 tenants with most users
-    var qry = datasources.db.svy_security.users.createSelect();
-    qry.result.add(qry.columns.tenant_name,'tenant');
-    qry.result.add(qry.columns.user_name.count,'number_of_users');
+    //get top 12 tenants with most usage for the last X months
+    var maxTenants = 12;
+    var monthsWindow = 6;
+    var curDate = application.getServerTimeStamp();
+    var cutOffDate = scopes.svyDateUtils.getFirstDayOfMonth(scopes.svyDateUtils.addMonths(curDate, (-1 * (monthsWindow - 1))));
+    
+    //get the top 12 tenants with max aggregate usage for the last 6 months
+    var qryFilter = datasources.db.svy_security.sessions.createSelect();
+    qryFilter.result.add(qryFilter.columns.tenant_name);
+    qryFilter.where.add(qryFilter.columns.session_start.gt(cutOffDate));
+    qryFilter.groupBy.add(qryFilter.columns.tenant_name);
+    qryFilter.sort.add(qryFilter.columns.session_duration.sum.desc);
+    var tenantsToInclude = databaseManager.getDataSetByQuery(qryFilter, maxTenants).getColumnAsArray(1);
+    
+    var yearMonths = new Array(monthsWindow); //will contain 201701, 201702,...
+    var yearMonthsNames = new Array(monthsWindow); //will contain Jan, Feb, Mar....
+    for (var index = 0; index < yearMonths.length; index++) {
+        var dt = scopes.svyDateUtils.addMonths(cutOffDate, index);
+        yearMonths[index] = (dt.getFullYear() * 100) + (dt.getMonth() + 1); /*month in JS is 0-11!*/
+        yearMonthsNames[index] = utils.dateFormat(dt,'MMM');        
+    }
+    
+    var qry = datasources.db.svy_security.sessions.createSelect();
+    var yearMonthCol = qry.columns.session_start.year.multiply(100).plus(qry.columns.session_start.month).cast(QUERY_COLUMN_TYPES.TYPE_INTEGER); 
+    
+    //select
+    qry.result.add(qry.columns.tenant_name, 'tenant');    
+    qry.result.add(yearMonthCol, 'yyyymm');
+    qry.result.add(qry.columns.session_duration.sum.divide(3600000), 'usage_hours'); //session_duration is stored in milliseconds so we need to convert it to hours
+    
+    //group by
     qry.groupBy.add(qry.columns.tenant_name);
+    qry.groupBy.add(yearMonthCol);
+    
+    //where
+    qry.where.add(qry.columns.session_start.gt(cutOffDate));
+    qry.where.add(qry.columns.tenant_name.isin(tenantsToInclude));
+    
+    //sort
     qry.sort.add(qry.columns.tenant_name.asc);
-    var ds = databaseManager.getDataSetByQuery(qry,12);
+    qry.sort.add(yearMonthCol);
+    
+    //TODO: there appears to be a Servoy bug which causes the valid generated SQL to fail with [column "sessions.session_start" must appear in the GROUP BY clause or be used in an aggregate function]
+    //var ds = databaseManager.getDataSetByQuery(qry, maxTenants * monthsWindow);
+    
+    //until the bug is resolved we simply pass the raw generated SQL (with slight modification because cannot pass array value as parameter to SQL for "...tenant_name in ?...")
+    //NOTE: the hardcoded SQL below is for PostgreSQL only!
+    var rawSql = 'select sessions.tenant_name as tenant, cast(((extract(year from sessions.session_start)*100)+extract(month from sessions.session_start)) as int4) as yyyymm, (sum(sessions.session_duration)/3600000) as usage_hours from sessions sessions where sessions.session_start > ? group by  sessions.tenant_name ,  cast(((extract(year from sessions.session_start)*100)+extract(month from sessions.session_start)) as int4) order by sessions.tenant_name asc, cast(((extract(year from sessions.session_start)*100)+extract(month from sessions.session_start)) as int4) asc';
+    var ds = databaseManager.getDataSetByQuery('svy_security', rawSql, [cutOffDate], maxTenants * monthsWindow);
+    
+    var dsData = databaseManager.createEmptyDataSet();
+    dsData.addColumn('tenant',1,JSColumn.TEXT);
+    for (index = 0; index < yearMonths.length; index++) {
+        dsData.addColumn(yearMonths[index].label, index+2, JSColumn.NUMBER);        
+    }
+    
+    //initialize the dsData with tenant names and 0's for the value columns
+    for (index = 0; index < tenantsToInclude.length; index++) {
+        var rowData = new Array(monthsWindow + 1);
+        rowData[0] = tenantsToInclude[index];
+        for (var i = 0; i < monthsWindow; i++){
+            rowData[i+1] = 0;
+        }            
+        dsData.addRow(rowData);
+    }
+    
+    for (index = 1; index <= ds.getMaxRowIndex(); index++) {        
+        var row = ds.getRowAsArray(index);
+        var tenantIndx = tenantsToInclude.indexOf(row[0]);
+        var valueIndx = yearMonths.indexOf(row[1]);
+        var value = row[2];
+        
+        dsData.setValue(tenantIndx+1, valueIndx + 2, value);
+    }
+    
+    var chartDatasets = [];
+    for (index = 0; index < tenantsToInclude.length; index++) {
+        chartDatasets.push({
+            label: tenantsToInclude[index],
+            data: [dsData.getRowAsArray(index+1).splice(1,monthsWindow)],
+            backgroundColor: scopes.svySecurityConsoleHelper.getColors(tenantsToInclude.length)
+        });
+    }
     
     var data = {
-        type: 'bar',
+        type: 'line',
         data: {
-            labels: ds.getColumnAsArray(1),
-        datasets: [{
-            data: ds.getColumnAsArray(2),
-            backgroundColor: scopes.svySecurityConsoleHelper.getColors(ds.getMaxRowIndex())
-            }]
+            labels: yearMonthsNames,
+            datasets: chartDatasets
         }
     };
     
     var options = {
         title: {
             display: true,
-            text: 'Top 12 tenants with most users'
+            text: utils.stringFormat('Usage for last %1$.0f months by tenant', [monthsWindow])
         },
         legend: {
             display: false
@@ -243,7 +316,8 @@ function refreshRightChart(){
             yAxes: [{
                 ticks: {
                     beginAtZero: true
-                }
+                },
+                labelString: 'Usage Hours'
             }]
         }
     };
