@@ -126,6 +126,8 @@ function refreshUserInfo() {
             m_LockReasonText = null;
             elements.btnLock.text = 'Lock User';
         }
+        
+        scopes.svySecurityConsole.createChartUserUsageOverTimeMonths(tenant_name,user_name,elements.chart);
     } else {
         m_TotalSessionsCount = 0;
         m_TotalSessionsHours = 0;

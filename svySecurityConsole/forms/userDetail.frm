@@ -34,7 +34,7 @@ typeid:7,
 uuid:"057F403D-7DF4-47EB-B91F-4CF0A25CF39C"
 },
 {
-location:"654,381",
+location:"654,618",
 name:"btnEditDisplayName",
 onActionMethodID:"17DEDFEC-4716-4343-88A9-1D410F729EC5",
 rolloverCursor:12,
@@ -99,7 +99,7 @@ uuid:"2C19B69E-D56F-4978-A8FA-4FCCBCA7AF67"
 },
 {
 displaysTags:true,
-location:"194,433",
+location:"194,670",
 name:"lblTenantInfo",
 size:"445,26",
 text:"User account for tenant <b>%%tenant_name%%<\/b>",
@@ -145,7 +145,7 @@ uuid:"67105928-9981-485C-8EEE-9509D79EDEB4"
 },
 {
 displaysTags:true,
-location:"194,465",
+location:"194,702",
 name:"lblCreationInfo",
 size:"445,26",
 text:"Created on  <b>%%creation_datetime%%<\/b>  by  <b>%%creation_user_name%%<\/b>",
@@ -154,7 +154,7 @@ uuid:"6FCCF2C3-0397-4F8D-B7F5-DD3BAEF48C02"
 },
 {
 dataProviderID:"m_LockReasonText",
-location:"194,523",
+location:"194,760",
 name:"lblLockReason",
 size:"445,26",
 typeid:7,
@@ -162,7 +162,7 @@ uuid:"88F39AD0-96EC-437B-9DE3-33E21ECBDBAC"
 },
 {
 labelFor:"",
-location:"56,435",
+location:"56,672",
 name:"lblStatus",
 size:"133,20",
 text:"Account Status",
@@ -189,7 +189,7 @@ uuid:"950EC219-2183-4700-9B16-41A990999B7B"
 },
 {
 labelFor:"fldName",
-location:"56,350",
+location:"56,587",
 name:"lblName",
 size:"133,20",
 styleClass:"large",
@@ -199,9 +199,34 @@ typeid:7,
 uuid:"954E7B94-E67B-4829-A882-63374EAAC345"
 },
 {
+json:{
+location:{
+x:15,
+y:314
+},
+size:{
+height:250,
+width:770
+},
+type:"bar"
+},
+location:"15,314",
+name:"chart",
+size:"770,250",
+typeName:"svychartjs-chart",
+typeid:47,
+uuid:"A9EC490D-8E77-4C57-B03D-016AC6288DC3"
+},
+{
+extendsID:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733",
+height:800,
+typeid:19,
+uuid:"B1B4A12B-D09D-4229-881D-AA0A78E408DA"
+},
+{
 dataProviderID:"user_name",
 editable:false,
-location:"194,345",
+location:"194,582",
 name:"fldName",
 size:"445,30",
 text:"Name",
@@ -210,7 +235,7 @@ uuid:"BC52BEFA-C877-4EAA-B37D-32BAA88A259E"
 },
 {
 dataProviderID:"m_LockStausText",
-location:"194,494",
+location:"194,731",
 name:"lblLockInfo",
 size:"445,26",
 typeid:7,
@@ -235,7 +260,7 @@ uuid:"D6EB3F2C-EB8E-45ED-BC83-75A7E9C8AD38"
 },
 {
 labelFor:"fldDisplayName",
-location:"56,386",
+location:"56,623",
 name:"lblDisplayName",
 size:"133,20",
 text:"Display Name",
@@ -260,7 +285,7 @@ uuid:"E3EDF865-A77C-48E3-83EE-0BB75E610E88"
 {
 dataProviderID:"display_name",
 editable:false,
-location:"194,381",
+location:"194,618",
 name:"fldDisplayName",
 size:"445,30",
 typeid:4,
