@@ -236,3 +236,20 @@ function getColors(numberOfDataElements) {
         return colors12.concat(colors6);
     }
 }
+
+/**
+ * @public 
+ * @param {Number} number
+ * @param {Number} decimals - number of decimal places to round to
+ * @return {Number}
+ * @properties={typeid:24,uuid:"79F74D83-CD7F-4858-B2F3-C3ACD68B6A77"}
+ */
+function roundNumber(number, decimals) {
+    if (decimals) {
+        var dec = Math.pow(10, decimals);
+        return Math.round(number * dec) / dec;
+    }
+    else {
+        return Math.round(number);
+    }
+}

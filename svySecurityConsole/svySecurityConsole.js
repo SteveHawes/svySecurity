@@ -234,7 +234,7 @@ function createChartTopTenantsUsageOverTimeMonths(chart){
         var valueIndx = yearMonths.indexOf(row[1]);
         var value = row[2];
         
-        dsData.setValue(tenantIndx+1, valueIndx + 2, value);
+        dsData.setValue(tenantIndx+1, valueIndx + 2, scopes.svySecurityConsoleHelper.roundNumber(value, 2));
     }
     
     var colors = scopes.svySecurityConsoleHelper.getColors(tenantsToInclude.length);
@@ -267,10 +267,118 @@ function createChartTopTenantsUsageOverTimeMonths(chart){
     var options = {
         title: {
             display: true,
-            text: utils.stringFormat('Usage for last %1$.0f months by tenant (top %2$.0f)', [monthsWindow, maxTenants])
+            text: utils.stringFormat('Usage for last %1$.0f months by tenant (top %2$.0f)', [monthsWindow, tenantsToInclude.length])
         },
         legend: {
             display: true,
+            position: 'bottom'
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Usage Hours'
+                }
+            }]
+        }
+    };
+    
+    chart.setData(data);
+    chart.setOptions(options);
+}
+
+/**
+ * @public
+ * @param {svychartjs-chart} chart
+ * @properties={typeid:24,uuid:"4E3E4B19-6940-4D84-AC37-0F0BD4C9440F"}
+ */
+function createChartTotalUsageOverTimeMonths(chart){
+    //get total usage by month for the last X months
+    var monthsWindow = 6;
+    var curDate = application.getServerTimeStamp();
+    var cutOffDate = scopes.svyDateUtils.getFirstDayOfMonth(scopes.svyDateUtils.addMonths(curDate, (-1 * (monthsWindow - 1))));
+        
+    var yearMonths = new Array(monthsWindow); //will contain 20171, 20172,...201712
+    var yearMonthsNames = new Array(monthsWindow); //will contain Jan, Feb, Mar....
+    for (var index = 0; index < yearMonths.length; index++) {
+        var dt = scopes.svyDateUtils.addMonths(cutOffDate, index);
+        yearMonths[index] = utils.stringFormat('%1$.0f%2$.0f',[dt.getFullYear(), (dt.getMonth() + 1)]); /*month in JS is 0-11!*/
+        yearMonthsNames[index] = utils.dateFormat(dt,'MMM');        
+    }
+    
+    var qry = datasources.db.svy_security.sessions.createSelect();
+    var yearMonthCol = qry.columns.session_start.year.cast(QUERY_COLUMN_TYPES.TYPE_STRING).concat(qry.columns.session_start.month.cast(QUERY_COLUMN_TYPES.TYPE_STRING)); 
+    
+    //select
+    qry.result.add(yearMonthCol, 'yyyymm');
+    qry.result.add(qry.columns.session_duration.sum.divide(3600000), 'usage_hours'); //session_duration is stored in milliseconds so we need to convert it to hours
+    
+    //group by
+    qry.groupBy.add(yearMonthCol);
+    
+    //where
+    qry.where.add(qry.columns.session_start.gt(cutOffDate));
+    
+    //sort
+    qry.sort.add(yearMonthCol);
+        
+    var ds = databaseManager.getDataSetByQuery(qry, monthsWindow);
+    
+    var dsData = databaseManager.createEmptyDataSet();    
+    for (index = 0; index < yearMonths.length; index++) {
+        dsData.addColumn(yearMonths[index].label, index+1, JSColumn.NUMBER);        
+    }
+    
+    //initialize the dsData with 0's for the value columns
+    var rowData = new Array(monthsWindow);
+    for (var i = 0; i < monthsWindow; i++){
+        rowData[i] = 0;
+    }            
+    dsData.addRow(rowData);
+    
+    for (index = 1; index <= ds.getMaxRowIndex(); index++) {        
+        var row = ds.getRowAsArray(index);        
+        var valueIndx = yearMonths.indexOf(row[0]);
+        var value = row[1];
+        
+        dsData.setValue(1, valueIndx + 1, scopes.svySecurityConsoleHelper.roundNumber(value, 2));
+    }
+    
+    var colors = scopes.svySecurityConsoleHelper.getColors(6);
+    var chartDatasets = [{
+            label: 'Total usage by month',
+            fill: true,
+            data: dsData.getRowAsArray(1),
+            borderColor: colors[5],            
+            pointBorderColor: colors[5],
+            pointBackgroundColor: colors[5],
+            pointBorderWidth: 1,
+            pointHoverRadius: 3,
+            pointHoverBackgroundColor: colors[5],
+            pointHoverBorderColor: 'orange',
+            pointHoverBorderWidth: 2,
+            tension: 0.3
+        }];
+    
+    
+    var data = {
+        type: 'line',
+        data: {
+            labels: yearMonthsNames,
+            datasets: chartDatasets
+        }
+    };
+    
+    var options = {
+        title: {
+            display: true,
+            text: utils.stringFormat('Total usage for last %1$.0f months', [monthsWindow])
+        },
+        legend: {
+            display: false,
             position: 'bottom'
         },
         scales: {
@@ -365,7 +473,7 @@ function createChartTenantTopUsersUsageOverTimeMonths(tenantName, chart){
         var valueIndx = yearMonths.indexOf(row[1]);
         var value = row[2];
         
-        dsData.setValue(userIndx+1, valueIndx + 2, value);
+        dsData.setValue(userIndx+1, valueIndx + 2, scopes.svySecurityConsoleHelper.roundNumber(value, 2));
     }
     
     var colors = scopes.svySecurityConsoleHelper.getColors(usersToInclude.length);
@@ -398,10 +506,121 @@ function createChartTenantTopUsersUsageOverTimeMonths(tenantName, chart){
     var options = {
         title: {
             display: true,
-            text: utils.stringFormat('Usage for last %1$.0f months by users of tenant %2$s (top %3$.0f)', [monthsWindow, tenantName, maxUsers])
+            text: utils.stringFormat('Usage for last %1$.0f months by users of tenant %2$s (top %3$.0f)', [monthsWindow, tenantName, usersToInclude.length])
         },
         legend: {
             display: true,
+            position: 'right'
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Usage Hours'
+                }
+            }]
+        }
+    };
+    
+    chart.setData(data);
+    chart.setOptions(options);
+}
+
+/**
+ * @public
+ * @param {String} tenantName
+ * @param {svychartjs-chart} chart
+ * @properties={typeid:24,uuid:"0392338E-6D9A-437E-94FC-99E648296685"}
+ */
+function createChartTotalTenantUsageOverTimeMonths(tenantName, chart){
+    //get total usage for tenant by month for the last X months
+    var monthsWindow = 6;
+    var curDate = application.getServerTimeStamp();
+    var cutOffDate = scopes.svyDateUtils.getFirstDayOfMonth(scopes.svyDateUtils.addMonths(curDate, (-1 * (monthsWindow - 1))));
+        
+    var yearMonths = new Array(monthsWindow); //will contain 20171, 20172,...201712
+    var yearMonthsNames = new Array(monthsWindow); //will contain Jan, Feb, Mar....
+    for (var index = 0; index < yearMonths.length; index++) {
+        var dt = scopes.svyDateUtils.addMonths(cutOffDate, index);
+        yearMonths[index] = utils.stringFormat('%1$.0f%2$.0f',[dt.getFullYear(), (dt.getMonth() + 1)]); /*month in JS is 0-11!*/
+        yearMonthsNames[index] = utils.dateFormat(dt,'MMM');        
+    }
+    
+    var qry = datasources.db.svy_security.sessions.createSelect();
+    var yearMonthCol = qry.columns.session_start.year.cast(QUERY_COLUMN_TYPES.TYPE_STRING).concat(qry.columns.session_start.month.cast(QUERY_COLUMN_TYPES.TYPE_STRING)); 
+    
+    //select    
+    qry.result.add(yearMonthCol, 'yyyymm');
+    qry.result.add(qry.columns.session_duration.sum.divide(3600000), 'usage_hours'); //session_duration is stored in milliseconds so we need to convert it to hours
+    
+    //group by
+    qry.groupBy.add(yearMonthCol);
+    
+    //where
+    qry.where.add(qry.columns.session_start.gt(cutOffDate));
+    qry.where.add(qry.columns.tenant_name.eq(tenantName));
+    
+    //sort
+    qry.sort.add(yearMonthCol);
+    
+    var ds = databaseManager.getDataSetByQuery(qry, monthsWindow);
+        
+    var dsData = databaseManager.createEmptyDataSet();
+    
+    for (index = 0; index < yearMonths.length; index++) {
+        dsData.addColumn(yearMonths[index].label, index+1, JSColumn.NUMBER);        
+    }
+    
+    //initialize the dsData with 0's for the value columns    
+    var rowData = new Array(monthsWindow);
+    for (var i = 0; i < monthsWindow; i++){
+        rowData[i] = 0;
+    }            
+    dsData.addRow(rowData);
+    
+    
+    for (index = 1; index <= ds.getMaxRowIndex(); index++) {        
+        var row = ds.getRowAsArray(index);
+        var valueIndx = yearMonths.indexOf(row[0]);
+        var value = row[1];        
+        dsData.setValue(1, valueIndx + 1, scopes.svySecurityConsoleHelper.roundNumber(value, 2));
+    }
+    
+    var colors = scopes.svySecurityConsoleHelper.getColors(6);
+    var chartDatasets = [{
+            label: utils.stringFormat('Usage over time for tenant "%1$s"',[tenantName]),
+            fill: true,
+            data: dsData.getRowAsArray(1),
+            borderColor: colors[5],            
+            pointBorderColor: colors[5],
+            pointBackgroundColor: colors[5],
+            pointBorderWidth: 1,
+            pointHoverRadius: 3,
+            pointHoverBackgroundColor: colors[5],
+            pointHoverBorderColor: 'orange',
+            pointHoverBorderWidth: 2,
+            tension: 0.3
+        }];
+    
+    
+    var data = {
+        type: 'line',
+        data: {
+            labels: yearMonthsNames,
+            datasets: chartDatasets
+        }
+    };
+    
+    var options = {
+        title: {
+            display: true,
+            text: utils.stringFormat('Usage for last %1$.0f months by users of tenant %2$s', [monthsWindow, tenantName])
+        },
+        legend: {
+            display: false,
             position: 'right'
         },
         scales: {
@@ -485,7 +704,7 @@ function createChartUserUsageOverTimeMonths(tenantName, userName, chart){
         var valueIndx = yearMonths.indexOf(row[1]);
         var value = row[2];
         
-        dsData.setValue(userIndx+1, valueIndx + 2, value);
+        dsData.setValue(userIndx+1, valueIndx + 2, scopes.svySecurityConsoleHelper.roundNumber(value, 2));
     }
     
     var colors = scopes.svySecurityConsoleHelper.getColors(6);

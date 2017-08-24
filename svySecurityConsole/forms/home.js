@@ -187,5 +187,5 @@ function refreshLeftChart(){
  * @properties={typeid:24,uuid:"1DE56846-EFA3-4C42-B2E4-8F824E5BFAE9"}
  */
 function refreshRightChart(){
-    scopes.svySecurityConsole.createChartTopTenantsUsageOverTimeMonths(elements.chartRight);
+    scopes.svySecurityConsole.createChartTotalUsageOverTimeMonths(elements.chartRight);
 }

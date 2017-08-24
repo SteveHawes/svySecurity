@@ -116,7 +116,7 @@ function refreshTenantInfo() {
             elements.btnLock.text = 'Lock Tenant';
         }
         
-        scopes.svySecurityConsole.createChartTenantTopUsersUsageOverTimeMonths(tenant_name,elements.chart);
+        scopes.svySecurityConsole.createChartTotalTenantUsageOverTimeMonths(tenant_name,elements.chart);
     } else {
         m_TenantUserCount = 0;
         m_ActiveSessionsCount = 0;
