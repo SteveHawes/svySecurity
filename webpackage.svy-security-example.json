@@ -1,6 +1,6 @@
 {
     "name":"svySecurityExample",
-    "displayName":"Security Example Application",
+    "displayName":"svySecurityExample",
     "packageType": "Solution",
     "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/2017-fr.wp-orange-lock.svg/1024px-2017-fr.wp-orange-lock.svg.png",
     "description": "Example solution to demonstrate security module usage",
