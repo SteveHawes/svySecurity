@@ -1,6 +1,6 @@
 {
     "name":"svySecurityConsole",
-    "displayName":"Security Administrative Console",
+    "displayName":"Security Management Console",
     "packageType": "Solution",
     "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/2017-fr.wp-orange-lock.svg/1024px-2017-fr.wp-orange-lock.svg.png",
     "description": "Management console to administer security and multi-tenancy",
