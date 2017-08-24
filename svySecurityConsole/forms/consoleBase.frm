@@ -18,7 +18,7 @@ uuid:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0"
 },
 {
 formIndex:20,
-location:"749,40",
+location:"750,40",
 name:"btnLogout",
 onActionMethodID:"5BBDFB2F-37E7-43FC-8AF2-F2153EE1F754",
 rolloverCursor:12,
