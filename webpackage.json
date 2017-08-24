@@ -1,0 +1,12 @@
+{
+    "name":"svySecurity",
+    "displayName":"Servoy Security",
+    "packageType": "Solution",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/2017-fr.wp-orange-lock.svg/1024px-2017-fr.wp-orange-lock.svg.png",
+    "description": "Security module to facilitate authentication, multi-tenancy, access control and more",
+    "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
+    "sourceUrl" : "https://github.com/Servoy/svySecurity",
+    "releases" : [
+        {"version":"1.0.0","url":"https://github.com/Servoy/svySecurity/releases/download/1.0.0-b1/svySecurity.servoy", "servoy-version":"8.1.0"}
+     ]
+}
