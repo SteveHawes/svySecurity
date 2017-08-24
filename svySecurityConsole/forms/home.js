@@ -189,3 +189,19 @@ function refreshLeftChart(){
 function refreshRightChart(){
     scopes.svySecurityConsole.createChartTotalUsageOverTimeMonths(elements.chartRight);
 }
+/**
+ * @param {Number} dataset_index
+ * @param {Number} index
+ * @param {string} label
+ * @param {Number} value
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"E4F633EC-A36B-49DD-8549-D34C4EA12267"}
+ */
+function onClickLeftChart(dataset_index, index, label, value) {
+    var tenantName = label;
+    if (tenantName) {
+        forms.tenantDetail.show(tenantName);
+    }
+}

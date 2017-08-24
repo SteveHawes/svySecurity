@@ -151,7 +151,7 @@ function createChartTenantsWithMostUsers(chart){
     var options = {
         title: {
             display: true,
-            text: 'Top 12 tenants with most users'
+            text: utils.stringFormat('Top %1$s tenants with most users', [ds.getMaxRowIndex()])
         },
         legend: {
             display: true,
