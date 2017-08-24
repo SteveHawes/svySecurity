@@ -7,6 +7,6 @@
     "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
     "sourceUrl" : "https://github.com/Servoy/svySecurity",
     "releases" : [
-        {"version":"1.0.0","url":"https://github.com/Servoy/svySecurity/releases/download/1.0.0-b1/svySecurity-82x.servoy", "servoy-version":"8.2.0"}
+        {"version":"1.0.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b1/svySecurityConsole_82x.servoy", "servoy-version":"8.2.0"}
      ]
 }
