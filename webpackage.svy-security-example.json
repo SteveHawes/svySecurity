@@ -1,0 +1,12 @@
+{
+    "name":"svySecurityExample",
+    "displayName":"Security Example Application",
+    "packageType": "Solution",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/2017-fr.wp-orange-lock.svg/1024px-2017-fr.wp-orange-lock.svg.png",
+    "description": "Example solution to demonstrate security module usage",
+    "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
+    "sourceUrl" : "https://github.com/Servoy/svySecurity",
+    "releases" : [
+        {"version":"1.0.0-b1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b1/svySecurityConsole_82x.servoy", "servoy-version":"8.2.0"}
+     ]
+}
