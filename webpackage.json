@@ -1,6 +1,6 @@
 {
     "name":"svySecurity",
-    "displayName":"Servoy Security",
+    "displayName":"svySecurity",
     "packageType": "Solution",
     "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/2017-fr.wp-orange-lock.svg/1024px-2017-fr.wp-orange-lock.svg.png",
     "description": "Security module to facilitate authentication, multi-tenancy, access control and more",
