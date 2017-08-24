@@ -36,6 +36,7 @@ name:"btnSignIn",
 onActionMethodID:"1E9579D2-FDF5-42ED-8EBE-6EF03963D521",
 size:"230,50",
 styleClass:"main-btn",
+tabSeq:4,
 text:"Sign In",
 toolTipText:"Sign In",
 typeid:7,
@@ -70,6 +71,12 @@ tabSeq:3,
 text:"Remember Me",
 typeid:4,
 uuid:"7905B07B-0AB5-46EC-867F-0AEDF31BD2F0"
+},
+{
+extendsID:"59AF4633-2848-4C74-85F2-6C7923BB7F82",
+tabSeq:-2,
+typeid:7,
+uuid:"84552634-E685-4BFB-9EB8-114546FAB252"
 },
 {
 location:"213,108",
