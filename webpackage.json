@@ -7,6 +7,7 @@
     "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
     "sourceUrl" : "https://github.com/Servoy/svySecurity",
     "releases" : [
-        {"version":"1.0.0-b1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b1/svySecurity_82x.servoy", "servoy-version":"8.2.0"}
+        {"version":"1.0.0-b1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b1/svySecurity_82x.servoy", "servoy-version":"8.2.0"},
+        {"version":"1.0.0-b2","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b2/svySecurity.servoy", "servoy-version":"8.2.0"}
      ]
 }
