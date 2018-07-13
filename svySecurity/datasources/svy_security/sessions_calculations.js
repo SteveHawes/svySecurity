@@ -4,7 +4,10 @@
  */
 function is_active()
 {
-	var clientIDs = [];
+	// SESSION IS CLOSED
+	if(session_end) return false;
+	
+	// SESSION IS NOT CLOSED, CHECK ACTIVE CLIENTS
 	var clients = plugins.clientmanager.getConnectedClients();
 	for(var i in clients){
 		if(servoy_client_id == clients[i].getClientID()) return true;

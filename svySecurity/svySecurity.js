@@ -4,7 +4,7 @@
  *
  * @properties={typeid:35,uuid:"7BA2289C-A59D-4F51-9D13-8DE45506D750"}
  */
-var SVY_SECURITY_VERSION = '1.0.0-b2';
+var SVY_SECURITY_VERSION = '1.2.0';
 
 /**
  * @protected
@@ -49,7 +49,8 @@ var supportExternalDBTransaction = false;
  * TODO should be externalized? Should be stored in db, so next expected time should be calculated ?
  * @private
  * @type {Number}
- * @SuppressWarnings(unused)
+ * @SuppressWarnings(unused) 
+ * @deprecated 
  * @properties={typeid:35,uuid:"9D18DE69-F778-4117-B8B3-0FCFF75E3B83",variableType:4}
  */
 var SESSION_PING_INTERVAL = 60000;
@@ -60,10 +61,10 @@ var SESSION_PING_INTERVAL = 60000;
  *
  * @private
  * @type {Number}
- *
+ * @deprecated Uses more accurate client manager plugin instead
  * @properties={typeid:35,uuid:"263D0C4F-2EA9-4A85-9AB0-E757D276FF04",variableType:8}
  */
-var SESSION_TIMEOUT = 30 * 60 * 1000;
+var SESSION_TIMEOUT = 60 * 1000;
 
 /**
  * Default user name for creation user audit fields when no user present
@@ -1947,6 +1948,7 @@ function Session(record) {
      *
      * @public
      * @return {Date} The date/time of the last session activity (client ping).
+     * @deprecated Sessions are cleaned by security batch processor
      *
      */
     this.getLastActivity = function() {
@@ -2003,12 +2005,7 @@ function Session(record) {
      * @return {Boolean} True if the session has not been terminated and has not been inactive for longer than the session inactivity timeout period.
      */
     this.isActive = function() {
-        //TODO Change this to check against the Servoy client sessions when the ClientManagement plugin is available
-        if (record.session_end) {
-            return false;
-        }
-        return record.last_client_ping.getTime() + SESSION_TIMEOUT > application.getServerTimeStamp().getTime();
-
+        return record.is_active;
     }
 
     /**
@@ -2034,6 +2031,7 @@ function Session(record) {
      * Records a client ping in the database. Internal-use only.
      *
      * @protected
+     * @deprecated 
      */
     this.sendPing = function() {
         setSessionLastPingAndDuration(record);
@@ -2188,16 +2186,20 @@ function initSession(user) {
     sessionRec.user_name = user.getUserName();
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
-    sessionRec.last_client_ping = application.getServerTimeStamp();
+    
+    // DEPRECATED 1.2.0
+//    sessionRec.last_client_ping = application.getServerTimeStamp();
+    
     if (application.getApplicationType() == APPLICATION_TYPES.NG_CLIENT) {
         sessionRec.user_agent_string = plugins.ngclientutils.getUserAgent();
     }
     saveRecord(sessionRec);
 
     // create ping job
-    var jobName = 'com.servoy.extensions.security.sessionUpdater';
-    plugins.scheduler.removeJob(jobName);
-    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
+    // DERECATED 1.2.0
+//    var jobName = 'com.servoy.extensions.security.sessionUpdater';
+//    plugins.scheduler.removeJob(jobName);
+//    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
 
     // store session id
     activeUserName = user.getUserName();
@@ -2210,6 +2212,7 @@ function initSession(user) {
  * Sends the current session going to DB. For internal use only with initSession() which schedules it
  *
  * @private
+ * @deprecated 1.2.0
  * @properties={typeid:24,uuid:"92DCCEDD-F678-4E72-89A3-BEEE78E88958"}
  */
 function sessionClientPing() {    
@@ -2228,7 +2231,15 @@ function sessionClientPing() {
 function closeSession() {
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
-    setSessionLastPingAndDuration(sessionRec, true);
+    
+    // SET END TIME AND DURATION
+    var now = application.getServerTimeStamp();
+    sessionRec.session_end = now;
+    sessionRec.session_duration = Math.max(0,now.getTime() - sessionRec.session_start.getTime());
+    
+    //	DEPRECATED 1.2.0
+//    setSessionLastPingAndDuration(sessionRec, true);
+    
     saveRecord(sessionRec);
     sessionID = null;
     activeUserName = null;
@@ -2403,14 +2414,23 @@ function nameLengthIsValid(name, maxLength) {
  * @properties={typeid:24,uuid:"9100D50E-8FC1-4466-9E94-3730E6B18783"}
  */
 function addActiveSessionSearchCriteria(qbSelect) {
-    if (!qbSelect) {
-        throw new Error('QBSelect is not specified');
-    }
-    var expiration = application.getServerTimeStamp();
-    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
-    var andActiveCriteria = qbSelect.and;
-    andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
-    qbSelect.where.add(andActiveCriteria);
+	
+	// GET ACTIVE CLIENT IDS
+	var activeClientIDs = [];
+	var clients = plugins.clientmanager.getConnectedClients();
+	for(var i in clients){
+		var client = clients[i];
+		activeClientIDs.push(client.getClientID());
+	}
+	
+	// SELECT IN [...CLIENT IDS]
+	qbSelect.where.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs));
+    
+//    var expiration = application.getServerTimeStamp();
+//    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 1 min in the past
+//    var andActiveCriteria = qbSelect.and;
+//    andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
+//    qbSelect.where.add(andActiveCriteria);
 }
 
 /**
@@ -2432,4 +2452,5 @@ function getVersion() {
  */
 var init = function() {
     syncPermissions();
+    scopes.svySecurityBatch.startBatch();
 }();
