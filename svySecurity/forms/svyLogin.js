@@ -208,6 +208,6 @@ function readCookie(){
  */
 function onShow(firstShow, event) {
 	if(firstShow){
-//		readCookie();
+		readCookie();
 	}
 }
