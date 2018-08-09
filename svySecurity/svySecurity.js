@@ -2028,6 +2028,16 @@ function Session(record) {
     }
 
     /**
+     * Gets the name of the Servoy solution that was accessed by this session
+     *
+     * @public
+     * @return {String}
+     */
+    this.getSolutionName = function(){
+    	return record.solution_name;
+    }
+    
+    /**
      * Records a client ping in the database. Internal-use only.
      *
      * @protected
