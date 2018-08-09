@@ -62,6 +62,7 @@ var SESSION_PING_INTERVAL = 60000;
  * @private
  * @type {Number}
  * @deprecated Uses more accurate client manager plugin instead
+ * @SuppressWarnings (unused)
  * @properties={typeid:35,uuid:"263D0C4F-2EA9-4A85-9AB0-E757D276FF04",variableType:8}
  */
 var SESSION_TIMEOUT = 60 * 1000;
