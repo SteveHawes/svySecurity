@@ -1932,7 +1932,6 @@ function Session(record) {
      * Gets the end datetime of this session.
      * Can be null if the session is still active or if the session has not been properly closed.
      * The session end date/time is set by {@link logout}.
-     * @note If a session is not properly close, one can compare the last client ping property (using {@link Session#getLastActivity}) to the start of the session to determine if the session is abandoned.
      *
      * @public
      * @return {Date} The end date/time of this session.
@@ -2186,13 +2185,17 @@ function initSession(user) {
     sessionRec.user_name = user.getUserName();
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
-    
+    sessionRec.solution_name = application.getSolutionName();
+
     // DEPRECATED 1.2.0
 //    sessionRec.last_client_ping = application.getServerTimeStamp();
     
     if (application.getApplicationType() == APPLICATION_TYPES.NG_CLIENT) {
         sessionRec.user_agent_string = plugins.ngclientutils.getUserAgent();
     }
+    
+    
+    
     saveRecord(sessionRec);
 
     // create ping job

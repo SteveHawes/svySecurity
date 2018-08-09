@@ -64,6 +64,13 @@ titleText:"Session Start"
 },
 {
 allowNull:true,
+creationOrderIndex:10,
+dataType:12,
+length:50,
+name:"solution_name"
+},
+{
+allowNull:true,
 creationOrderIndex:7,
 dataType:12,
 length:50,

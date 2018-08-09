@@ -1,4 +1,11 @@
 /**
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"F22F523D-E4ED-4571-871B-001E801EBBA6"}
+ */
+var FLAG_CLEAN_SESSIONS_IN_DEVELOPER = 'cleanSessionsInDeveloper';
+/**
  * Job timings: every minute
  * 
  * @private 
@@ -8,16 +15,17 @@
  */
 var BATCH_INTERVAL = '0 0/1 * * * ?';
 
+
 /**
  * @type {String}
- *
+ * @private 
  * @properties={typeid:35,uuid:"8E386A49-AEC8-4B7D-BD19-2F8BCF6E11B9"}
  */
 var CLIENT_ID = 'com.servoy.extensions.svy-security.batch';
 
 /**
  * Launches the batch processor in a headless client 
- * @public  
+ * @private   
  * @properties={typeid:24,uuid:"C0E3D90A-C0E1-41B2-A20A-6770ACA2CB48"}
  */
 function startBatch(){
@@ -41,6 +49,13 @@ function scheduleSessionManager(){
  * @AllowToRunInFind
  */
 function updateOpenClientSessions(){
+	
+	// Check settings for how to handle abandoned sessions when running developer
+	var cleanSessionsInDeveloper = application.getUserProperty(FLAG_CLEAN_SESSIONS_IN_DEVELOPER); 
+	if(application.isInDeveloper() && cleanSessionsInDeveloper === "false"){
+		application.output('Abandoned sessions will not be cleaned from Servoy Developer. Change setting {user.cleanSessionsInDeveloper=true} in servoy.properties to have them cleaned',LOGGINGLEVEL.DEBUG);
+		return;
+	}
 	
 	application.output('Starting session cleanup...', LOGGINGLEVEL.DEBUG);
 	
