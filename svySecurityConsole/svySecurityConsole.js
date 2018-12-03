@@ -664,7 +664,7 @@ function createChartUserUsageOverTimeMonths(tenantName, userName, chart){
     var yearMonthCol = qry.columns.session_start.year.cast(QUERY_COLUMN_TYPES.TYPE_STRING).concat(qry.columns.session_start.month.cast(QUERY_COLUMN_TYPES.TYPE_STRING)); 
     
     //select
-    qry.result.add(qry.columns.user_name, 'user');    
+    qry.result.add(qry.columns.user_name, 'svyuser');    
     qry.result.add(yearMonthCol, 'yyyymm');
     qry.result.add(qry.columns.session_duration.sum.divide(3600000), 'usage_hours'); //session_duration is stored in milliseconds so we need to convert it to hours
     
@@ -684,7 +684,7 @@ function createChartUserUsageOverTimeMonths(tenantName, userName, chart){
     var ds = databaseManager.getDataSetByQuery(qry, monthsWindow);
         
     var dsData = databaseManager.createEmptyDataSet();
-    dsData.addColumn('user',1,JSColumn.TEXT);
+    dsData.addColumn('svyuser',1,JSColumn.TEXT);
     for (index = 0; index < yearMonths.length; index++) {
         dsData.addColumn(yearMonths[index].label, index+2, JSColumn.NUMBER);        
     }
