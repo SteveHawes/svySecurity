@@ -2458,6 +2458,29 @@ function getVersion() {
 }
 
 /**
+ * If no tenants exist, create a tenant, user and role with permission
+ * Tenantname: tenant
+ * Username: user
+ * Password: pass
+ * Role: Administrators
+ * Permissions: Administrators
+ * 
+ * @private
+ * @properties={typeid:24,uuid:"B34BC0F8-6792-4AD1-BD36-9E616C790B81"}
+ */
+function createSampleData(){
+	if(!getTenants().length){
+		var tenant = createTenant('tenant');
+		var user = tenant.createUser('user');
+		user.setPassword('pass');
+		var role = tenant.createRole('Administrators');
+		user.addRole(role)		
+		var permission = scopes.svySecurity.getPermissions()[0];
+		role.addPermission(permission);
+	}
+}
+
+/**
  * Initializes the module.
  * NOTE: This var must remain at the BOTTOM of the file.
  * @private
@@ -2466,5 +2489,6 @@ function getVersion() {
  */
 var init = function() {
     syncPermissions();
+	createSampleData();    
     scopes.svySecurityBatch.startBatch();
 }();
