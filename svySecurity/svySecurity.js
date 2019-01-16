@@ -103,6 +103,14 @@ var SECURITY_TABLES_FILTER_NAME = 'com.servoy.extensions.security.data-filter';
 var MAX_NAME_LENGTH = 50;
 
 /**
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"AB71B8B7-60C9-4BAD-B6E5-785CE10C9C06"}
+ */
+var DEFAULT_TENANT = 'admin';
+
+/**
  * Logs in the specified user and initializes a new {@link Session} for it.
  * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
  * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
@@ -2470,12 +2478,14 @@ function getVersion() {
  */
 function createSampleData(){
 	if(!getTenants().length){
-		var tenant = createTenant('tenant');
-		var user = tenant.createUser('user');
-		user.setPassword('pass');
-		var role = tenant.createRole('Administrators');
+		
+		logInfo('No security data found. Default data will be created');
+		var tenant = createTenant(DEFAULT_TENANT);
+		var user = tenant.createUser(DEFAULT_TENANT);
+		user.setPassword(DEFAULT_TENANT);
+		var role = tenant.createRole(DEFAULT_TENANT);
 		user.addRole(role)		
-		var permission = scopes.svySecurity.getPermissions()[0];
+		var permission = getPermissions()[0];
 		role.addPermission(permission);
 	}
 }
