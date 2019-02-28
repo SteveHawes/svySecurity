@@ -1,0 +1,11 @@
+deprecated:"true",
+encapsulation:2,
+foreignDataSource:"db:/svy_security/tenants",
+items:[
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"7D9149AC-30F1-46DA-82C4-89513F7D5837"}
+],
+joinType:1,
+name:"items_to_tenants",
+primaryDataSource:"db:/svy_security/items",
+typeid:22,
+uuid:"7CAD239B-652B-4225-97E0-5F99B55DFA43"

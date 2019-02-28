@@ -1,0 +1,11 @@
+deprecated:"true",
+encapsulation:2,
+foreignDataSource:"db:/svy_security/items",
+items:[
+{foreignColumnName:"item_id",primaryDataProviderID:"item_id",typeid:23,uuid:"D2002266-5F2D-49FD-8A90-49A873F4CA1D"}
+],
+joinType:1,
+name:"items_permissions_to_items",
+primaryDataSource:"db:/svy_security/items_permissions",
+typeid:22,
+uuid:"39DE3E64-8F2D-4470-858E-21F201C12F57"

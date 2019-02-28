@@ -1,3 +1,16 @@
+/** 
+ * NOTES FOR SEAN
+ * SvySecurity will include svyProperties unless there is any reason why shall i get svySecurity without svyProperties ?
+ * SvyProperties can be used as standalone module instead. This means that tenant_name is not a mandatory field in svy_properties
+ * 
+ * Question: do we want to allow Properties without a tenant name !?
+ * 
+ * TODOs List
+ * TODO don't allow null for svy_properties_permissions.tenant_name. Conclusion: we don't need at all tenant_name in svy_properties_permissions as permissions allow access independently from tenant name.
+ * TODO rename svy_properties_permissions to properties_permissions !?
+ * 
+ * */
+
 /**
  * @private 
  * @type {String}
@@ -288,7 +301,7 @@ function getTenant(name) {
  * @public
  * @param {Tenant|String} tenant The tenant object or the name of the tenant to delete.
  * @return {Boolean} False if tenant could not be deleted, most commonly because of active user sessions associated with the tenant.
- * @properties={typeid:24,uuid:"416DAE0D-25B4-485F-BDB9-189B151EA1B9"}
+ * @properties={typeid:24,uuid:"3EBC98FA-0AA1-47F8-94C3-04125DA06220"}
  * @AllowToRunInFind
  */
 function deleteTenant(tenant) {
@@ -1690,6 +1703,12 @@ function Permission(record) {
     if (!record) {
         throw new Error('Permission record is not specified');
     }
+    
+    /** 
+     * @protected 
+     * @type {JSRecord<db:/svy_security/permissions>}
+     */
+    this.record = record;
 
     /**
      * Gets the name of this permission.
@@ -1836,6 +1855,82 @@ function Permission(record) {
         }
         return users;
     }
+}
+
+/**
+ * @deprecated
+ * Use {@link Tenant#createItem} to create item objects.
+ * Creating item ojects with the new operator is reserved for internal use only.
+ *
+ * @classdesc Security item  which can have [user]{@link User} members and can be granted [permissions]{@link Permission}.
+ *
+ * @protected
+ * @param {JSRecord<db:/svy_security/items>} record
+ * @constructor
+ *
+ * @properties={typeid:24,uuid:"7D463C51-8593-4E69-9757-43535E0618CC"}
+ */
+function Item(record) {
+    if (!record) {
+        throw new Error('Role record is not specified');
+    }
+    
+    /**
+     * Gets the namespace of this role.
+     *
+     * @public
+     * @return {UUID} The item namespace.
+     */
+    this.getID = function() {
+        return record.item_id;
+    }
+
+    /**
+     * Gets the namespace of this role.
+     *
+     * @public
+     * @return {String} The item namespace.
+     */
+    this.getNameSpace = function() {
+        return record.item_namespace;
+    }
+
+    /**
+     * Gets the display name of this item.
+     * @public
+     * @return {String} The display name of this item. Can be null.
+     */
+    this.getDisplayName = function() {
+        return record.display_name;
+    }
+
+    /**
+     * Sets the display name of this item.
+     * @public
+     * @param {String} displayName The display name to use.
+     * @return {Item} This item for call-chaining support.
+     */
+    this.setDisplayName = function(displayName) {
+        record.display_name = displayName;
+        saveRecord(record);
+        return this;
+    }
+
+    /**
+     * Gets the tenant which this role belongs to.
+     *
+     * @public
+     * @return {Tenant} The tenant which this role belongs to.
+     */
+    this.getTenant = function() {
+    	if (utils.hasRecords(record,"items_to_tenants")) {
+    		return new Tenant(record.items_to_tenants.getSelectedRecord());
+    	} else {
+    		return null;
+    	}
+    }
+    
+    // TODO add all needed functions
 }
 
 /**
@@ -2092,7 +2187,7 @@ function saveRecord(record) {
  * @private
  * @param {JSRecord} record
  *
- * @properties={typeid:24,uuid:"8A2071D7-F4ED-40D7-8285-B3B206DB74CE"}
+ * @properties={typeid:24,uuid:"D0449941-D784-429A-8214-1F1F8E7D65A1"}
  */
 function deleteRecord(record) {
     var startedLocalTransaction = false;
@@ -2481,6 +2576,328 @@ function createSampleData(){
 }
 
 /**
+ * @param propertyNameSpace
+ * @param propertyValue
+ * @param [propertyType]
+ * @param [tenantName]
+ * @param [userName]
+ * 
+ * @return {SecureProperty}
+ * @public 
+ * 
+ * @throws {Error, scopes.svyDataUtils.ValueNotUniqueException}
+ *
+ * @properties={typeid:24,uuid:"C949C607-DD60-45EE-B308-ADD71F66002F"}
+ */
+function createSecureProperty(propertyNameSpace, propertyValue, propertyType, tenantName, userName) {
+	var property = scopes.svyProperties.createProperty(propertyNameSpace,propertyValue,propertyType,tenantName,userName);
+	return getSecureProperty(property.getPropertyUUID());
+}
+
+/**
+ * Immediately and permanently deletes the specified property.
+ * @note USE WITH CAUTION! There is no undo for this operation.
+ *
+ * @public
+ * @param {SecureProperty|UUID|String} property The property object or the UUID (UUID or UUID as String) of the property to delete.
+ * @return {Boolean} False if property could not be deleted.
+ * @properties={typeid:24,uuid:"B3286BC5-9B47-41DE-A98A-B4E83B353EEA"}
+ * @AllowToRunInFind
+ */
+function deleteProperty(property) {
+    if (!property) {
+        throw 'Property cannot be null';
+    }
+    /** @type {String|UUID} */
+    var propertyUUID;
+    if (property instanceof SecureProperty) {
+    	propertyUUID = property.getPropertyUUID();
+    } else {
+    	propertyUUID = property;
+    }
+    scopes.svyProperties.deleteProperty(propertyUUID);
+}
+
+/**
+ * Returns the Property with the given propertyUUID
+ * @param {UUID|String} propertyUUID the UUID of the property (as UUID or as a UUIDString)
+ * 
+ * @return {SecureProperty}
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"BB294C24-60CF-4115-BA8C-A51817EA7E71"}
+ */
+function getSecureProperty(propertyUUID) {
+    if (propertyUUID instanceof String) {
+        /**
+         * @type {String}
+         * @private
+         */
+        var propertyString = propertyUUID;
+        propertyUUID = getSecureProperty(application.getUUID(propertyString));
+    }
+	
+	/** @type {JSRecord<db:/svy_security/svy_properties>} */
+	var rec = scopes.svyDataUtils.getRecord(datasources.db.svy_security.svy_properties.getDataSource(),[propertyUUID]);
+	if (rec) {
+		return new SecureProperty(rec)
+	} else {
+		// TODO shall i throw an exception here ?
+		return null;
+	}
+}
+
+
+/**
+ * @protected
+ * @param {JSRecord<db:/svy_security/svy_properties>} record
+ * @constructor 
+ * 
+ * @extends {scopes.svyProperties.Property}
+ * @properties={typeid:24,uuid:"9BEE2E89-9D10-4EE7-8B2B-ADE017FFFFB1"}
+ */
+function SecureProperty(record) {
+	scopes.svyProperties['Property'].call(this, record);
+}
+
+/**
+ * @private 
+ * @properties={typeid:24,uuid:"F830601A-15FF-4D32-802C-1B793D34189D"}
+ */
+function setupPermissionProperties() {
+	
+	// don't do anything if svyProperties is not available
+//	if (!scopes.svyProperties) {
+//		return;
+//	}
+		
+	 /**
+     * Grants this permission to the specified role.
+     * The permission will be granted to all users that are members of the specified role.
+     *
+     * @public
+     * @param {scopes.svyProperties.Property} property The property object to which the permission should be granted.
+     * @return {Permission} This permission for call-chaining support.
+     */
+    Permission.prototype.addProperty = function(property) {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+    	
+        if (!property) {
+            throw new Error('Property cannot be null');
+        }
+		// Don't allow to add a property with a null tenant to permission since it will be filtered out anyhow
+//		var propertyTenantName = property.getTenantName() ? property.getTenantName() : activeTenantName;
+//		if (!propertyTenantName) {
+//			throw new Error(utils.stringFormat('Property "%1$s" added to Permission "%2$s" doesn\'t have a tenant name;', [propertyID, record.permission_name]))
+//		}
+        
+        var propertyID = property.getPropertyUUID();
+        if (!this.hasProperty(property)) {
+        	
+        	// create a svy_properties_permissions record
+            var propertyPermRec = record.permissions_to_properties_permissions.getRecord(record.permissions_to_properties_permissions.newRecord(false, false));
+            if (!propertyPermRec) {
+                throw new Error('Failed to create new properties_permissions record');
+            }
+//            propertyPermRec.tenant_name = propertyTenantName;
+            propertyPermRec.property_uuid = propertyID;
+            if (!propertyPermRec.creation_user_name) {
+                propertyPermRec.creation_user_name = SYSTEM_USER;
+            }
+            saveRecord(propertyPermRec);
+        }
+        return thisInstance;
+    }
+    
+    /**
+     * Gets all the properties to which this permission is granted.
+     *
+     * @public
+     * @return {Array<scopes.svyProperties.Property>} An array with all properties to which this permission is granted or an empty array if the permission has not been granted to any role.
+     */
+    Permission.prototype.getPropertys = function() {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        var properties = [];
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            var property = record.permissions_to_properties_permissions.getRecord(i).properties_permissions_to_properties.getSelectedRecord();
+            properties.push(scopes.svyProperties.getProperty(property.property_uuid));
+        }
+        return properties;
+    }
+    
+    /**
+     * Checks if this permission is granted to the specified property.
+     *
+     * @public
+     * @param {scopes.svyProperties.Property|String} property The property object or the name of the property to check.
+     * @return {Boolean} True if this permission is granted to the specified property.
+     */
+    Permission.prototype.hasProperty = function(property) {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        if (!property) {
+            throw 'Role cannot be null';
+        }
+        var propertyID = property instanceof String ? property : property.getPropertyUUID();
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            if (record.permissions_to_properties_permissions.getRecord(i).property_uuid == propertyID) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Removes this permission from the specified property.
+     * The permission will no longer be granted to all users that are members of the specified property.
+     *
+     * @public
+     * @param {scopes.svyProperties.Property|String} property The property object or the name of the property to remove.
+     * @return {Permission} This permission for call-chaining support.
+     */
+    Permission.prototype.removeProperty = function(property) {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        if (!property) {
+            throw 'Property cannot be null';
+        }
+        var propertyID = property instanceof String ? property : property.getPropertyUUID();
+
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            if (record.permissions_to_properties_permissions.getRecord(i).property_uuid == propertyID) {
+                deleteRecord(record.permissions_to_properties_permissions.getRecord(i));
+                break;
+            }
+        }
+        return thisInstance;
+    }
+}
+
+/**
+ * @private  
+ * @properties={typeid:24,uuid:"43566F38-5276-4343-91D4-05D626BDB70E"}
+ */
+function setupSecureProperty() {
+	
+	// Extend Property object
+	SecureProperty.prototype = Object.create(scopes.svyProperties['Property'].prototype);
+	SecureProperty.prototype.constructor = SecureProperty;
+	
+    /**
+     * Gets all the permissions to which this property is granted.
+     *
+     * @public
+     * @return {Array<Permission>} An array with all permissions to which this property is granted or an empty array if the property has not been granted to any permission.
+     */
+	SecureProperty.prototype.getPermissions = function() {
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+        var permissions = [];
+        for (var i = 1; i <= record.properties_to_properties_permissions.getSize(); i++) {
+            var permission = record.properties_to_properties_permissions.getRecord(i).properties_permissions_to_permissions.getSelectedRecord();
+            permissions.push(new Permission(permission));
+        }
+        return permissions;
+    }
+	
+    /**
+     * Grants this property to the specified Permission.
+     * Any users that are granted of this permission will be granted the property.
+     *
+     * @public
+     * @param {Permission|String} permission The permission object or name of permission to add.
+     * @return {SecureProperty} This property for call-chaining support.
+     */
+    SecureProperty.prototype.addPermission = function(permission) {
+
+        if (!permission) {
+            throw 'Permission cannot be null';
+        }
+        
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+
+        /**
+         * @type {String}
+         * @private
+         */
+        var permissionName = permission instanceof String ? permission : permission.getName();
+        if (!scopes.svySecurity.getPermission(permissionName)) {
+            throw 'Permission "' + permissionName + '" does not exist in system';
+        }
+        if (!this.hasPermission(permission)) {
+            var rolesPermRec = record.properties_to_properties_permissions.getRecord(record.properties_to_properties_permissions.newRecord(false, false));
+            if (!rolesPermRec) {
+                throw 'Failed to create property permission record';
+            }
+            rolesPermRec.permission_name = permissionName;
+            if (!rolesPermRec.creation_user_name) {
+                logWarning('Creating security record without current user context');
+                rolesPermRec.creation_user_name = SYSTEM_USER;
+            }
+            saveRecord(rolesPermRec);
+        }
+        return this;
+    }
+
+    /**
+     * Checks if the specified permission is granted to this role.
+     *
+     * @public
+     * @param {Permission|String} permission The permission object or name of permission to check.
+     * @return {Boolean} True if the specified permission is granted to this role.
+     */
+    SecureProperty.prototype.hasPermission = function(permission) {
+        if (!permission) {
+            throw 'Permission cannot be null';
+        }
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+        var permissionName = permission instanceof String ? permission : permission.getName();
+        for (var i = 1; i <= record.properties_to_properties_permissions.getSize(); i++) {
+            if (record.properties_to_properties_permissions.getRecord(i).permission_name == permissionName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Removes the specified permission from this role.
+     * The permission will no longer be granted to all users that are members of this role.
+     *
+     * @public
+     * @param {Permission|String} permission The permission object or name of permission to remove.
+     * @return {SecureProperty} This role for call-chaining support.
+     */
+    SecureProperty.prototype.removePermission = function(permission) {
+        if (!permission) {
+            throw 'Permission cannot be null';
+        }
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+        var permissionName = permission instanceof String ? permission : permission.getName();
+        for (var i = 1; i <= record.properties_to_properties_permissions.getSize(); i++) {
+            if (record.properties_to_properties_permissions.getRecord(i).permission_name == permissionName) {
+                deleteRecord(record.properties_to_properties_permissions.getRecord(i));
+                break;
+            }
+        }
+        return this;
+    }    
+}
+
+/**
  * Initializes the module.
  * NOTE: This var must remain at the BOTTOM of the file.
  * @private
@@ -2488,6 +2905,9 @@ function createSampleData(){
  * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
  */
 var init = function() {
+	setupPermissionProperties();
+	setupSecureProperty();
+	
     syncPermissions();
 	createSampleData();    
     scopes.svySecurityBatch.startBatch();
