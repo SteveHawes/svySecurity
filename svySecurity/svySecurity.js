@@ -4,7 +4,7 @@
  *
  * @properties={typeid:35,uuid:"7BA2289C-A59D-4F51-9D13-8DE45506D750"}
  */
-var SVY_SECURITY_VERSION = '1.0.0-b2';
+var SVY_SECURITY_VERSION = '1.2.0';
 
 /**
  * @protected
@@ -49,7 +49,8 @@ var supportExternalDBTransaction = false;
  * TODO should be externalized? Should be stored in db, so next expected time should be calculated ?
  * @private
  * @type {Number}
- * @SuppressWarnings(unused)
+ * @SuppressWarnings(unused) 
+ * @deprecated 
  * @properties={typeid:35,uuid:"9D18DE69-F778-4117-B8B3-0FCFF75E3B83",variableType:4}
  */
 var SESSION_PING_INTERVAL = 60000;
@@ -60,10 +61,11 @@ var SESSION_PING_INTERVAL = 60000;
  *
  * @private
  * @type {Number}
- *
+ * @deprecated Uses more accurate client manager plugin instead
+ * @SuppressWarnings (unused)
  * @properties={typeid:35,uuid:"263D0C4F-2EA9-4A85-9AB0-E757D276FF04",variableType:8}
  */
-var SESSION_TIMEOUT = 30 * 60 * 1000;
+var SESSION_TIMEOUT = 60 * 1000;
 
 /**
  * Default user name for creation user audit fields when no user present
@@ -99,6 +101,14 @@ var SECURITY_TABLES_FILTER_NAME = 'com.servoy.extensions.security.data-filter';
  * @properties={typeid:35,uuid:"6F6E55FB-0644-4746-9FE2-ABA60111AEE9",variableType:4}
  */
 var MAX_NAME_LENGTH = 50;
+
+/**
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"AB71B8B7-60C9-4BAD-B6E5-785CE10C9C06"}
+ */
+var DEFAULT_TENANT = 'admin';
 
 /**
  * Logs in the specified user and initializes a new {@link Session} for it.
@@ -1931,7 +1941,6 @@ function Session(record) {
      * Gets the end datetime of this session.
      * Can be null if the session is still active or if the session has not been properly closed.
      * The session end date/time is set by {@link logout}.
-     * @note If a session is not properly close, one can compare the last client ping property (using {@link Session#getLastActivity}) to the start of the session to determine if the session is abandoned.
      *
      * @public
      * @return {Date} The end date/time of this session.
@@ -1947,6 +1956,7 @@ function Session(record) {
      *
      * @public
      * @return {Date} The date/time of the last session activity (client ping).
+     * @deprecated Sessions are cleaned by security batch processor
      *
      */
     this.getLastActivity = function() {
@@ -2003,12 +2013,7 @@ function Session(record) {
      * @return {Boolean} True if the session has not been terminated and has not been inactive for longer than the session inactivity timeout period.
      */
     this.isActive = function() {
-        //TODO Change this to check against the Servoy client sessions when the ClientManagement plugin is available
-        if (record.session_end) {
-            return false;
-        }
-        return record.last_client_ping.getTime() + SESSION_TIMEOUT > application.getServerTimeStamp().getTime();
-
+        return record.is_active;
     }
 
     /**
@@ -2031,9 +2036,20 @@ function Session(record) {
     }
 
     /**
+     * Gets the name of the Servoy solution that was accessed by this session
+     *
+     * @public
+     * @return {String}
+     */
+    this.getSolutionName = function(){
+    	return record.solution_name;
+    }
+    
+    /**
      * Records a client ping in the database. Internal-use only.
      *
      * @protected
+     * @deprecated 
      */
     this.sendPing = function() {
         setSessionLastPingAndDuration(record);
@@ -2188,16 +2204,24 @@ function initSession(user) {
     sessionRec.user_name = user.getUserName();
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
-    sessionRec.last_client_ping = application.getServerTimeStamp();
+    sessionRec.solution_name = application.getSolutionName();
+
+    // DEPRECATED 1.2.0
+//    sessionRec.last_client_ping = application.getServerTimeStamp();
+    
     if (application.getApplicationType() == APPLICATION_TYPES.NG_CLIENT) {
         sessionRec.user_agent_string = plugins.ngclientutils.getUserAgent();
     }
+    
+    
+    
     saveRecord(sessionRec);
 
     // create ping job
-    var jobName = 'com.servoy.extensions.security.sessionUpdater';
-    plugins.scheduler.removeJob(jobName);
-    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
+    // DERECATED 1.2.0
+//    var jobName = 'com.servoy.extensions.security.sessionUpdater';
+//    plugins.scheduler.removeJob(jobName);
+//    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
 
     // store session id
     activeUserName = user.getUserName();
@@ -2210,6 +2234,7 @@ function initSession(user) {
  * Sends the current session going to DB. For internal use only with initSession() which schedules it
  *
  * @private
+ * @deprecated 1.2.0
  * @properties={typeid:24,uuid:"92DCCEDD-F678-4E72-89A3-BEEE78E88958"}
  */
 function sessionClientPing() {    
@@ -2228,7 +2253,15 @@ function sessionClientPing() {
 function closeSession() {
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
-    setSessionLastPingAndDuration(sessionRec, true);
+    
+    // SET END TIME AND DURATION
+    var now = application.getServerTimeStamp();
+    sessionRec.session_end = now;
+    sessionRec.session_duration = Math.max(0,now.getTime() - sessionRec.session_start.getTime());
+    
+    //	DEPRECATED 1.2.0
+//    setSessionLastPingAndDuration(sessionRec, true);
+    
     saveRecord(sessionRec);
     sessionID = null;
     activeUserName = null;
@@ -2403,14 +2436,23 @@ function nameLengthIsValid(name, maxLength) {
  * @properties={typeid:24,uuid:"9100D50E-8FC1-4466-9E94-3730E6B18783"}
  */
 function addActiveSessionSearchCriteria(qbSelect) {
-    if (!qbSelect) {
-        throw new Error('QBSelect is not specified');
-    }
-    var expiration = application.getServerTimeStamp();
-    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 30 min in the past
-    var andActiveCriteria = qbSelect.and;
-    andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
-    qbSelect.where.add(andActiveCriteria);
+	
+	// GET ACTIVE CLIENT IDS
+	var activeClientIDs = [];
+	var clients = plugins.clientmanager.getConnectedClients();
+	for(var i in clients){
+		var client = clients[i];
+		activeClientIDs.push(client.getClientID());
+	}
+	
+	// SELECT IN [...CLIENT IDS]
+	qbSelect.where.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs));
+    
+//    var expiration = application.getServerTimeStamp();
+//    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 1 min in the past
+//    var andActiveCriteria = qbSelect.and;
+//    andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
+//    qbSelect.where.add(andActiveCriteria);
 }
 
 /**
@@ -2424,6 +2466,31 @@ function getVersion() {
 }
 
 /**
+ * If no tenants exist, create a tenant, user and role with permission
+ * Tenantname: tenant
+ * Username: user
+ * Password: pass
+ * Role: Administrators
+ * Permissions: Administrators
+ * 
+ * @private
+ * @properties={typeid:24,uuid:"B34BC0F8-6792-4AD1-BD36-9E616C790B81"}
+ */
+function createSampleData(){
+	if(!getTenants().length){
+		
+		logInfo('No security data found. Default data will be created');
+		var tenant = createTenant(DEFAULT_TENANT);
+		var user = tenant.createUser(DEFAULT_TENANT);
+		user.setPassword(DEFAULT_TENANT);
+		var role = tenant.createRole(DEFAULT_TENANT);
+		user.addRole(role)		
+		var permission = getPermissions()[0];
+		role.addPermission(permission);
+	}
+}
+
+/**
  * Initializes the module.
  * NOTE: This var must remain at the BOTTOM of the file.
  * @private
@@ -2432,4 +2499,6 @@ function getVersion() {
  */
 var init = function() {
     syncPermissions();
+	createSampleData();    
+    scopes.svySecurityBatch.startBatch();
 }();

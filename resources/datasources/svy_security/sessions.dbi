@@ -24,6 +24,7 @@ autoEnterSubType:0,
 autoEnterType:1,
 creationOrderIndex:5,
 dataType:93,
+description:"@deprecated use is_active calculation",
 name:"last_client_ping",
 titleText:"Last Activity"
 },
@@ -60,6 +61,13 @@ creationOrderIndex:1,
 dataType:93,
 name:"session_start",
 titleText:"Session Start"
+},
+{
+allowNull:true,
+creationOrderIndex:10,
+dataType:12,
+length:50,
+name:"solution_name"
 },
 {
 allowNull:true,
