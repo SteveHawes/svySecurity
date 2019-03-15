@@ -85,7 +85,7 @@ function updateOpenClientSessions(){
 	for (var j = 1; j <= fs.getSize(); j++) {
 		var session = fs.getRecord(j);
 		session.session_end = now;
-		session.session_duration = Math.max(0,now.getTime() - session.session_start.getTime());
+		session.session_duration = Math.min(Math.max(0, now.getTime() - session.session_start.getTime()), 2147483647);
 		if(!databaseManager.saveData(session)){
 			application.output('Failed to update abandoned session: ' + session.servoy_client_id, LOGGINGLEVEL.ERROR);
 			continue;
