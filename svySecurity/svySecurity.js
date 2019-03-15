@@ -108,10 +108,11 @@ var MAX_NAME_LENGTH = 50;
  * @note This method does not perform any password checks - for validation of user passwords use [User.checkPassword]{@link User#checkPassword}.
  * @public
  * @param {User} user The user to log in.
+ * @param {String|UUID} [userUid] The uid to log the user in with (defaults to userName)
  * @return {Boolean} Returns true if the login was successful and a user {@link Session} was created, otherwise false.
  * @properties={typeid:24,uuid:"83266E3D-BB41-416F-988C-964593F1F33C"}
  */
-function login(user) {
+function login(user, userUid) {
 
     if (!user) {
         throw 'User cannot be null';
@@ -153,7 +154,7 @@ function login(user) {
     }
 
     // login
-    if (!security.login(user.getUserName(), user.getUserName(), servoyGroups)) {
+    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), servoyGroups)) {
         logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), servoyGroups]));
         return false;
     }
@@ -998,7 +999,6 @@ function Tenant(record) {
 /**
  * Use {@link Tenant#createUser} to create user objects. Creating user objects with the new operator is reserved for internal use only.
  * @classdesc Application user account associated with a {@link Tenant}. Security [Permissions]{@link Permission} are granted to users through their {@link Role} membership.
- * @protected
  * @param {JSRecord<db:/svy_security/users>} record
  * @constructor
  * @properties={typeid:24,uuid:"96BACE39-6564-4270-8DBD-D16E11F0370E"}
