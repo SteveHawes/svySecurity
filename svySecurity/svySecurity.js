@@ -2385,7 +2385,7 @@ function setSessionLastPingAndDuration(sessionRec, setEndDate) {
 function filterSecurityTables() {
     var serverName = datasources.db.svy_security.getServerName();
     databaseManager.removeTableFilterParam(serverName, SECURITY_TABLES_FILTER_NAME);
-    if (!databaseManager.addTableFilterParam(serverName, null, 'tenant_name', '=', activeTenantName, SECURITY_TABLES_FILTER_NAME)) {
+    if (!databaseManager.addTableFilterParam(serverName, null, 'tenant_name', '^||=', activeTenantName, SECURITY_TABLES_FILTER_NAME)) {
         logError('Failed to filter security tables');
         logout();
         throw 'Failed to filter security tables';
