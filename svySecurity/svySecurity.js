@@ -2661,6 +2661,7 @@ function SecureProperty(record) {
 }
 
 /**
+ * @constructor 
  * @private 
  * @properties={typeid:24,uuid:"F830601A-15FF-4D32-802C-1B793D34189D"}
  */
@@ -2676,7 +2677,7 @@ function setupPermissionProperties() {
      * The permission will be granted to all users that are members of the specified role.
      *
      * @public
-     * @param {scopes.svyProperties.Property} property The property object to which the permission should be granted.
+     * @param {scopes.svyProperties.Property|String|UUID} property The property object to which the permission should be granted.
      * @return {Permission} This permission for call-chaining support.
      */
     Permission.prototype.addProperty = function(property) {
@@ -2694,7 +2695,16 @@ function setupPermissionProperties() {
 //			throw new Error(utils.stringFormat('Property "%1$s" added to Permission "%2$s" doesn\'t have a tenant name;', [propertyID, record.permission_name]))
 //		}
         
-        var propertyID = property.getPropertyUUID();
+        var propertyID;
+        if (property instanceof String) {
+        	propertyID = property;
+        } else if (property instanceof UUID) {
+        	propertyID = property;
+        } else {
+        	propertyID = property.getPropertyUUID();
+        }
+        
+        // add the property
         if (!this.hasProperty(property)) {
         	
         	// create a svy_properties_permissions record
@@ -2735,7 +2745,7 @@ function setupPermissionProperties() {
      * Checks if this permission is granted to the specified property.
      *
      * @public
-     * @param {scopes.svyProperties.Property|String} property The property object or the name of the property to check.
+     * @param {scopes.svyProperties.Property|String|UUID} property The property object or the name of the property to check.
      * @return {Boolean} True if this permission is granted to the specified property.
      */
     Permission.prototype.hasProperty = function(property) {
@@ -2746,7 +2756,16 @@ function setupPermissionProperties() {
         if (!property) {
             throw 'Role cannot be null';
         }
-        var propertyID = property instanceof String ? property : property.getPropertyUUID();
+        
+        var propertyID;
+        if (property instanceof String) {
+        	propertyID = property;
+        } else if (property instanceof UUID) {
+        	propertyID = property;
+        } else {
+        	propertyID = property.getPropertyUUID();
+        }
+        
         for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
             if (record.permissions_to_properties_permissions.getRecord(i).property_uuid == propertyID) {
                 return true;
@@ -2760,7 +2779,7 @@ function setupPermissionProperties() {
      * The permission will no longer be granted to all users that are members of the specified property.
      *
      * @public
-     * @param {scopes.svyProperties.Property|String} property The property object or the name of the property to remove.
+     * @param {scopes.svyProperties.Property|String|UUID} property The property object or the name of the property to remove.
      * @return {Permission} This permission for call-chaining support.
      */
     Permission.prototype.removeProperty = function(property) {
@@ -2771,7 +2790,15 @@ function setupPermissionProperties() {
         if (!property) {
             throw 'Property cannot be null';
         }
-        var propertyID = property instanceof String ? property : property.getPropertyUUID();
+        
+        var propertyID;
+        if (property instanceof String) {
+        	propertyID = property;
+        } else if (property instanceof UUID) {
+        	propertyID = property;
+        } else {
+        	propertyID = property.getPropertyUUID();
+        }
 
         for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
             if (record.permissions_to_properties_permissions.getRecord(i).property_uuid == propertyID) {
@@ -2784,6 +2811,7 @@ function setupPermissionProperties() {
 }
 
 /**
+ * @constructor 
  * @private  
  * @properties={typeid:24,uuid:"43566F38-5276-4343-91D4-05D626BDB70E"}
  */
