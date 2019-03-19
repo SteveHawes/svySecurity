@@ -25,7 +25,7 @@ var CLIENT_ID = 'com.servoy.extensions.svy-security.batch';
 
 /**
  * Launches the batch processor in a headless client 
- * @private   
+ * @public    
  * @properties={typeid:24,uuid:"C0E3D90A-C0E1-41B2-A20A-6770ACA2CB48"}
  */
 function startBatch(){
@@ -57,8 +57,6 @@ function updateOpenClientSessions(){
 		return;
 	}
 	
-	application.output('Starting session cleanup...', LOGGINGLEVEL.DEBUG);
-	
 	// GET IDS FOR ALL CONNECTED CLIENTS
 	var clientIDs = [];
 	var clients = plugins.clientmanager.getConnectedClients();
@@ -78,24 +76,22 @@ function updateOpenClientSessions(){
 	fs.loadRecords(q);
 	var sessionCount = fs.getSize(); 
 	if(!sessionCount){
-		application.output('No sessions to clean up', LOGGINGLEVEL.DEBUG);
 		return
 	}
-	application.output('Found '+sessionCount+' abandoned session(s');
+	application.output('Found '+sessionCount+' abandoned session(s', LOGGINGLEVEL.INFO);
 	
 	// UPDATE SESSIONS
 	var now = application.getServerTimeStamp();
 	for (var j = 1; j <= fs.getSize(); j++) {
 		var session = fs.getRecord(j);
 		session.session_end = now;
-		session.session_duration = Math.max(0,now.getTime() - session.session_start.getTime());
+		session.session_duration = Math.min(Math.max(0, now.getTime() - session.session_start.getTime()), 2147483647);
 		if(!databaseManager.saveData(session)){
 			application.output('Failed to update abandoned session: ' + session.servoy_client_id, LOGGINGLEVEL.ERROR);
 			continue;
 		}
 		application.output('Closed abandoned session: ' + session.servoy_client_id,LOGGINGLEVEL.INFO);
 	}
-	application.output('Session cleanup completed', LOGGINGLEVEL.DEBUG);
 }
 /**
  * Callback method for when solution is opened.

@@ -116,6 +116,14 @@ var SECURITY_TABLES_FILTER_NAME = 'com.servoy.extensions.security.data-filter';
 var MAX_NAME_LENGTH = 50;
 
 /**
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"AB71B8B7-60C9-4BAD-B6E5-785CE10C9C06"}
+ */
+var DEFAULT_TENANT = 'admin';
+
+/**
  * Logs in the specified user and initializes a new {@link Session} for it.
  * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
  * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
@@ -123,10 +131,11 @@ var MAX_NAME_LENGTH = 50;
  * @note This method does not perform any password checks - for validation of user passwords use [User.checkPassword]{@link User#checkPassword}.
  * @public
  * @param {User} user The user to log in.
+ * @param {String|UUID} [userUid] The uid to log the user in with (defaults to userName)
  * @return {Boolean} Returns true if the login was successful and a user {@link Session} was created, otherwise false.
  * @properties={typeid:24,uuid:"83266E3D-BB41-416F-988C-964593F1F33C"}
  */
-function login(user) {
+function login(user, userUid) {
 
     if (!user) {
         throw 'User cannot be null';
@@ -168,7 +177,7 @@ function login(user) {
     }
 
     // login
-    if (!security.login(user.getUserName(), user.getUserName(), servoyGroups)) {
+    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), servoyGroups)) {
         logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), servoyGroups]));
         return false;
     }
@@ -1013,7 +1022,6 @@ function Tenant(record) {
 /**
  * Use {@link Tenant#createUser} to create user objects. Creating user objects with the new operator is reserved for internal use only.
  * @classdesc Application user account associated with a {@link Tenant}. Security [Permissions]{@link Permission} are granted to users through their {@link Role} membership.
- * @protected
  * @param {JSRecord<db:/svy_security/users>} record
  * @constructor
  * @properties={typeid:24,uuid:"96BACE39-6564-4270-8DBD-D16E11F0370E"}
@@ -2565,12 +2573,14 @@ function getVersion() {
  */
 function createSampleData(){
 	if(!getTenants().length){
-		var tenant = createTenant('tenant');
-		var user = tenant.createUser('user');
-		user.setPassword('pass');
-		var role = tenant.createRole('Administrators');
+		
+		logInfo('No security data found. Default data will be created');
+		var tenant = createTenant(DEFAULT_TENANT);
+		var user = tenant.createUser(DEFAULT_TENANT);
+		user.setPassword(DEFAULT_TENANT);
+		var role = tenant.createRole(DEFAULT_TENANT);
 		user.addRole(role)		
-		var permission = scopes.svySecurity.getPermissions()[0];
+		var permission = getPermissions()[0];
 		role.addPermission(permission);
 	}
 }
