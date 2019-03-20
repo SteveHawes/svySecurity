@@ -119,10 +119,11 @@ var DEFAULT_TENANT = 'admin';
  * @public
  * @param {User} user The user to log in.
  * @param {String|UUID} [userUid] The uid to log the user in with (defaults to userName)
+ * @param {Array<String|Permission>} [permissionsToApply] Optional permissions to assign to the user. Note that these permissions cannot be asked for using User.getPermissions() or User.hasPermission().
  * @return {Boolean} Returns true if the login was successful and a user {@link Session} was created, otherwise false.
  * @properties={typeid:24,uuid:"83266E3D-BB41-416F-988C-964593F1F33C"}
  */
-function login(user, userUid) {
+function login(user, userUid, permissionsToApply) {
 
     if (!user) {
         throw 'User cannot be null';
@@ -151,6 +152,12 @@ function login(user, userUid) {
     var permissions = user.getPermissions();
     for (var i in permissions) {
         servoyGroups.push(permissions[i].getName());
+    }
+    
+    if (permissionsToApply) {
+    	for (var p = 0; p < permissionsToApply.length; p++) {
+			servoyGroups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
+       	}
     }
 
     // no groups
@@ -199,7 +206,7 @@ function logout() {
  * @properties={typeid:24,uuid:"2093C23A-D1E5-49D2-AA0B-428D5CB8B0FA"}
  */
 function createTenant(name) {
-    if (!name) {
+	if (!name) {
         throw new Error('Name cannot be null or empty');
     }
     if (!nameLengthIsValid(name, MAX_NAME_LENGTH)) {
@@ -2473,14 +2480,14 @@ function getVersion() {
  * @properties={typeid:24,uuid:"B34BC0F8-6792-4AD1-BD36-9E616C790B81"}
  */
 function createSampleData(){
-	if(!getTenants().length){
-		
+	if (!getTenants().length) {
+
 		logInfo('No security data found. Default data will be created');
 		var tenant = createTenant(DEFAULT_TENANT);
 		var user = tenant.createUser(DEFAULT_TENANT);
 		user.setPassword(DEFAULT_TENANT);
 		var role = tenant.createRole(DEFAULT_TENANT);
-		user.addRole(role)		
+		user.addRole(role)
 		var permission = getPermissions()[0];
 		role.addPermission(permission);
 	}
@@ -2494,7 +2501,7 @@ function createSampleData(){
  * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
  */
 var init = function() {
-    syncPermissions();
-	createSampleData();    
+		syncPermissions();
+	createSampleData();
     scopes.svySecurityBatch.startBatch();
 }();
