@@ -33,7 +33,8 @@ location:{
 x:10,
 y:160
 },
-onCellClick:"7551DD44-6DB7-4F85-B96C-A14D8949D1D9",
+onCellClick:null,
+onCellDoubleClick:"790C38E3-4D7B-4354-A24A-7ACA6E2C1242",
 size:{
 height:429,
 width:780
