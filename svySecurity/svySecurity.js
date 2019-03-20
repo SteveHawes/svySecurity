@@ -206,6 +206,55 @@ function logout() {
  * @properties={typeid:24,uuid:"2093C23A-D1E5-49D2-AA0B-428D5CB8B0FA"}
  */
 function createTenant(name) {
+    var rec = createTenantRecord(name);
+    return new Tenant(rec);
+}
+
+/**
+ * Creates and returns a new tenant with the specified name as a clone of the given tenant.
+ * The names of tenants must be unique in the system.
+ * The cloned tenant has the same roles and role permissions as the original.
+ * When makeSlave is true, the newly created clone will be a slave of the tenant to clone,
+ * inheriting all role / permission changes made to the master.
+ * 
+ * @public
+ * @param {Tenant} tenantToClone The tenant to clone from
+ * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
+ * @param {Boolean} [makeSlave] When true, the cloned tenant will be a slave of the tenant to clone (defaults to false).
+ * @return {Tenant} The cloned tenant that is created.
+ *
+ * @properties={typeid:24,uuid:"6C41B9E2-7033-4FD9-84EF-1D91E400DF95"}
+ */
+function cloneTenant(tenantToClone, name, makeSlave) {
+	var rec = createTenantRecord(name);
+	if (makeSlave === true) {
+		rec.master_tenant_name = tenantToClone.getName();
+		saveRecord(rec);
+	}
+	var tenant = new Tenant(rec);
+	var roles = tenantToClone.getRoles();
+	for (var r = 0; r < roles.length; r++) {
+		var role = tenant.createRole(roles[r].getName());
+		role.setDisplayName(roles[r].getDisplayName());
+		var permissions = roles[r].getPermissions();
+		for (var p = 0; p < permissions.length; p++) {
+			role.addPermission(permissions[p]);
+		}
+	}
+	return tenant;
+}
+
+/**
+ * Creates a tenant record with the given name.
+ * The names of tenants must be unique in the system.
+ * 
+ * @private 
+ * @param {String} name
+ * @return {JSRecord<db:/svy_security/tenants>}
+ *
+ * @properties={typeid:24,uuid:"66D6A963-76FA-48CA-BE11-C9CD0CC74D1A"}
+ */
+function createTenantRecord(name) {
 	if (!name) {
         throw new Error('Name cannot be null or empty');
     }
@@ -224,7 +273,7 @@ function createTenant(name) {
         rec.creation_user_name = SYSTEM_USER;
     }
     saveRecord(rec);
-    return new Tenant(rec);
+    return rec;
 }
 
 /**
@@ -853,7 +902,7 @@ function Tenant(record) {
             }
         }
 
-        var fs = datasources.db.svy_security.roles.getFoundSet();// record.tenants_to_roles.duplicateFoundSet();
+        var fs = datasources.db.svy_security.roles.getFoundSet();
         var qry = datasources.db.svy_security.roles.createSelect();
         qry.where.add(qry.columns.role_name.eq(roleName));
         qry.where.add(qry.columns.tenant_name.eq(record.tenant_name));
@@ -862,6 +911,7 @@ function Tenant(record) {
             throw 'Role ' + roleName + ' not found in tenant';
         }
         deleteRecord(fs.getRecord(1));
+        
         return this;
     }
 
@@ -1006,6 +1056,55 @@ function Tenant(record) {
      */
     this.getLockExpiration = function() {
         return record.lock_expiration;
+    }
+    
+    /**
+     * Gets all slaves of this tenant
+     * When recursive is true, all slaves of this tenant's slaves are included
+     * 
+     * @public 
+     * @return {Array<Tenant>} slaves Array of tenants that have this tenant as their master
+     */
+    this.getSlaves = function(recursive) {
+    	 var fs = datasources.db.svy_security.tenants.getFoundSet();
+         var qry = datasources.db.svy_security.tenants.createSelect();
+         qry.where.add(qry.columns.master_tenant_name.eq(this.getName()));
+         fs.loadRecords(qry);
+         
+         var slaves = [];
+         if (utils.hasRecords(fs)) {
+        	 for (var s = 1; s <= fs.getSize(); s++) {
+        	 	var recordSlave = fs.getRecord(s);
+        	 	var slave = new Tenant(recordSlave);
+        	 	slaves.push(slave);
+        	 	if (recursive === true && utils.hasRecords(recordSlave.tenants_to_tenants$slaves)) {
+        	 		slaves = slaves.concat(slave.getSlaves(recursive));
+        	 	}
+        	 }
+         }
+         return slaves;
+    }
+    
+    /**
+     * Returns true if this Tenant is a master (template) tenant
+     * 
+     * @public 
+     * @return {Boolean} isMasterTenant Whether this tenant is a master to other tenants
+     */
+    this.isMasterTenant = function() {
+    	return utils.hasRecords(record.tenants_to_tenants$slaves);
+    }
+    
+    /**
+     * Creates a slave of this tenant with the given name.
+     * Modifications to roles and permissions of this tenant will be propagated to all of its slaves.
+     * 
+     * @public 
+     * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
+     * @return {Tenant} slave The slave that has been created
+     */
+    this.createSlave = function(name) {
+		return cloneTenant(this, name, true);
     }
 }
 
@@ -1680,6 +1779,7 @@ function Role(record) {
                 break;
             }
         }
+        
         return this;
     }
 }
@@ -2059,6 +2159,7 @@ function Session(record) {
         saveRecord(record);
     }
 }
+
 /**
  * Utility to save record with error thrown
  * @private
@@ -2486,6 +2587,191 @@ function createSampleData(){
 		user.addRole(role)
 		var permission = getPermissions()[0];
 		role.addPermission(permission);
+	}
+}
+
+/**
+ * Record after-insert trigger.
+ * Adds this role to all slaves
+ *
+ * @param {JSRecord<db:/svy_security/roles>} record record that is inserted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"17106233-8761-463C-ABDB-6F8ED312DFA5"}
+ */
+function afterRecordInsert_role(record) {
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate insert to all slaves
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			var recordRoleSlave;
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					return;
+				}
+			}
+			
+			recordRoleSlave = recordSlave.tenants_to_roles.getRecord(recordSlave.tenants_to_roles.newRecord());
+			//copy fields to not miss values in case columns are added in the future
+			databaseManager.copyMatchingFields(record, recordRoleSlave, ['tenant_name']);
+			databaseManager.saveData(recordRoleSlave);
+		}
+	}
+}
+
+/**
+ * Record after-update trigger.
+ * Removes this role from all slaves.
+ *
+ * @param {JSRecord<db:/svy_security/roles>} record record that is updated
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"90523996-D26E-4296-B97E-8B911FE4A4C7"}
+ */
+function afterRecordUpdate_role(record) {
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate update to all slaves
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				var recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					databaseManager.copyMatchingFields(record, recordRoleSlave, ['tenant_name']);					
+					databaseManager.saveData(recordRoleSlave);
+					break;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Record after-insert trigger.
+ * Adds this permission to the role on all slaves. 
+ *
+ * @param {JSRecord<db:/svy_security/roles_permissions>} record record that is inserted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"6A602687-ACF0-4F04-B0D6-8D5762FEF65E"}
+ */
+function afterRecordInsert_role_permission(record) {
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate insert to all slaves
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			var recordRolePermissionSlave,
+				recordRoleSlave,
+				roleFound = false;
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					roleFound = true;
+					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSlave.permission_name === record.permission_name) {
+							logDebug('Slave ' + recordSlave.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
+							return;
+						}
+					}
+					break;
+				}
+			}
+			
+			if (roleFound) {
+				recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(recordRoleSlave.roles_to_roles_permissions.newRecord());
+				//copy fields to not miss values in case columns are added in the future
+				databaseManager.copyMatchingFields(record, recordRolePermissionSlave, ['tenant_name']);
+				databaseManager.saveData(recordRolePermissionSlave);
+			} else {
+				logDebug('Slave ' + recordSlave.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
+			}
+		}
+	}
+}
+
+/**
+ * Record after-delete trigger.
+ * Removes this role from all slaves
+ *
+ * @param {JSRecord<db:/svy_security/roles>} record record that is deleted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"AC038DA1-1E18-4116-8922-E2B7FD079374"}
+ */
+function afterRecordDelete_role(record) {
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate delete to all slaves
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				var recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					recordSlave.tenants_to_roles.deleteRecord(r)
+					break;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Record after-delete trigger.
+ * Removes this permission from all slaves
+ *
+ * @param {JSRecord<db:/svy_security/roles_permissions>} record record that is deleted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"094D2472-04CC-4555-8BCD-CE55D18BE397"}
+ */
+function afterRecordDelete_roles_permissions(record) {
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate delete to all slaves
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			var recordRolePermissionSlave,
+				recordRoleSlave;
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSlave.permission_name === record.permission_name) {
+							recordRoleSlave.roles_to_roles_permissions.deleteRecord(p)
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Record after-delete trigger.
+ * Clears the master_tenant_name from all slaves or replace it with the master of the tenant that is deleted.
+ *
+ * @param {JSRecord<db:/svy_security/tenants>} record record that is deleted
+ *
+ * @properties={typeid:24,uuid:"FA620835-B83C-4F75-B5BC-0A83EBE50D87"}
+ */
+function afterRecordDelete_tenant(record) {
+	if (utils.hasRecords(record.tenants_to_tenants$slaves)) {
+		//if the tenant to delete itself has a master, set that on all slaves
+		var masterTenantName = null;
+		if (utils.hasRecords(record.tenants_to_tenants$master)) {
+			masterTenantName = record.tenants_to_tenants$master.tenant_name;
+		}
+		for (var s = 1; s <= record.tenants_to_tenants$slaves.getSize(); s++) {
+			var recordSlave = record.tenants_to_tenants$slaves.getRecord(s);
+			recordSlave.master_tenant_name = masterTenantName;
+		}
+		databaseManager.saveData(record.tenants_to_tenants$slaves);
 	}
 }
 
