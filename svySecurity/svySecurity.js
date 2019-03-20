@@ -2076,7 +2076,6 @@ function saveRecord(record) {
         }
     } else {
         startedLocalTransaction = true;
-        logDebug('Starting internal database transaction.');
         databaseManager.startTransaction();
     }
 
@@ -2085,7 +2084,6 @@ function saveRecord(record) {
             throw new Error('Failed to save record ' + record.exception);
         }
         if (startedLocalTransaction) {
-            logDebug('Committing internal database transaction.');
             if (!databaseManager.commitTransaction(true, true)) {
                 throw new Error('Failed to commit database transaction.');
             }
@@ -2115,7 +2113,6 @@ function deleteRecord(record) {
         }
     } else {
         startedLocalTransaction = true;
-        logDebug('Starting internal database transaction.');
         databaseManager.startTransaction();
     }
 
@@ -2124,7 +2121,6 @@ function deleteRecord(record) {
             throw new Error('Failed to delete record.');
         }
         if (startedLocalTransaction) {
-            logDebug('Committing internal database transaction.');
             if (!databaseManager.commitTransaction(true, true)) {
                 throw new Error('Failed to commit database transaction.');
             }
