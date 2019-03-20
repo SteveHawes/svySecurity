@@ -146,10 +146,6 @@ function login(user, userUid) {
         return false;
     }
 
-    // sync permissions
-    // TODO Necessary to do here ?
-    syncPermissions();
-
     // get internal groups
     var servoyGroups = [];
     var permissions = user.getPermissions();
