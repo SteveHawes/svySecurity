@@ -2234,14 +2234,14 @@ function deleteRecord(record) {
 }
 
 /**
- * Utility to sync permission records to the internal, design-time  Servoy Security Groups.
+ * Utility to sync permission records to the internal, design-time Servoy Security Groups.
  * This should be called on solution import or on startup
  * This action will create new permission records.
  *
  * NOTE: This action will not delete permissions which have been removed from internal security.
  * Design-time groups should never be renamed. They will be seen only as an ADD and will lose their tie to roles.
  *
- * @private
+ * @public 
  * @param {Boolean} [forcePermissionRemoval] if true then permissions without a matching
  * Servoy security group will be deleted regardless if they have been granted to any role or not;
  * if false (default) then permissions without a matching Servoy security group will be deleted only
