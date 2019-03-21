@@ -159,6 +159,12 @@ function onActionAddRoleMember(event) {
     }
 
     var tenantUsers = databaseManager.convertToDataSet(foundset.svy_sec_console_tenants_to_users, ['user_name']).getColumnAsArray(1);
+    
+    if (tenantUsers.length === 0) {
+    	plugins.dialogs.showInfoDialog('No users','Please create users first.');
+        return;
+    }
+    
     var userToAdd =  plugins.dialogs.showSelectDialog('Add Role User Member','Select the user to add to the selected role:', tenantUsers);
     if (!userToAdd) {
         return;

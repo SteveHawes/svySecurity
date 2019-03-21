@@ -57,6 +57,7 @@ function showAll(){
 	setSearchText(null);
 	onSearch();
 }
+
 /**
  * Callback method for when form is shown.
  *
@@ -72,27 +73,18 @@ function onShow(firstShow, event) {
 }
 
 /**
- * Called when the mouse is clicked on a row/cell (foundset and column indexes are given) or.
- * when the ENTER key is used then only the selected foundset index is given
- * Use the record to exactly match where the user clicked on
- *
- * @param {Number} foundsetindex
- * @param {Number} [columnindex]
- * @param {JSRecord} [record]
- * @param {JSEvent} [event]
- *
- * @protected
- *
- * @properties={typeid:24,uuid:"7551DD44-6DB7-4F85-B96C-A14D8949D1D9"}
- */
-function onCellClick(foundsetindex, columnindex, record, event) {
-	showDetail();
-}
-
-/**
  * @protected 
  * @properties={typeid:24,uuid:"A38C16DD-2902-4598-B249-982DA2E826B1"}
  */
 function showDetail(){
 	// override
+}
+
+/**
+ * @private  
+ *
+ * @properties={typeid:24,uuid:"790C38E3-4D7B-4354-A24A-7ACA6E2C1242"}
+ */
+function onCellDoubleClick() {
+	showDetail();
 }

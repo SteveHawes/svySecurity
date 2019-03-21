@@ -10,9 +10,20 @@ extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
 extendsID:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733",
-height:800,
+height:900,
 typeid:19,
 uuid:"05D59C8C-8BB2-4CC5-A66C-2885B1677F3A"
+},
+{
+labelFor:"fldMasterTenantName",
+location:"56,679",
+name:"lblMasterTenantName",
+size:"133,20",
+styleClass:"large",
+text:"Slave of Tenant",
+transparent:true,
+typeid:7,
+uuid:"066ECE98-7C17-4CB1-94EC-19DF0CF1B92F"
 },
 {
 location:"60,40",
@@ -59,7 +70,7 @@ uuid:"2D96E7D8-2A5B-498B-AA1E-085B4BF5D229"
 },
 {
 displaysTags:true,
-location:"194,690",
+location:"194,720",
 name:"lblCreationInfo",
 size:"445,26",
 text:"Created on  <b>%%creation_datetime%%<\/b>  by  <b>%%creation_user_name%%<\/b>",
@@ -98,7 +109,7 @@ uuid:"4B64A149-18C0-424B-94B0-7B05F07835FB"
 },
 {
 dataProviderID:"m_LockStausText",
-location:"194,719",
+location:"194,749",
 name:"lblLockInfo",
 size:"445,26",
 typeid:7,
@@ -113,6 +124,16 @@ text:"Tenant Display Name",
 transparent:true,
 typeid:7,
 uuid:"56C777A4-3B04-471D-A2DD-4EF59ED5C276"
+},
+{
+dataProviderID:"master_tenant_name",
+editable:false,
+location:"194,674",
+name:"fldMasterTenantName",
+size:"445,30",
+text:"Name",
+typeid:4,
+uuid:"8B525409-1BD2-4DB4-9BC1-4C6E59872945"
 },
 {
 anchors:9,
@@ -292,7 +313,7 @@ uuid:"E3F4FEB0-7726-4F22-9788-8E42E36996E8"
 },
 {
 labelFor:"",
-location:"56,694",
+location:"56,724",
 name:"lblStatus",
 size:"133,20",
 text:"Account Status",
@@ -312,7 +333,7 @@ uuid:"F190E1C1-65B3-4684-8D24-EF5A2EB8A048"
 },
 {
 dataProviderID:"m_LockReasonText",
-location:"194,748",
+location:"194,778",
 name:"lblLockReason",
 size:"445,26",
 typeid:7,

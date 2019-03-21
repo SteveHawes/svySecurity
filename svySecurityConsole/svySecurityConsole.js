@@ -53,10 +53,12 @@ function onError(ex) {
 }
 
 /**
+ * @param {JSRecord<db:/svy_security/tenants>} [recordMaster]
+ * @param {Boolean} [makeSlave]
  * @public 
  * @properties={typeid:24,uuid:"04B144AE-7E6B-4932-BB7B-8BA1A76C11DB"}
  */
-function addNewTenant() {
+function addNewTenant(recordMaster, makeSlave) {
     var name = plugins.dialogs.showInputDialog('Add New Tenant', 'Enter a name for the new tenant:');
     if(!name){
         return;
@@ -65,7 +67,13 @@ function addNewTenant() {
         plugins.dialogs.showErrorDialog('Could Not Create Tenant', utils.stringFormat('The specified tenant name "%1$s" is already in use.', [name]));
         return;
     }
-    var tenant = scopes.svySecurity.createTenant(name);
+    var tenant;
+    if (recordMaster) {
+    	var masterTenant = scopes.svySecurity.getTenant(recordMaster.tenant_name);
+    	tenant = scopes.svySecurity.cloneTenant(masterTenant, name, makeSlave ? true : false);
+    } else {    	
+	    tenant = scopes.svySecurity.createTenant(name);
+    }
     if(!tenant){
         plugins.dialogs.showErrorDialog('Could not create tenant', 'There was an unknown error. Please check server logs.');
         return;
@@ -125,7 +133,7 @@ function onSolutionOpen(arg, queryParams) {
 
 /**
  * @public
- * @param {svychartjs-chart} chart
+ * @param {svychartjs-chart|svychartjs-chart_abs} chart
  * @properties={typeid:24,uuid:"D54407E3-A7ED-41F2-ACFD-0757B6168520"}
  */
 function createChartTenantsWithMostUsers(chart){
@@ -292,7 +300,7 @@ function createChartTopTenantsUsageOverTimeMonths(chart){
 
 /**
  * @public
- * @param {svychartjs-chart} chart
+ * @param {svychartjs-chart|svychartjs-chart_abs} chart
  * @properties={typeid:24,uuid:"4E3E4B19-6940-4D84-AC37-0F0BD4C9440F"}
  */
 function createChartTotalUsageOverTimeMonths(chart){
@@ -532,7 +540,7 @@ function createChartTenantTopUsersUsageOverTimeMonths(tenantName, chart){
 /**
  * @public
  * @param {String} tenantName
- * @param {svychartjs-chart} chart
+ * @param {svychartjs-chart|svychartjs-chart_abs} chart
  * @properties={typeid:24,uuid:"0392338E-6D9A-437E-94FC-99E648296685"}
  */
 function createChartTotalTenantUsageOverTimeMonths(tenantName, chart){
@@ -644,7 +652,7 @@ function createChartTotalTenantUsageOverTimeMonths(tenantName, chart){
  * @public
  * @param {String} tenantName
  * @param {String} userName
- * @param {svychartjs-chart} chart
+ * @param {svychartjs-chart|svychartjs-chart_abs} chart
  * @properties={typeid:24,uuid:"B4BF6476-C659-421D-991C-9DCD95991C20"}
  */
 function createChartUserUsageOverTimeMonths(tenantName, userName, chart){    

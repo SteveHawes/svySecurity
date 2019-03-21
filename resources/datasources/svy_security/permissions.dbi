@@ -1,6 +1,7 @@
 columns:[
 {
 allowNull:false,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:0,
 dataType:12,
 flags:1,
@@ -21,6 +22,7 @@ titleText:"Created"
 allowNull:false,
 autoEnterSubType:2,
 autoEnterType:1,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:4,
 dataType:12,
 length:50,
@@ -28,6 +30,7 @@ name:"creation_user_name"
 },
 {
 allowNull:true,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:3,
 dataType:12,
 length:50,
@@ -46,6 +49,7 @@ titleText:"Modified"
 allowNull:true,
 autoEnterSubType:4,
 autoEnterType:1,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:5,
 dataType:12,
 length:50,
