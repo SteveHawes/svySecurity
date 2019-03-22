@@ -206,7 +206,7 @@ function logout() {
  * @properties={typeid:24,uuid:"2093C23A-D1E5-49D2-AA0B-428D5CB8B0FA"}
  */
 function createTenant(name) {
-    var rec = createTenantRecord(name);
+    var rec = createTenantRecord(name, null);
     return new Tenant(rec);
 }
 
@@ -226,11 +226,7 @@ function createTenant(name) {
  * @properties={typeid:24,uuid:"6C41B9E2-7033-4FD9-84EF-1D91E400DF95"}
  */
 function cloneTenant(tenantToClone, name, makeSlave) {
-	var rec = createTenantRecord(name);
-	if (makeSlave === true) {
-		rec.master_tenant_name = tenantToClone.getName();
-		saveRecord(rec);
-	}
+	var rec = createTenantRecord(name, makeSlave === true && tenantToClone ? tenantToClone.getName() : null);
 	var tenant = new Tenant(rec);
 	var roles = tenantToClone.getRoles();
 	for (var r = 0; r < roles.length; r++) {
@@ -250,11 +246,12 @@ function cloneTenant(tenantToClone, name, makeSlave) {
  * 
  * @private 
  * @param {String} name
+ * @param {String} [masterTenantName]
  * @return {JSRecord<db:/svy_security/tenants>}
  *
  * @properties={typeid:24,uuid:"66D6A963-76FA-48CA-BE11-C9CD0CC74D1A"}
  */
-function createTenantRecord(name) {
+function createTenantRecord(name, masterTenantName) {
 	if (!name) {
         throw new Error('Name cannot be null or empty');
     }
@@ -268,6 +265,7 @@ function createTenantRecord(name) {
     var rec = fs.getRecord(fs.newRecord(false, false));
     rec.tenant_name = name;
     rec.display_name = name;
+    rec.master_tenant_name = masterTenantName;
     if (!rec.creation_user_name) {
         logWarning('Creating security record without current user context');
         rec.creation_user_name = SYSTEM_USER;
