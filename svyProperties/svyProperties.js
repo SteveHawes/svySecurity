@@ -455,17 +455,3 @@ function deleteRecord(record) {
         throw e;
     }
 }
-
-
-
-
-/**
- * Initializes the module.
- * NOTE: This var must remain at the BOTTOM of the file.
- * @private
- * @SuppressWarnings (unused)
- * @properties={typeid:35,uuid:"AA79B112-EACF-4094-83A9-9C121DE8F7E6",variableType:-4}
- */
-var init = function() {
-//	setupSecurityProperties();
-}();
