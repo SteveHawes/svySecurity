@@ -2604,11 +2604,17 @@ function afterRecordInsert_role(record) {
 			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
 			
 			var recordRoleSlave;
+			var roleFound = false;
 			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
 				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
 				if (recordRoleSlave.role_name === record.role_name) {
-					return;
+					roleFound = true;
+					break;
 				}
+			}
+			
+			if (roleFound === true) {
+				continue;
 			}
 			
 			recordRoleSlave = recordSlave.tenants_to_roles.getRecord(recordSlave.tenants_to_roles.newRecord());
@@ -2663,28 +2669,31 @@ function afterRecordInsert_role_permission(record) {
 			
 			var recordRolePermissionSlave,
 				recordRoleSlave,
-				roleFound = false;
+				roleFound = false,
+				permissionFound;
 			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
 				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
 				if (recordRoleSlave.role_name === record.role_name) {
 					roleFound = true;
+					permissionFound = false;
 					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
 						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
 						if (recordRolePermissionSlave.permission_name === record.permission_name) {
 							logDebug('Slave ' + recordSlave.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
-							return;
+							permissionFound = true;
+							break;
 						}
 					}
 					break;
 				}
 			}
 			
-			if (roleFound) {
+			if (roleFound && !permissionFound) {
 				recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(recordRoleSlave.roles_to_roles_permissions.newRecord());
 				//copy fields to not miss values in case columns are added in the future
 				databaseManager.copyMatchingFields(record, recordRolePermissionSlave, ['tenant_name']);
 				databaseManager.saveData(recordRolePermissionSlave);
-			} else {
+			} else if (!roleFound) {
 				logDebug('Slave ' + recordSlave.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
 			}
 		}
