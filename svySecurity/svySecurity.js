@@ -161,27 +161,39 @@ function login(user, userUid, permissionsToApply) {
     }
 
     // get internal groups
-    var servoyGroups = [];
+    var servoyGroups = security.getGroups().getColumnAsArray(2);
+    var groups = [];
     var permissions = user.getPermissions();
     for (var i in permissions) {
-        servoyGroups.push(permissions[i].getName());
+        groups.push(permissions[i].getName());
     }
     
     if (permissionsToApply) {
     	for (var p = 0; p < permissionsToApply.length; p++) {
-			servoyGroups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
+			groups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
        	}
     }
+    
+    // login with groups that do no longer exist will fail, so we need to filter them out
+    groups = groups.filter(
+    	function(groupName) {
+    		var groupIdx = servoyGroups.indexOf(groupName);
+    		if (groupIdx === -1) {
+    			logWarning(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings and cannot be assigned to user "%2$s".', [groupName, user.getUserName()]));
+    		}
+    		return groupIdx >= 0;
+    	}
+    );
 
     // no groups
-    if (!servoyGroups.length) {
+    if (!groups.length) {
         logWarning('No Permissions. Cannot login');
         return false;
     }
 
     // login
-    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), servoyGroups)) {
-        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), servoyGroups]));
+    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), groups)) {
+        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
         return false;
     }
 
@@ -3050,11 +3062,17 @@ function afterRecordInsert_role(record) {
 			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
 			
 			var recordRoleSlave;
+			var roleFound = false;
 			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
 				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
 				if (recordRoleSlave.role_name === record.role_name) {
-					return;
+					roleFound = true;
+					break;
 				}
+			}
+			
+			if (roleFound === true) {
+				continue;
 			}
 			
 			recordRoleSlave = recordSlave.tenants_to_roles.getRecord(recordSlave.tenants_to_roles.newRecord());
@@ -3109,28 +3127,31 @@ function afterRecordInsert_role_permission(record) {
 			
 			var recordRolePermissionSlave,
 				recordRoleSlave,
-				roleFound = false;
+				roleFound = false,
+				permissionFound;
 			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
 				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
 				if (recordRoleSlave.role_name === record.role_name) {
 					roleFound = true;
+					permissionFound = false;
 					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
 						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
 						if (recordRolePermissionSlave.permission_name === record.permission_name) {
 							logDebug('Slave ' + recordSlave.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
-							return;
+							permissionFound = true;
+							break;
 						}
 					}
 					break;
 				}
 			}
 			
-			if (roleFound) {
+			if (roleFound && !permissionFound) {
 				recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(recordRoleSlave.roles_to_roles_permissions.newRecord());
 				//copy fields to not miss values in case columns are added in the future
 				databaseManager.copyMatchingFields(record, recordRolePermissionSlave, ['tenant_name']);
 				databaseManager.saveData(recordRolePermissionSlave);
-			} else {
+			} else if (!roleFound) {
 				logDebug('Slave ' + recordSlave.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
 			}
 		}
