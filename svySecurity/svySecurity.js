@@ -2793,8 +2793,7 @@ function setupPermissionProperties() {
 //	}
 		
 	 /**
-     * Grants this permission to the specified role.
-     * The permission will be granted to all users that are members of the specified role.
+     * Assign this permission to the specified property.
      *
      * @public
      * @param {scopes.svyProperties.Property|String|UUID} property The property object to which the permission should be granted.
@@ -2896,7 +2895,6 @@ function setupPermissionProperties() {
     
     /**
      * Removes this permission from the specified property.
-     * The permission will no longer be granted to all users that are members of the specified property.
      *
      * @public
      * @param {scopes.svyProperties.Property|String|UUID} property The property object or the name of the property to remove.
@@ -2999,11 +2997,11 @@ function setupSecureProperty() {
     }
 
     /**
-     * Checks if the specified permission is granted to this role.
+     * Checks if the specified permission is granted to this property.
      *
      * @public
      * @param {Permission|String} permission The permission object or name of permission to check.
-     * @return {Boolean} True if the specified permission is granted to this role.
+     * @return {Boolean} True if the specified permission is granted to this property.
      */
     SecureProperty.prototype.hasPermission = function(permission) {
         if (!permission) {
@@ -3021,8 +3019,8 @@ function setupSecureProperty() {
     }
 
     /**
-     * Removes the specified permission from this role.
-     * The permission will no longer be granted to all users that are members of this role.
+     * Removes the specified permission from this property.
+     * The permission will no longer be granted to all users that are members of this property.
      *
      * @public
      * @param {Permission|String} permission The permission object or name of permission to remove.
