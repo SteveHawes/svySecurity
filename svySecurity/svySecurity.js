@@ -148,27 +148,39 @@ function login(user, userUid, permissionsToApply) {
     }
 
     // get internal groups
-    var servoyGroups = [];
+    var servoyGroups = security.getGroups().getColumnAsArray(2);
+    var groups = [];
     var permissions = user.getPermissions();
     for (var i in permissions) {
-        servoyGroups.push(permissions[i].getName());
+        groups.push(permissions[i].getName());
     }
     
     if (permissionsToApply) {
     	for (var p = 0; p < permissionsToApply.length; p++) {
-			servoyGroups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
+			groups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
        	}
     }
+    
+    // login with groups that do no longer exist will fail, so we need to filter them out
+    groups = groups.filter(
+    	function(groupName) {
+    		var groupIdx = servoyGroups.indexOf(groupName);
+    		if (groupIdx === -1) {
+    			logWarning(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings and cannot be assigned to user "%2$s".', [groupName, user.getUserName()]));
+    		}
+    		return groupIdx >= 0;
+    	}
+    );
 
     // no groups
-    if (!servoyGroups.length) {
+    if (!groups.length) {
         logWarning('No Permissions. Cannot login');
         return false;
     }
 
     // login
-    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), servoyGroups)) {
-        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), servoyGroups]));
+    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), groups)) {
+        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
         return false;
     }
 
