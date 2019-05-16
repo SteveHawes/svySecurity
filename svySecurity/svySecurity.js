@@ -2767,6 +2767,7 @@ function setupPermissionProperties() {
     
     /**
      * Gets all the properties to which this permission is granted.
+     * @deprecated use getProperties instead
      *
      * @public
      * @return {Array<scopes.svyProperties.Property>} An array with all properties to which this permission is granted or an empty array if the permission has not been granted to any role.
@@ -2783,6 +2784,25 @@ function setupPermissionProperties() {
         }
         return properties;
     }
+    
+    /**
+     * Gets all the properties to which this permission is granted.
+     *
+     * @public
+     * @return {Array<scopes.svyProperties.Property>} An array with all properties to which this permission is granted or an empty array if the permission has not been granted to any role.
+     */
+    Permission.prototype.getProperties = function() {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        var properties = [];
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            var property = record.permissions_to_properties_permissions.getRecord(i).properties_permissions_to_properties.getSelectedRecord();
+            properties.push(scopes.svyProperties.getProperty(property.property_uuid));
+        }
+        return properties;
+    }    
     
     /**
      * Checks if this permission is granted to the specified property.
@@ -2887,6 +2907,7 @@ function setupSecureProperty() {
      * @public
      * @param {Permission|String} permission The permission object or name of permission to add.
      * @return {SecureProperty} This property for call-chaining support.
+     * @this {SecureProperty}
      */
     SecureProperty.prototype.addPermission = function(permission) {
 
@@ -2949,6 +2970,7 @@ function setupSecureProperty() {
      * @public
      * @param {Permission|String} permission The permission object or name of permission to remove.
      * @return {SecureProperty} This role for call-chaining support.
+     * @this {SecureProperty}
      */
     SecureProperty.prototype.removePermission = function(permission) {
         if (!permission) {
