@@ -75,16 +75,13 @@ var supportExternalDBTransaction = false;
  * the state of security-related objects upon transaction rollbacks which occur after
  * successful calls to the svyProperties API.
  *
- * @private
+ * @public 
  * @param {Boolean} mustSupportExternalTransactions The value for the supportExternalDBTransaction flag to set.
  *
  *
  * @properties={typeid:24,uuid:"E96349F8-049D-412F-B4E6-B8B8C7BAB3C6"}
  */
 function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions) {
-	if (databaseManager.hasTransaction()) {
-		throw new Error('The external DB transaction support flag can be changed only while a DB transaction is not in progress.');
-	}
 	supportExternalDBTransaction = mustSupportExternalTransactions;
 }
 
@@ -396,7 +393,6 @@ function saveRecord(record) {
 		}
 	} else {
 		startedLocalTransaction = true;
-		log.debug('Starting internal database transaction.');
 		databaseManager.startTransaction();
 	}
 
@@ -405,8 +401,7 @@ function saveRecord(record) {
 			throw new Error('Failed to save record ' + record.exception);
 		}
 		if (startedLocalTransaction) {
-			log.debug('Committing internal database transaction.');
-			if (!databaseManager.commitTransaction(true, true)) {
+			if (!databaseManager.commitTransaction(false, false)) {
 				throw new Error('Failed to commit database transaction.');
 			}
 		}
@@ -435,7 +430,6 @@ function deleteRecord(record) {
         }
     } else {
         startedLocalTransaction = true;
-        log.debug('Starting internal database transaction.');
         databaseManager.startTransaction();
     }
 
@@ -444,7 +438,6 @@ function deleteRecord(record) {
             throw new Error('Failed to delete record.');
         }
         if (startedLocalTransaction) {
-        	log.debug('Committing internal database transaction.');
             if (!databaseManager.commitTransaction(true, true)) {
                 throw new Error('Failed to commit database transaction.');
             }
