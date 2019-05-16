@@ -1,6 +1,12 @@
 customProperties:"formComponent:false,\
 layout:{\
 responsive:true\
+},\
+methods:{\
+onLoadMethodID:{\
+arguments:null,\
+parameters:null\
+}\
 }",
 encapsulation:60,
 extendsID:"674E6B11-85C3-4D0E-807D-AA26B4FA0A52",
@@ -72,19 +78,21 @@ typeid:47,
 uuid:"4C147FBF-3361-4179-A615-CBDB7AD9494F"
 },
 {
-cssPosition:"15,100,-1,100,0,120",
+cssPosition:"15,calc( 50% - 150px),-1,calc( 50% - 150px),0,120",
 json:{
 cssPosition:{
 bottom:"-1",
 height:"120",
-left:"100",
-right:"100",
+left:"calc( 50% - 150px)",
+right:"calc( 50% - 150px)",
 top:"15",
 width:"0"
 },
-media:"E9AD00C6-6156-40C2-B034-231892E1292D"
+media:"E9AD00C6-6156-40C2-B034-231892E1292D",
+styleClass:"full-width"
 },
 name:"logo",
+styleClass:"full-width",
 typeName:"servoyextra-imagelabel",
 typeid:47,
 uuid:"4C34B051-D80F-42F5-873E-E71059A0FEDC"
@@ -220,6 +228,7 @@ uuid:"287276BA-6179-4483-87A0-3026896D1BC8"
 ],
 name:"svyLoginUX",
 navigatorID:"-1",
+onLoadMethodID:"9FEABBD6-00AC-4423-A921-27553CCFA252",
 showInMenu:true,
 titleText:"-none-",
 typeid:3,

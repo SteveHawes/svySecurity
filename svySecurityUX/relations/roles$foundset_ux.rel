@@ -1,0 +1,7 @@
+encapsulation:2,
+foreignDataSource:"db:/ips/role",
+joinType:1,
+name:"roles$foundset_ux",
+primaryDataSource:"db:/ips/role",
+typeid:22,
+uuid:"0AD89F0B-B07F-40ED-A0F7-5FB4A32FF2F6"
