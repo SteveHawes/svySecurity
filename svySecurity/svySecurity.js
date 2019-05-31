@@ -2528,15 +2528,12 @@ function logError(msg) {
  * the state of security-related objects upon transaction rollbacks which occur after
  * successful calls to the svySecurity API.
  *
- * @private
+ * @public 
  * @param {Boolean} mustSupportExternalTransactions The value for the supportExternalDBTransaction flag to set.
  *
  * @properties={typeid:24,uuid:"0447F6A2-6A4C-4691-8981-F573ECF029DE"}
  */
 function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions) {
-    if (databaseManager.hasTransaction()) {
-        throw new Error('The external DB transaction support flag can be changed only while a DB transaction is not in progress.');
-    }
     supportExternalDBTransaction = mustSupportExternalTransactions;
 }
 
