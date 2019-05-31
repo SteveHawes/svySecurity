@@ -294,6 +294,71 @@ function getProperty(propertyUUID) {
 	}
 }
 
+
+/**
+ * @param {String} propertyNameSpace
+ * @param {String} [propertyType] should be an exact match
+ * @param {String} [tenantName] should be an exact match
+ * @param {String} [userName] should be an exact match
+ * 
+ * @return {Array<Property>}
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"7F95F54F-D932-4226-AA75-60841D07CBF4"}
+ */
+function getProperties(propertyNameSpace, propertyType, tenantName, userName) {
+	if (propertyNameSpace == null || propertyNameSpace == undefined) {
+		throw "PropertyNameSpace required";
+	}
+	
+	// Check if value is unique values
+	/** @type {Array<String>} */
+	var queryColumns = [];
+	var queryValues = [];
+	
+	if (propertyType !== null && propertyType !== undefined) {
+		queryColumns.push("property_type");
+		queryValues.push(propertyType);
+	}
+	
+	if (tenantName !== null && tenantName !== undefined) {
+		queryColumns.push("tenant_name");
+		queryValues.push(tenantName);
+	}
+	
+	if (userName !== null && userName !== undefined) {
+		queryColumns.push("user_name");
+		queryValues.push(userName);
+	}
+	
+	var query = datasources.db.svy_security.svy_properties.createSelect();
+	if (propertyNameSpace.indexOf("%") > -1) {
+		query.where.add(query.columns.property_namespace.like(propertyNameSpace));
+	} else {
+		query.where.add(query.columns.property_namespace.eq(propertyNameSpace));
+	}
+	
+	for (var j = 0; j < queryColumns.length; j++) {
+		if (queryValues[j] == null) {
+			query.where.add(query.getColumn(queryColumns[j]).isNull);
+		} else {
+			query.where.add(query.getColumn(queryColumns[j]).eq(queryValues[j]));
+		}
+	}
+	
+	/** @type {JSFoundSet<db:/svy_security/svy_properties>} */
+	var fsExists = databaseManager.getFoundSet(query);
+	var result = [];
+	
+	for (var i = 1; i <= fsExists.getSize(); i++) {
+		var record = fsExists.getRecord(i);
+		result.push(new Property(record));
+	}
+	
+	return result;
+}
+
+
 /**
  * Immediately and permanently deletes the specified property.
  * @note USE WITH CAUTION! There is no undo for this operation.
