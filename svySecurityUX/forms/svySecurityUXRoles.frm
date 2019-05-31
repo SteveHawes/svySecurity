@@ -4,17 +4,18 @@ dataSource:"db:/svy_security/roles",
 encapsulation:60,
 items:[
 {
-cssPosition:"-1,-1,10,110,25,32",
+cssPosition:"-1,-1,10,110,25,40",
 json:{
+alignment:"center-vertically",
 cssPosition:{
 bottom:"10",
-height:"32",
+height:"40",
 left:"110",
 right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-shield text-success text-center-vertical h4 clickable",
+faclass:"fa fa-user-shield text-success h4 clickable",
 onActionMethodID:"313704AB-9377-4BC7-BDE9-DD9A017E29C7",
 size:{
 height:25,
@@ -69,17 +70,18 @@ typeid:47,
 uuid:"1F290062-0A38-4818-9041-93A652AE2F78"
 },
 {
-cssPosition:"-1,-1,10,278,25,32",
+cssPosition:"-1,-1,10,278,25,40",
 json:{
+alignment:"center-vertically",
 cssPosition:{
 bottom:"10",
-height:"32",
+height:"40",
 left:"278",
 right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-shield text-danger text-center-vertical h4 clickable",
+faclass:"fa fa-user-shield text-danger h4 clickable",
 onActionMethodID:"0818F08B-71A3-40D8-A97C-D4FC572771DD",
 size:{
 height:25,

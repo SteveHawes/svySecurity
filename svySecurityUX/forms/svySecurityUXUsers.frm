@@ -25,17 +25,18 @@ typeid:47,
 uuid:"10BD6E6A-E680-4C25-BE98-53268A174F56"
 },
 {
-cssPosition:"-1,-1,10,278,25,32",
+cssPosition:"-1,-1,10,278,25,40",
 json:{
+alignment:"center",
 cssPosition:{
 bottom:"10",
-height:"32",
+height:"40",
 left:"278",
 right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-minus text-danger text-center-vertical h4 clickable",
+faclass:"fa fa-user-minus text-danger h4 clickable",
 onActionMethodID:"5671D9E4-2485-4788-AAD6-F5744DC20D11",
 size:{
 height:25,
@@ -160,17 +161,18 @@ typeid:19,
 uuid:"DEBF1A30-9FC0-4531-A503-7B28C5E43427"
 },
 {
-cssPosition:"-1,-1,10,110,25,32",
+cssPosition:"-1,-1,10,110,25,40",
 json:{
+alignment:"center",
 cssPosition:{
 bottom:"10",
-height:"32",
+height:"40",
 left:"110",
 right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-plus text-success text-center-vertical h4 clickable",
+faclass:"fa fa-user-plus text-success h4 clickable",
 onActionMethodID:"6C10F510-A289-4DDA-9D24-4666F08E6F9D",
 size:{
 height:25,

@@ -25,17 +25,18 @@ typeid:47,
 uuid:"213148F7-E128-44F5-8892-5B0C6E352AA7"
 },
 {
-cssPosition:"-1,30,10,-1,25,32",
+cssPosition:"-1,30,10,-1,25,40",
 json:{
+alignment:"center",
 cssPosition:{
 bottom:"10",
-height:"32",
+height:"40",
 left:"-1",
 right:"30",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-long-arrow-right text-tertiary text-center-vertical h4 clickable",
+faclass:"fa fa-long-arrow-right text-tertiary h4 clickable",
 onActionMethodID:"2728289F-AA07-4D48-93D1-29BF6F1943C5",
 size:{
 height:25,
