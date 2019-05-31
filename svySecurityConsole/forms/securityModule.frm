@@ -1,8 +1,10 @@
-customProperties:"formComponent:false",
+customProperties:"formComponent:false,\
+useCssPosition:true",
 dataSource:"db:/svy_security/svy_properties",
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
+cssPosition:"40,-1,-1,10,40,40",
 extendsID:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0",
 location:"10,40",
 size:"40,40",
@@ -11,6 +13,7 @@ uuid:"0C5040D9-F8AC-4069-8C36-16AC0EAF3B0F"
 },
 {
 anchors:15,
+cssPosition:"140,0,9,0,800,560",
 formIndex:2,
 location:"0,140",
 name:"tabless",
@@ -29,6 +32,7 @@ uuid:"49BADF54-8201-434C-A84D-18E74F467ABF"
 },
 {
 anchors:11,
+cssPosition:"90,0,-1,0,800,42",
 formIndex:-5,
 location:"0,90",
 name:"lblToolbar",
@@ -39,6 +43,7 @@ typeid:7,
 uuid:"5259DD41-4E76-4708-93DF-0F499C23C53A"
 },
 {
+cssPosition:"90,-1,-1,473,320,40",
 displaysTags:true,
 horizontalAlignment:4,
 location:"473,90",
