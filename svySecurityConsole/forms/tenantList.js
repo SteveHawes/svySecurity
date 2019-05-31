@@ -52,6 +52,36 @@ function onActionCreateTenant(event) {
 }
 
 /**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"D5A99C94-81ED-4921-8BFD-BE98A30E8D06"}
+ */
+function onActionCreateSlave(event) {
+	if (utils.hasRecords(foundset)) {
+		scopes.svySecurityConsole.addNewTenant(foundset.getSelectedRecord(), true);
+	}
+}
+
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"B329E8C1-AF47-4049-A224-F6AF1A40DA38"}
+ */
+function onActionCloneTenant(event) {
+	if (utils.hasRecords(foundset)) {
+		scopes.svySecurityConsole.addNewTenant(foundset.getSelectedRecord(), false);
+	}
+}
+
+/**
  * @public 
  * @properties={typeid:24,uuid:"45D3644E-9404-4144-9DA8-891BBE27899F"}
  */

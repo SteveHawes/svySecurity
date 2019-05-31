@@ -1,3 +1,16 @@
+/** 
+ * NOTES FOR SEAN
+ * SvySecurity will include svyProperties unless there is any reason why shall i get svySecurity without svyProperties ?
+ * SvyProperties can be used as standalone module instead. This means that tenant_name is not a mandatory field in svy_properties
+ * 
+ * Question: do we want to allow Properties without a tenant name !?
+ * 
+ * TODOs List
+ * TODO don't allow null for svy_properties_permissions.tenant_name. Conclusion: we don't need at all tenant_name in svy_properties_permissions as permissions allow access independently from tenant name.
+ * TODO rename svy_properties_permissions to properties_permissions !?
+ * 
+ * */
+
 /**
  * @private 
  * @type {String}
@@ -119,10 +132,11 @@ var DEFAULT_TENANT = 'admin';
  * @public
  * @param {User} user The user to log in.
  * @param {String|UUID} [userUid] The uid to log the user in with (defaults to userName)
+ * @param {Array<String|Permission>} [permissionsToApply] Optional permissions to assign to the user. Note that these permissions cannot be asked for using User.getPermissions() or User.hasPermission().
  * @return {Boolean} Returns true if the login was successful and a user {@link Session} was created, otherwise false.
  * @properties={typeid:24,uuid:"83266E3D-BB41-416F-988C-964593F1F33C"}
  */
-function login(user, userUid) {
+function login(user, userUid, permissionsToApply) {
 
     if (!user) {
         throw 'User cannot be null';
@@ -146,26 +160,40 @@ function login(user, userUid) {
         return false;
     }
 
-    // sync permissions
-    // TODO Necessary to do here ?
-    syncPermissions();
-
     // get internal groups
-    var servoyGroups = [];
+    var servoyGroups = security.getGroups().getColumnAsArray(2);
+    var groups = [];
     var permissions = user.getPermissions();
     for (var i in permissions) {
-        servoyGroups.push(permissions[i].getName());
+        groups.push(permissions[i].getName());
     }
+    
+    if (permissionsToApply) {
+    	for (var p = 0; p < permissionsToApply.length; p++) {
+			groups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
+       	}
+    }
+    
+    // login with groups that do no longer exist will fail, so we need to filter them out
+    groups = groups.filter(
+    	function(groupName) {
+    		var groupIdx = servoyGroups.indexOf(groupName);
+    		if (groupIdx === -1) {
+    			logWarning(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings and cannot be assigned to user "%2$s".', [groupName, user.getUserName()]));
+    		}
+    		return groupIdx >= 0;
+    	}
+    );
 
     // no groups
-    if (!servoyGroups.length) {
+    if (!groups.length) {
         logWarning('No Permissions. Cannot login');
         return false;
     }
 
     // login
-    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), servoyGroups)) {
-        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), servoyGroups]));
+    if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), groups)) {
+        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
         return false;
     }
 
@@ -203,7 +231,53 @@ function logout() {
  * @properties={typeid:24,uuid:"2093C23A-D1E5-49D2-AA0B-428D5CB8B0FA"}
  */
 function createTenant(name) {
-    if (!name) {
+    var rec = createTenantRecord(name, null);
+    return new Tenant(rec);
+}
+
+/**
+ * Creates and returns a new tenant with the specified name as a clone of the given tenant.
+ * The names of tenants must be unique in the system.
+ * The cloned tenant has the same roles and role permissions as the original.
+ * When makeSlave is true, the newly created clone will be a slave of the tenant to clone,
+ * inheriting all role / permission changes made to the master.
+ * 
+ * @public
+ * @param {Tenant} tenantToClone The tenant to clone from
+ * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
+ * @param {Boolean} [makeSlave] When true, the cloned tenant will be a slave of the tenant to clone (defaults to false).
+ * @return {Tenant} The cloned tenant that is created.
+ *
+ * @properties={typeid:24,uuid:"6C41B9E2-7033-4FD9-84EF-1D91E400DF95"}
+ */
+function cloneTenant(tenantToClone, name, makeSlave) {
+	var rec = createTenantRecord(name, makeSlave === true && tenantToClone ? tenantToClone.getName() : null);
+	var tenant = new Tenant(rec);
+	var roles = tenantToClone.getRoles();
+	for (var r = 0; r < roles.length; r++) {
+		var role = tenant.createRole(roles[r].getName());
+		role.setDisplayName(roles[r].getDisplayName());
+		var permissions = roles[r].getPermissions();
+		for (var p = 0; p < permissions.length; p++) {
+			role.addPermission(permissions[p]);
+		}
+	}
+	return tenant;
+}
+
+/**
+ * Creates a tenant record with the given name.
+ * The names of tenants must be unique in the system.
+ * 
+ * @private 
+ * @param {String} name
+ * @param {String} [masterTenantName]
+ * @return {JSRecord<db:/svy_security/tenants>}
+ *
+ * @properties={typeid:24,uuid:"66D6A963-76FA-48CA-BE11-C9CD0CC74D1A"}
+ */
+function createTenantRecord(name, masterTenantName) {
+	if (!name) {
         throw new Error('Name cannot be null or empty');
     }
     if (!nameLengthIsValid(name, MAX_NAME_LENGTH)) {
@@ -216,12 +290,13 @@ function createTenant(name) {
     var rec = fs.getRecord(fs.newRecord(false, false));
     rec.tenant_name = name;
     rec.display_name = name;
+    rec.master_tenant_name = masterTenantName;
     if (!rec.creation_user_name) {
         logWarning('Creating security record without current user context');
         rec.creation_user_name = SYSTEM_USER;
     }
     saveRecord(rec);
-    return new Tenant(rec);
+    return rec;
 }
 
 /**
@@ -297,7 +372,7 @@ function getTenant(name) {
  * @public
  * @param {Tenant|String} tenant The tenant object or the name of the tenant to delete.
  * @return {Boolean} False if tenant could not be deleted, most commonly because of active user sessions associated with the tenant.
- * @properties={typeid:24,uuid:"416DAE0D-25B4-485F-BDB9-189B151EA1B9"}
+ * @properties={typeid:24,uuid:"3EBC98FA-0AA1-47F8-94C3-04125DA06220"}
  * @AllowToRunInFind
  */
 function deleteTenant(tenant) {
@@ -850,7 +925,7 @@ function Tenant(record) {
             }
         }
 
-        var fs = datasources.db.svy_security.roles.getFoundSet();// record.tenants_to_roles.duplicateFoundSet();
+        var fs = datasources.db.svy_security.roles.getFoundSet();
         var qry = datasources.db.svy_security.roles.createSelect();
         qry.where.add(qry.columns.role_name.eq(roleName));
         qry.where.add(qry.columns.tenant_name.eq(record.tenant_name));
@@ -859,6 +934,7 @@ function Tenant(record) {
             throw 'Role ' + roleName + ' not found in tenant';
         }
         deleteRecord(fs.getRecord(1));
+        
         return this;
     }
 
@@ -1003,6 +1079,55 @@ function Tenant(record) {
      */
     this.getLockExpiration = function() {
         return record.lock_expiration;
+    }
+    
+    /**
+     * Gets all slaves of this tenant
+     * When recursive is true, all slaves of this tenant's slaves are included
+     * 
+     * @public 
+     * @return {Array<Tenant>} slaves Array of tenants that have this tenant as their master
+     */
+    this.getSlaves = function(recursive) {
+    	 var fs = datasources.db.svy_security.tenants.getFoundSet();
+         var qry = datasources.db.svy_security.tenants.createSelect();
+         qry.where.add(qry.columns.master_tenant_name.eq(this.getName()));
+         fs.loadRecords(qry);
+         
+         var slaves = [];
+         if (utils.hasRecords(fs)) {
+        	 for (var s = 1; s <= fs.getSize(); s++) {
+        	 	var recordSlave = fs.getRecord(s);
+        	 	var slave = new Tenant(recordSlave);
+        	 	slaves.push(slave);
+        	 	if (recursive === true && utils.hasRecords(recordSlave.tenants_to_tenants$slaves)) {
+        	 		slaves = slaves.concat(slave.getSlaves(recursive));
+        	 	}
+        	 }
+         }
+         return slaves;
+    }
+    
+    /**
+     * Returns true if this Tenant is a master (template) tenant
+     * 
+     * @public 
+     * @return {Boolean} isMasterTenant Whether this tenant is a master to other tenants
+     */
+    this.isMasterTenant = function() {
+    	return utils.hasRecords(record.tenants_to_tenants$slaves);
+    }
+    
+    /**
+     * Creates a slave of this tenant with the given name.
+     * Modifications to roles and permissions of this tenant will be propagated to all of its slaves.
+     * 
+     * @public 
+     * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
+     * @return {Tenant} slave The slave that has been created
+     */
+    this.createSlave = function(name) {
+		return cloneTenant(this, name, true);
     }
 }
 
@@ -1677,6 +1802,7 @@ function Role(record) {
                 break;
             }
         }
+        
         return this;
     }
 }
@@ -1698,6 +1824,12 @@ function Permission(record) {
     if (!record) {
         throw new Error('Permission record is not specified');
     }
+    
+    /** 
+     * @protected 
+     * @type {JSRecord<db:/svy_security/permissions>}
+     */
+    this.record = record;
 
     /**
      * Gets the name of this permission.
@@ -2056,6 +2188,7 @@ function Session(record) {
         saveRecord(record);
     }
 }
+
 /**
  * Utility to save record with error thrown
  * @private
@@ -2073,7 +2206,6 @@ function saveRecord(record) {
         }
     } else {
         startedLocalTransaction = true;
-        logDebug('Starting internal database transaction.');
         databaseManager.startTransaction();
     }
 
@@ -2082,7 +2214,6 @@ function saveRecord(record) {
             throw new Error('Failed to save record ' + record.exception);
         }
         if (startedLocalTransaction) {
-            logDebug('Committing internal database transaction.');
             if (!databaseManager.commitTransaction(true, true)) {
                 throw new Error('Failed to commit database transaction.');
             }
@@ -2100,7 +2231,7 @@ function saveRecord(record) {
  * @private
  * @param {JSRecord} record
  *
- * @properties={typeid:24,uuid:"8A2071D7-F4ED-40D7-8285-B3B206DB74CE"}
+ * @properties={typeid:24,uuid:"D0449941-D784-429A-8214-1F1F8E7D65A1"}
  */
 function deleteRecord(record) {
     var startedLocalTransaction = false;
@@ -2112,7 +2243,6 @@ function deleteRecord(record) {
         }
     } else {
         startedLocalTransaction = true;
-        logDebug('Starting internal database transaction.');
         databaseManager.startTransaction();
     }
 
@@ -2121,7 +2251,6 @@ function deleteRecord(record) {
             throw new Error('Failed to delete record.');
         }
         if (startedLocalTransaction) {
-            logDebug('Committing internal database transaction.');
             if (!databaseManager.commitTransaction(true, true)) {
                 throw new Error('Failed to commit database transaction.');
             }
@@ -2134,14 +2263,14 @@ function deleteRecord(record) {
 }
 
 /**
- * Utility to sync permission records to the internal, design-time  Servoy Security Groups.
+ * Utility to sync permission records to the internal, design-time Servoy Security Groups.
  * This should be called on solution import or on startup
  * This action will create new permission records.
  *
  * NOTE: This action will not delete permissions which have been removed from internal security.
  * Design-time groups should never be renamed. They will be seen only as an ADD and will lose their tie to roles.
  *
- * @private
+ * @public 
  * @param {Boolean} [forcePermissionRemoval] if true then permissions without a matching
  * Servoy security group will be deleted regardless if they have been granted to any role or not;
  * if false (default) then permissions without a matching Servoy security group will be deleted only
@@ -2298,7 +2427,7 @@ function setSessionLastPingAndDuration(sessionRec, setEndDate) {
 function filterSecurityTables() {
     var serverName = datasources.db.svy_security.getServerName();
     databaseManager.removeTableFilterParam(serverName, SECURITY_TABLES_FILTER_NAME);
-    if (!databaseManager.addTableFilterParam(serverName, null, 'tenant_name', '=', activeTenantName, SECURITY_TABLES_FILTER_NAME)) {
+    if (!databaseManager.addTableFilterParam(serverName, null, 'tenant_name', '^||=', activeTenantName, SECURITY_TABLES_FILTER_NAME)) {
         logError('Failed to filter security tables');
         logout();
         throw 'Failed to filter security tables';
@@ -2399,15 +2528,12 @@ function logError(msg) {
  * the state of security-related objects upon transaction rollbacks which occur after
  * successful calls to the svySecurity API.
  *
- * @private
+ * @public 
  * @param {Boolean} mustSupportExternalTransactions The value for the supportExternalDBTransaction flag to set.
  *
  * @properties={typeid:24,uuid:"0447F6A2-6A4C-4691-8981-F573ECF029DE"}
  */
 function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions) {
-    if (databaseManager.hasTransaction()) {
-        throw new Error('The external DB transaction support flag can be changed only while a DB transaction is not in progress.');
-    }
     supportExternalDBTransaction = mustSupportExternalTransactions;
 }
 
@@ -2477,16 +2603,581 @@ function getVersion() {
  * @properties={typeid:24,uuid:"B34BC0F8-6792-4AD1-BD36-9E616C790B81"}
  */
 function createSampleData(){
-	if(!getTenants().length){
-		
+	if (!getTenants().length) {
+
 		logInfo('No security data found. Default data will be created');
 		var tenant = createTenant(DEFAULT_TENANT);
 		var user = tenant.createUser(DEFAULT_TENANT);
 		user.setPassword(DEFAULT_TENANT);
 		var role = tenant.createRole(DEFAULT_TENANT);
-		user.addRole(role)		
+		user.addRole(role)
 		var permission = getPermissions()[0];
 		role.addPermission(permission);
+	}
+}
+
+/**
+ * @param propertyNameSpace
+ * @param propertyValue
+ * @param [propertyType]
+ * @param [tenantName]
+ * @param [userName]
+ * 
+ * @return {SecureProperty}
+ * @public 
+ * 
+ * @throws {Error, scopes.svyDataUtils.ValueNotUniqueException}
+ *
+ * @properties={typeid:24,uuid:"C949C607-DD60-45EE-B308-ADD71F66002F"}
+ */
+function createSecureProperty(propertyNameSpace, propertyValue, propertyType, tenantName, userName) {
+	var property = scopes.svyProperties.createProperty(propertyNameSpace,propertyValue,propertyType,tenantName,userName);
+	return getSecureProperty(property.getPropertyUUID());
+}
+
+/**
+ * Immediately and permanently deletes the specified property.
+ * @note USE WITH CAUTION! There is no undo for this operation.
+ *
+ * @public
+ * @param {SecureProperty|UUID|String} property The property object or the UUID (UUID or UUID as String) of the property to delete.
+ * @return {Boolean} False if property could not be deleted.
+ * @properties={typeid:24,uuid:"B3286BC5-9B47-41DE-A98A-B4E83B353EEA"}
+ * @AllowToRunInFind
+ */
+function deleteProperty(property) {
+    if (!property) {
+        throw 'Property cannot be null';
+    }
+    /** @type {String|UUID} */
+    var propertyUUID;
+    if (property instanceof SecureProperty) {
+    	propertyUUID = property.getPropertyUUID();
+    } else {
+    	propertyUUID = property;
+    }
+    scopes.svyProperties.deleteProperty(propertyUUID);
+}
+
+/**
+ * Returns the Property with the given propertyUUID
+ * @param {UUID|String} propertyUUID the UUID of the property (as UUID or as a UUIDString)
+ * 
+ * @return {SecureProperty}
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"BB294C24-60CF-4115-BA8C-A51817EA7E71"}
+ */
+function getSecureProperty(propertyUUID) {
+    if (propertyUUID instanceof String) {
+        /**
+         * @type {String}
+         * @private
+         */
+        var propertyString = propertyUUID;
+        propertyUUID = getSecureProperty(application.getUUID(propertyString));
+    }
+	
+	/** @type {JSRecord<db:/svy_security/svy_properties>} */
+	var rec = scopes.svyDataUtils.getRecord(datasources.db.svy_security.svy_properties.getDataSource(),[propertyUUID]);
+	if (rec) {
+		return new SecureProperty(rec)
+	} else {
+		// TODO shall i throw an exception here ?
+		return null;
+	}
+}
+
+
+/**
+ * @protected
+ * @param {JSRecord<db:/svy_security/svy_properties>} record
+ * @constructor 
+ * 
+ * @extends {scopes.svyProperties.Property}
+ * @properties={typeid:24,uuid:"9BEE2E89-9D10-4EE7-8B2B-ADE017FFFFB1"}
+ */
+function SecureProperty(record) {
+	scopes.svyProperties['Property'].call(this, record);
+}
+
+/**
+ * @constructor 
+ * @private 
+ * @properties={typeid:24,uuid:"F830601A-15FF-4D32-802C-1B793D34189D"}
+ */
+function setupPermissionProperties() {
+	
+	// don't do anything if svyProperties is not available
+//	if (!scopes.svyProperties) {
+//		return;
+//	}
+		
+	 /**
+     * Assign this permission to the specified property.
+     *
+     * @public
+     * @param {scopes.svyProperties.Property|String|UUID} property The property object to which the permission should be granted.
+     * @return {Permission} This permission for call-chaining support.
+     */
+    Permission.prototype.addProperty = function(property) {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+    	
+        if (!property) {
+            throw new Error('Property cannot be null');
+        }
+		// Don't allow to add a property with a null tenant to permission since it will be filtered out anyhow
+//		var propertyTenantName = property.getTenantName() ? property.getTenantName() : activeTenantName;
+//		if (!propertyTenantName) {
+//			throw new Error(utils.stringFormat('Property "%1$s" added to Permission "%2$s" doesn\'t have a tenant name;', [propertyID, record.permission_name]))
+//		}
+        
+        var propertyID;
+        if (property instanceof String) {
+        	propertyID = property;
+        } else if (property instanceof UUID) {
+        	propertyID = property;
+        } else {
+        	propertyID = property.getPropertyUUID();
+        }
+        
+        // add the property
+        if (!this.hasProperty(property)) {
+        	
+        	// create a svy_properties_permissions record
+            var propertyPermRec = record.permissions_to_properties_permissions.getRecord(record.permissions_to_properties_permissions.newRecord(false, false));
+            if (!propertyPermRec) {
+                throw new Error('Failed to create new properties_permissions record');
+            }
+//            propertyPermRec.tenant_name = propertyTenantName;
+            propertyPermRec.property_uuid = propertyID;
+            if (!propertyPermRec.creation_user_name) {
+                propertyPermRec.creation_user_name = SYSTEM_USER;
+            }
+            saveRecord(propertyPermRec);
+        }
+        return thisInstance;
+    }
+    
+    /**
+     * Gets all the properties to which this permission is granted.
+     * @deprecated use getProperties instead
+     *
+     * @public
+     * @return {Array<scopes.svyProperties.Property>} An array with all properties to which this permission is granted or an empty array if the permission has not been granted to any role.
+     */
+    Permission.prototype.getPropertys = function() {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        var properties = [];
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            var property = record.permissions_to_properties_permissions.getRecord(i).properties_permissions_to_properties.getSelectedRecord();
+            properties.push(scopes.svyProperties.getProperty(property.property_uuid));
+        }
+        return properties;
+    }
+    
+    /**
+     * Gets all the properties to which this permission is granted.
+     *
+     * @public
+     * @return {Array<scopes.svyProperties.Property>} An array with all properties to which this permission is granted or an empty array if the permission has not been granted to any role.
+     */
+    Permission.prototype.getProperties = function() {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        var properties = [];
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            var property = record.permissions_to_properties_permissions.getRecord(i).properties_permissions_to_properties.getSelectedRecord();
+            properties.push(scopes.svyProperties.getProperty(property.property_uuid));
+        }
+        return properties;
+    }    
+    
+    /**
+     * Checks if this permission is granted to the specified property.
+     *
+     * @public
+     * @param {scopes.svyProperties.Property|String|UUID} property The property object or the name of the property to check.
+     * @return {Boolean} True if this permission is granted to the specified property.
+     */
+    Permission.prototype.hasProperty = function(property) {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        if (!property) {
+            throw 'Role cannot be null';
+        }
+        
+        var propertyID;
+        if (property instanceof String) {
+        	propertyID = property;
+        } else if (property instanceof UUID) {
+        	propertyID = property;
+        } else {
+        	propertyID = property.getPropertyUUID();
+        }
+        
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            if (record.permissions_to_properties_permissions.getRecord(i).property_uuid == propertyID) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Removes this permission from the specified property.
+     *
+     * @public
+     * @param {scopes.svyProperties.Property|String|UUID} property The property object or the name of the property to remove.
+     * @return {Permission} This permission for call-chaining support.
+     */
+    Permission.prototype.removeProperty = function(property) {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        if (!property) {
+            throw 'Property cannot be null';
+        }
+        
+        var propertyID;
+        if (property instanceof String) {
+        	propertyID = property;
+        } else if (property instanceof UUID) {
+        	propertyID = property;
+        } else {
+        	propertyID = property.getPropertyUUID();
+        }
+
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            if (record.permissions_to_properties_permissions.getRecord(i).property_uuid == propertyID) {
+                deleteRecord(record.permissions_to_properties_permissions.getRecord(i));
+                break;
+            }
+        }
+        return thisInstance;
+    }
+}
+
+/**
+ * @constructor 
+ * @private  
+ * @properties={typeid:24,uuid:"43566F38-5276-4343-91D4-05D626BDB70E"}
+ */
+function setupSecureProperty() {
+	
+	// Extend Property object
+	SecureProperty.prototype = Object.create(scopes.svyProperties['Property'].prototype);
+	SecureProperty.prototype.constructor = SecureProperty;
+	
+    /**
+     * Gets all the permissions to which this property is granted.
+     *
+     * @public
+     * @return {Array<Permission>} An array with all permissions to which this property is granted or an empty array if the property has not been granted to any permission.
+     */
+	SecureProperty.prototype.getPermissions = function() {
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+        var permissions = [];
+        for (var i = 1; i <= record.properties_to_properties_permissions.getSize(); i++) {
+            var permission = record.properties_to_properties_permissions.getRecord(i).properties_permissions_to_permissions.getSelectedRecord();
+            permissions.push(new Permission(permission));
+        }
+        return permissions;
+    }
+	
+    /**
+     * Grants this property to the specified Permission.
+     * Any users that are granted of this permission will be granted the property.
+     *
+     * @public
+     * @param {Permission|String} permission The permission object or name of permission to add.
+     * @return {SecureProperty} This property for call-chaining support.
+     * @this {SecureProperty}
+     */
+    SecureProperty.prototype.addPermission = function(permission) {
+
+        if (!permission) {
+            throw 'Permission cannot be null';
+        }
+        
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+
+        /**
+         * @type {String}
+         * @private
+         */
+        var permissionName = permission instanceof String ? permission : permission.getName();
+        if (!scopes.svySecurity.getPermission(permissionName)) {
+            throw 'Permission "' + permissionName + '" does not exist in system';
+        }
+        if (!this.hasPermission(permission)) {
+            var rolesPermRec = record.properties_to_properties_permissions.getRecord(record.properties_to_properties_permissions.newRecord(false, false));
+            if (!rolesPermRec) {
+                throw 'Failed to create property permission record';
+            }
+            rolesPermRec.permission_name = permissionName;
+            if (!rolesPermRec.creation_user_name) {
+                logWarning('Creating security record without current user context');
+                rolesPermRec.creation_user_name = SYSTEM_USER;
+            }
+            saveRecord(rolesPermRec);
+        }
+        return this;
+    }
+
+    /**
+     * Checks if the specified permission is granted to this property.
+     *
+     * @public
+     * @param {Permission|String} permission The permission object or name of permission to check.
+     * @return {Boolean} True if the specified permission is granted to this property.
+     */
+    SecureProperty.prototype.hasPermission = function(permission) {
+        if (!permission) {
+            throw 'Permission cannot be null';
+        }
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+        var permissionName = permission instanceof String ? permission : permission.getName();
+        for (var i = 1; i <= record.properties_to_properties_permissions.getSize(); i++) {
+            if (record.properties_to_properties_permissions.getRecord(i).permission_name == permissionName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Removes the specified permission from this property.
+     * The permission will no longer be granted to all users that are members of this property.
+     *
+     * @public
+     * @param {Permission|String} permission The permission object or name of permission to remove.
+     * @return {SecureProperty} This role for call-chaining support.
+     * @this {SecureProperty}
+     */
+    SecureProperty.prototype.removePermission = function(permission) {
+        if (!permission) {
+            throw 'Permission cannot be null';
+        }
+		/** @type {JSRecord<db:/svy_security/svy_properties>} */
+		var record = this['record'];
+        var permissionName = permission instanceof String ? permission : permission.getName();
+        for (var i = 1; i <= record.properties_to_properties_permissions.getSize(); i++) {
+            if (record.properties_to_properties_permissions.getRecord(i).permission_name == permissionName) {
+                deleteRecord(record.properties_to_properties_permissions.getRecord(i));
+                break;
+            }
+        }
+        return this;
+    }
+    
+}
+
+/**
+ * Record after-insert trigger.
+ * Adds this role to all slaves
+ *
+ * @param {JSRecord<db:/svy_security/roles>} record record that is inserted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"17106233-8761-463C-ABDB-6F8ED312DFA5"}
+ */
+function afterRecordInsert_role(record) {
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate insert to all slaves
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			var recordRoleSlave;
+			var roleFound = false;
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					roleFound = true;
+					break;
+				}
+			}
+			
+			if (roleFound === true) {
+				continue;
+			}
+			
+			recordRoleSlave = recordSlave.tenants_to_roles.getRecord(recordSlave.tenants_to_roles.newRecord());
+			//copy fields to not miss values in case columns are added in the future
+			databaseManager.copyMatchingFields(record, recordRoleSlave, ['tenant_name']);
+			databaseManager.saveData(recordRoleSlave);
+		}
+	}
+}
+
+/**
+ * Record after-update trigger.
+ * Removes this role from all slaves.
+ *
+ * @param {JSRecord<db:/svy_security/roles>} record record that is updated
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"90523996-D26E-4296-B97E-8B911FE4A4C7"}
+ */
+function afterRecordUpdate_role(record) {
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate update to all slaves
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				var recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					databaseManager.copyMatchingFields(record, recordRoleSlave, ['tenant_name']);					
+					databaseManager.saveData(recordRoleSlave);
+					break;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Record after-insert trigger.
+ * Adds this permission to the role on all slaves. 
+ *
+ * @param {JSRecord<db:/svy_security/roles_permissions>} record record that is inserted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"6A602687-ACF0-4F04-B0D6-8D5762FEF65E"}
+ */
+function afterRecordInsert_role_permission(record) {
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate insert to all slaves
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			var recordRolePermissionSlave,
+				recordRoleSlave,
+				roleFound = false,
+				permissionFound;
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					roleFound = true;
+					permissionFound = false;
+					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSlave.permission_name === record.permission_name) {
+							logDebug('Slave ' + recordSlave.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
+							permissionFound = true;
+							break;
+						}
+					}
+					break;
+				}
+			}
+			
+			if (roleFound && !permissionFound) {
+				recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(recordRoleSlave.roles_to_roles_permissions.newRecord());
+				//copy fields to not miss values in case columns are added in the future
+				databaseManager.copyMatchingFields(record, recordRolePermissionSlave, ['tenant_name']);
+				databaseManager.saveData(recordRolePermissionSlave);
+			} else if (!roleFound) {
+				logDebug('Slave ' + recordSlave.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
+			}
+		}
+	}
+}
+
+/**
+ * Record after-delete trigger.
+ * Removes this role from all slaves
+ *
+ * @param {JSRecord<db:/svy_security/roles>} record record that is deleted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"AC038DA1-1E18-4116-8922-E2B7FD079374"}
+ */
+function afterRecordDelete_role(record) {
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate delete to all slaves
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				var recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					recordSlave.tenants_to_roles.deleteRecord(r)
+					break;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Record after-delete trigger.
+ * Removes this permission from all slaves
+ *
+ * @param {JSRecord<db:/svy_security/roles_permissions>} record record that is deleted
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"094D2472-04CC-4555-8BCD-CE55D18BE397"}
+ */
+function afterRecordDelete_roles_permissions(record) {
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
+		//propagate delete to all slaves
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
+			var recordSlave = record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+			
+			var recordRolePermissionSlave,
+				recordRoleSlave;
+			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
+				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
+				if (recordRoleSlave.role_name === record.role_name) {
+					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSlave.permission_name === record.permission_name) {
+							recordRoleSlave.roles_to_roles_permissions.deleteRecord(p)
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Record after-delete trigger.
+ * Clears the master_tenant_name from all slaves or replace it with the master of the tenant that is deleted.
+ *
+ * @param {JSRecord<db:/svy_security/tenants>} record record that is deleted
+ *
+ * @properties={typeid:24,uuid:"FA620835-B83C-4F75-B5BC-0A83EBE50D87"}
+ */
+function afterRecordDelete_tenant(record) {
+	if (utils.hasRecords(record.tenants_to_tenants$slaves)) {
+		//if the tenant to delete itself has a master, set that on all slaves
+		var masterTenantName = null;
+		if (utils.hasRecords(record.tenants_to_tenants$master)) {
+			masterTenantName = record.tenants_to_tenants$master.tenant_name;
+		}
+		for (var s = 1; s <= record.tenants_to_tenants$slaves.getSize(); s++) {
+			var recordSlave = record.tenants_to_tenants$slaves.getRecord(s);
+			recordSlave.master_tenant_name = masterTenantName;
+		}
+		databaseManager.saveData(record.tenants_to_tenants$slaves);
 	}
 }
 
@@ -2498,7 +3189,12 @@ function createSampleData(){
  * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
  */
 var init = function() {
-    syncPermissions();
-	createSampleData();    
+	setupPermissionProperties();
+	setupSecureProperty();
+	
+	if (application.isInDeveloper()) {
+		syncPermissions();
+	}
+	createSampleData();
     scopes.svySecurityBatch.startBatch();
 }();

@@ -1,0 +1,10 @@
+encapsulation:2,
+foreignDataSource:"db:/svy_security/permissions",
+items:[
+{foreignColumnName:"permission_name",primaryDataProviderID:"permission_name",typeid:23,uuid:"08EF053D-CFF1-4954-B26D-42BBF7777149"}
+],
+joinType:1,
+name:"properties_permissions_to_permissions",
+primaryDataSource:"db:/svy_security/svy_properties_permissions",
+typeid:22,
+uuid:"CE0B48EB-4084-491B-98AC-FD92A0F3D65C"
