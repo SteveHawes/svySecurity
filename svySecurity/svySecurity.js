@@ -1979,82 +1979,6 @@ function Permission(record) {
 }
 
 /**
- * @deprecated
- * Use {@link Tenant#createItem} to create item objects.
- * Creating item ojects with the new operator is reserved for internal use only.
- *
- * @classdesc Security item  which can have [user]{@link User} members and can be granted [permissions]{@link Permission}.
- *
- * @protected
- * @param {JSRecord<db:/svy_security/items>} record
- * @constructor
- *
- * @properties={typeid:24,uuid:"7D463C51-8593-4E69-9757-43535E0618CC"}
- */
-function Item(record) {
-    if (!record) {
-        throw new Error('Role record is not specified');
-    }
-    
-    /**
-     * Gets the namespace of this role.
-     *
-     * @public
-     * @return {UUID} The item namespace.
-     */
-    this.getID = function() {
-        return record.item_id;
-    }
-
-    /**
-     * Gets the namespace of this role.
-     *
-     * @public
-     * @return {String} The item namespace.
-     */
-    this.getNameSpace = function() {
-        return record.item_namespace;
-    }
-
-    /**
-     * Gets the display name of this item.
-     * @public
-     * @return {String} The display name of this item. Can be null.
-     */
-    this.getDisplayName = function() {
-        return record.display_name;
-    }
-
-    /**
-     * Sets the display name of this item.
-     * @public
-     * @param {String} displayName The display name to use.
-     * @return {Item} This item for call-chaining support.
-     */
-    this.setDisplayName = function(displayName) {
-        record.display_name = displayName;
-        saveRecord(record);
-        return this;
-    }
-
-    /**
-     * Gets the tenant which this role belongs to.
-     *
-     * @public
-     * @return {Tenant} The tenant which this role belongs to.
-     */
-    this.getTenant = function() {
-    	if (utils.hasRecords(record,"items_to_tenants")) {
-    		return new Tenant(record.items_to_tenants.getSelectedRecord());
-    	} else {
-    		return null;
-    	}
-    }
-    
-    // TODO add all needed functions
-}
-
-/**
  *
  * Session objects cannot be created through the API.
  * They are created automatically when a user is logged in.
@@ -2604,15 +2528,12 @@ function logError(msg) {
  * the state of security-related objects upon transaction rollbacks which occur after
  * successful calls to the svySecurity API.
  *
- * @private
+ * @public 
  * @param {Boolean} mustSupportExternalTransactions The value for the supportExternalDBTransaction flag to set.
  *
  * @properties={typeid:24,uuid:"0447F6A2-6A4C-4691-8981-F573ECF029DE"}
  */
 function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions) {
-    if (databaseManager.hasTransaction()) {
-        throw new Error('The external DB transaction support flag can be changed only while a DB transaction is not in progress.');
-    }
     supportExternalDBTransaction = mustSupportExternalTransactions;
 }
 
@@ -2843,6 +2764,7 @@ function setupPermissionProperties() {
     
     /**
      * Gets all the properties to which this permission is granted.
+     * @deprecated use getProperties instead
      *
      * @public
      * @return {Array<scopes.svyProperties.Property>} An array with all properties to which this permission is granted or an empty array if the permission has not been granted to any role.
@@ -2859,6 +2781,25 @@ function setupPermissionProperties() {
         }
         return properties;
     }
+    
+    /**
+     * Gets all the properties to which this permission is granted.
+     *
+     * @public
+     * @return {Array<scopes.svyProperties.Property>} An array with all properties to which this permission is granted or an empty array if the permission has not been granted to any role.
+     */
+    Permission.prototype.getProperties = function() {
+		/** @type {Permission} */
+		var thisInstance = this;
+		/** @type {JSRecord<db:/svy_security/permissions>} */
+        var record = thisInstance['record'];
+        var properties = [];
+        for (var i = 1; i <= record.permissions_to_properties_permissions.getSize(); i++) {
+            var property = record.permissions_to_properties_permissions.getRecord(i).properties_permissions_to_properties.getSelectedRecord();
+            properties.push(scopes.svyProperties.getProperty(property.property_uuid));
+        }
+        return properties;
+    }    
     
     /**
      * Checks if this permission is granted to the specified property.
@@ -2963,6 +2904,7 @@ function setupSecureProperty() {
      * @public
      * @param {Permission|String} permission The permission object or name of permission to add.
      * @return {SecureProperty} This property for call-chaining support.
+     * @this {SecureProperty}
      */
     SecureProperty.prototype.addPermission = function(permission) {
 
@@ -3025,6 +2967,7 @@ function setupSecureProperty() {
      * @public
      * @param {Permission|String} permission The permission object or name of permission to remove.
      * @return {SecureProperty} This role for call-chaining support.
+     * @this {SecureProperty}
      */
     SecureProperty.prototype.removePermission = function(permission) {
         if (!permission) {

@@ -4,11 +4,13 @@ onShowMethodID:{\
 arguments:null,\
 parameters:null\
 }\
-}",
+},\
+useCssPosition:true",
 dataSource:"db:/svy_security/svy_properties",
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
+cssPosition:"178,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,178",
 name:"lblTenantInfoc",
@@ -18,6 +20,7 @@ typeid:7,
 uuid:"07C165F6-D059-489C-8D81-544FB05F8C4A"
 },
 {
+cssPosition:"542,-1,-1,50,340,138",
 dataProviderID:"m_SelectedPermission",
 displayType:11,
 location:"50,542",
@@ -28,6 +31,7 @@ uuid:"12AC1972-2AFF-4237-A801-71F93743DB3B",
 valuelistID:"732D8AED-14A8-4C80-B714-53F872749CE5"
 },
 {
+cssPosition:"286,-1,-1,56,133,20",
 labelFor:"fldDisplayName",
 location:"56,286",
 name:"lblDisplayName",
@@ -38,6 +42,7 @@ typeid:7,
 uuid:"16D632D7-C7DB-486B-8D67-D7C29FA63D93"
 },
 {
+cssPosition:"511,-1,-1,50,340,26",
 labelFor:"lstRoles",
 location:"50,511",
 name:"lblRoles",
@@ -48,6 +53,7 @@ typeid:7,
 uuid:"252E86E1-78E6-4F68-9210-03FBDDAB02B3"
 },
 {
+cssPosition:"215,-1,-1,56,133,20",
 labelFor:"fldName",
 location:"56,215",
 name:"lblNamecc",
@@ -59,6 +65,7 @@ typeid:7,
 uuid:"2766EAA8-D426-4AB9-B9F0-DFE3D050F6C4"
 },
 {
+cssPosition:"40,-1,-1,10,40,40",
 extendsID:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0",
 location:"10,40",
 size:"40,40",
@@ -66,6 +73,7 @@ typeid:7,
 uuid:"3DA93567-3917-4BE8-A62A-C5193DC4A29A"
 },
 {
+cssPosition:"90,-1,-1,472,320,40",
 displaysTags:true,
 horizontalAlignment:4,
 location:"472,90",
@@ -83,6 +91,7 @@ typeid:7,
 uuid:"41FDF3C8-5802-4B29-B7BE-DAB46B167436"
 },
 {
+cssPosition:"210,-1,-1,194,445,30",
 dataProviderID:"property_type",
 editable:false,
 location:"194,210",
@@ -93,6 +102,7 @@ typeid:4,
 uuid:"446BDBEC-E35F-490B-89C7-05007C216C75"
 },
 {
+cssPosition:"250,-1,-1,56,133,20",
 labelFor:"fldName",
 location:"56,250",
 name:"lblNamec",
@@ -104,6 +114,7 @@ typeid:7,
 uuid:"4A1EF2F2-CBB1-4F76-8FF9-D50A3236ADBE"
 },
 {
+cssPosition:"454,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,454",
 name:"lblCreationInfo",
@@ -114,6 +125,7 @@ uuid:"4ACD17A1-3E23-4A67-B674-D87B788A466B"
 },
 {
 anchors:11,
+cssPosition:"90,0,-1,0,800,42",
 formIndex:-5,
 location:"0,90",
 name:"lblToolbar",
@@ -124,6 +136,7 @@ typeid:7,
 uuid:"69884EC4-446F-4E1B-A599-E9888ECEEA6A"
 },
 {
+cssPosition:"422,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,422",
 name:"lblTenantInfo",
@@ -134,6 +147,7 @@ uuid:"707FB3C7-EB55-4827-A5D9-83B6E7A4B02F"
 },
 {
 anchors:3,
+cssPosition:"594,105,-1,-1,280,40",
 location:"415,594",
 name:"btnRemoveRole",
 onActionMethodID:"F7BDD86D-1E6D-440D-B840-D572E5FDE578",
@@ -152,6 +166,7 @@ typeid:19,
 uuid:"7BE603AF-CB7B-4B98-8659-3955CC183DC4"
 },
 {
+cssPosition:"424,-1,-1,56,133,20",
 labelFor:"",
 location:"56,424",
 name:"lblStatus",
@@ -162,6 +177,7 @@ typeid:7,
 uuid:"842E9989-60FB-4C6C-AA9C-144AC03E06E6"
 },
 {
+cssPosition:"245,-1,-1,194,445,30",
 dataProviderID:"property_namespace",
 editable:false,
 location:"194,245",
@@ -173,6 +189,7 @@ uuid:"927F3896-64D9-48E9-863C-8432E6791ABC"
 },
 {
 anchors:3,
+cssPosition:"542,103,-1,-1,282,40",
 location:"415,542",
 name:"btnAddRole",
 onActionMethodID:"D03A296E-CAE0-4C41-B1DA-FEB496C485CF",
@@ -187,6 +204,7 @@ uuid:"ACCC5A83-B6C8-4682-8AF8-ECAA671F6B8D"
 },
 {
 anchors:3,
+cssPosition:"90,679,-1,-1,120,40",
 formIndex:1,
 location:"1,90",
 name:"btnDelete",
@@ -200,6 +218,7 @@ typeid:7,
 uuid:"B19E1CC5-14DC-491D-8DAD-71D50912BA5C"
 },
 {
+cssPosition:"281,-1,-1,194,445,30",
 dataProviderID:"display_name",
 editable:false,
 location:"194,281",
@@ -209,6 +228,7 @@ typeid:4,
 uuid:"B412AE66-0B16-4AA2-89BC-6A94F5B7D7A2"
 },
 {
+cssPosition:"40,-1,-1,60,40,40",
 location:"60,40",
 name:"btnShowTenantUsersList",
 onActionMethodID:"68945F96-D1B0-4BAC-BB6A-D5E5523032F8",
@@ -224,6 +244,7 @@ typeid:7,
 uuid:"B7328308-288E-45D7-94A1-352B5FD7D2F1"
 },
 {
+cssPosition:"178,-1,-1,56,133,20",
 labelFor:"fldName",
 location:"56,178",
 name:"lblNameccc",
@@ -235,6 +256,7 @@ typeid:7,
 uuid:"BC07A663-3F2A-40C2-ACD3-09BE50BABAF7"
 },
 {
+cssPosition:"281,-1,-1,654,30,30",
 location:"654,281",
 name:"btnEditDisplayName",
 onActionMethodID:"B3398638-C1E4-44B7-919F-1A485D71C1FB",
@@ -249,6 +271,7 @@ typeid:7,
 uuid:"C2E05620-2770-4201-ABFA-206B45C7A577"
 },
 {
+cssPosition:"322,-1,-1,56,133,20",
 labelFor:"fldDisplayName",
 location:"56,322",
 name:"lblDisplayNamec",
@@ -259,6 +282,7 @@ typeid:7,
 uuid:"CEC72D0A-8EBE-4A17-8187-3EFFF9373A9D"
 },
 {
+cssPosition:"317,-1,-1,194,445,101",
 dataProviderID:"property_value",
 displayType:1,
 editable:false,
@@ -269,6 +293,7 @@ typeid:4,
 uuid:"DEE2AA27-E555-428B-871D-782784D6ADFA"
 },
 {
+cssPosition:"458,-1,-1,194,445,26",
 dataProviderID:"m_LockReasonText",
 location:"194,458",
 name:"lblLockReason",
