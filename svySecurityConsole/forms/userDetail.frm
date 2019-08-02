@@ -105,7 +105,7 @@ typeid:7,
 uuid:"2C19B69E-D56F-4978-A8FA-4FCCBCA7AF67"
 },
 {
-cssPosition:"670,-1,-1,194,445,26",
+cssPosition:"693,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,670",
 name:"lblTenantInfo",
@@ -113,6 +113,21 @@ size:"445,26",
 text:"User account for tenant <b>%%tenant_name%%<\/b>",
 typeid:7,
 uuid:"38BFBAD5-FC52-4811-BA36-B3F9C3195B5B"
+},
+{
+cssPosition:"655,-1,-1,654,30,30",
+location:"654,618",
+name:"btnEditEmail",
+onActionMethodID:"6E5C3C35-1DD1-4D86-A07E-B2F800ADA993",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"30,30",
+styleClass:"font-icon large transition-medium",
+text:"<span class=\"fa fa-pencil\"/>",
+transparent:true,
+typeid:7,
+uuid:"54FCE7C5-A93C-49DA-8F98-8581094C25DC"
 },
 {
 cssPosition:"40,-1,-1,60,40,40",
@@ -155,7 +170,7 @@ typeid:7,
 uuid:"67105928-9981-485C-8EEE-9509D79EDEB4"
 },
 {
-cssPosition:"702,-1,-1,194,445,26",
+cssPosition:"725,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,702",
 name:"lblCreationInfo",
@@ -165,7 +180,7 @@ typeid:7,
 uuid:"6FCCF2C3-0397-4F8D-B7F5-DD3BAEF48C02"
 },
 {
-cssPosition:"760,-1,-1,194,445,26",
+cssPosition:"783,-1,-1,194,445,26",
 dataProviderID:"m_LockReasonText",
 location:"194,760",
 name:"lblLockReason",
@@ -174,7 +189,7 @@ typeid:7,
 uuid:"88F39AD0-96EC-437B-9DE3-33E21ECBDBAC"
 },
 {
-cssPosition:"672,-1,-1,56,133,20",
+cssPosition:"695,-1,-1,56,133,20",
 labelFor:"",
 location:"56,672",
 name:"lblStatus",
@@ -243,8 +258,19 @@ typeid:47,
 uuid:"A9EC490D-8E77-4C57-B03D-016AC6288DC3"
 },
 {
+cssPosition:"659,-1,-1,56,133,20",
+labelFor:"fldDisplayName",
+location:"56,623",
+name:"lblEmail",
+size:"133,20",
+text:"Email",
+transparent:true,
+typeid:7,
+uuid:"AFA6F17A-4ACB-4167-A990-15B04F8282C0"
+},
+{
 extendsID:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733",
-height:800,
+height:827,
 typeid:19,
 uuid:"B1B4A12B-D09D-4229-881D-AA0A78E408DA"
 },
@@ -260,7 +286,7 @@ typeid:4,
 uuid:"BC52BEFA-C877-4EAA-B37D-32BAA88A259E"
 },
 {
-cssPosition:"731,-1,-1,194,445,26",
+cssPosition:"754,-1,-1,194,445,26",
 dataProviderID:"m_LockStausText",
 location:"194,731",
 name:"lblLockInfo",
@@ -296,6 +322,16 @@ text:"Display Name",
 transparent:true,
 typeid:7,
 uuid:"D9D11D5E-199A-45C7-AFC8-C683361E7116"
+},
+{
+cssPosition:"655,-1,-1,194,445,30",
+dataProviderID:"email",
+editable:false,
+location:"194,618",
+name:"fldEmail",
+size:"445,30",
+typeid:4,
+uuid:"E08F6E12-1863-43F1-9080-A66F0F09B475"
 },
 {
 anchors:3,
@@ -374,5 +410,6 @@ uuid:"F762E99C-F210-4BB6-BF61-D9811D760EEA"
 ],
 name:"userDetail",
 onShowMethodID:"3EA203A8-76F5-4EC9-9C04-EE427CB20969",
+size:"800,827",
 typeid:3,
 uuid:"A43F6676-F094-4B15-BAD1-02C3BFC2C506"
