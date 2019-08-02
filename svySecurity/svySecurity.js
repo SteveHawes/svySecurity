@@ -1175,6 +1175,28 @@ function User(record) {
     this.getDisplayName = function() {
         return record.display_name;
     }
+    /**
+     * @public
+     *  @return {String} The email of this user.
+     */
+    this.getEmail = function() {
+        return record.email;
+    }
+    
+    /**
+     * @public
+     * @param {String} email
+     * @return {User} This user for call-chaining support.
+     */
+    this.setEmail = function(email) {
+        // no change
+        if (email == record.email) {
+            return this;
+        }
+        record.email = email;
+        saveRecord(record);
+        return this;
+    }
 
     /**
      * Sets the display name of this user.

@@ -64,6 +64,13 @@ titleText:"Display Name"
 },
 {
 allowNull:true,
+creationOrderIndex:12,
+dataType:12,
+length:254,
+name:"email"
+},
+{
+allowNull:true,
 creationOrderIndex:7,
 dataType:93,
 name:"lock_expiration"
