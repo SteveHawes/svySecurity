@@ -36,7 +36,7 @@ right:"30",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-long-arrow-right text-tertiary h4 clickable",
+faclass:"fa fa-long-arrow-right text-tertiary fa-lg clickable",
 onActionMethodID:"2728289F-AA07-4D48-93D1-29BF6F1943C5",
 size:{
 height:25,

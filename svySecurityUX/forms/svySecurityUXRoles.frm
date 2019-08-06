@@ -15,7 +15,7 @@ right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-shield text-success h4 clickable",
+faclass:"fa fa-user-shield text-success fa-lg clickable",
 onActionMethodID:"313704AB-9377-4BC7-BDE9-DD9A017E29C7",
 size:{
 height:25,
@@ -27,6 +27,33 @@ size:"25,25",
 typeName:"servoyextra-fontawesome",
 typeid:47,
 uuid:"026C8F89-8450-42E6-88C9-A1D877F936E1"
+},
+{
+cssPosition:"-1,40,10,-1,25,40",
+json:{
+alignment:"center",
+cssPosition:{
+bottom:"10",
+height:"40",
+left:"-1",
+right:"40",
+top:"-1",
+width:"25"
+},
+faclass:"fa fa-check text-success fa-lg clickable",
+onActionMethodID:"D6B95B92-351E-4F51-AA89-AB79D6B99754",
+size:{
+height:25,
+width:25
+},
+visible:false
+},
+name:"iconConfirmNew",
+size:"25,25",
+typeName:"servoyextra-fontawesome",
+typeid:47,
+uuid:"07D4012E-5271-4F4C-8A82-304B24615DA0",
+visible:false
 },
 {
 cssPosition:"-1,-1,10,28,115,40",
@@ -48,6 +75,33 @@ styleClass:"text-success clickable text-center-vertical",
 typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"0B98E168-8738-46E3-B869-313FF0C84596"
+},
+{
+cssPosition:"-1,15,10,-1,25,40",
+json:{
+alignment:"center",
+cssPosition:{
+bottom:"10",
+height:"40",
+left:"-1",
+right:"15",
+top:"-1",
+width:"25"
+},
+faclass:"fa fa-remove text-tertiary fa-lg clickable",
+onActionMethodID:"AE04F250-83D1-49C2-8A3D-B21979AC4AEE",
+size:{
+height:25,
+width:25
+},
+visible:false
+},
+name:"iconCancelNew",
+size:"25,25",
+typeName:"servoyextra-fontawesome",
+typeid:47,
+uuid:"156DFEB3-3977-4816-9200-4B49018EE07F",
+visible:false
 },
 {
 cssPosition:"10,0,-1,0,0,50",
@@ -81,7 +135,7 @@ right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-shield text-danger h4 clickable",
+faclass:"fa fa-user-shield text-danger fa-lg clickable",
 onActionMethodID:"0818F08B-71A3-40D8-A97C-D4FC572771DD",
 size:{
 height:25,
@@ -157,13 +211,13 @@ typeid:47,
 uuid:"9E9EB95A-2CE1-4450-B0FC-55338CB427C7"
 },
 {
-cssPosition:"-1,15,15,15,0,35",
+cssPosition:"-1,76,15,15,0,35",
 json:{
 cssPosition:{
 bottom:"15",
 height:"35",
 left:"15",
-right:"15",
+right:"76",
 top:"-1",
 width:"0"
 },

@@ -21,10 +21,22 @@ var UX_SELECTED_USER;
 var SVY_SECURITY_UX = {
 	TENANT: "svySecurityUXTenant",
 	TENANT_ROLES: "svySecurityUXTenantRolesContainer",
-	TENANT_USERS: "svySecurityUXTenantUsersContainer"
+	TENANT_USERS: "svySecurityUXTenantUsersContainer",
+	USER: "svySecurityUXUser"
 }
 
+
 /**
+ * @protected  
+ * @enum 
+ * @properties={typeid:35,uuid:"D76A9E1A-D611-464F-AB6D-01B4B7540D4E",variableType:-4}
+ */
+var SVY_SECURITY_EVENTS = {
+	AFTER_USER_CREATE: 'after-user-create'
+};
+
+/**
+ * This function should be used only by svySecurityUX module, do not call this function
  * @protected 
  * @param {String} roleName
  *
@@ -35,6 +47,7 @@ function setSelectedRole(roleName) {
 }
 
 /**
+ * This function should be used only by svySecurityUX module, do not call this function
  * @protected 
  * @param {String} userName
  *
@@ -42,4 +55,41 @@ function setSelectedRole(roleName) {
  */
 function setSelectedUser(userName) {
 	UX_SELECTED_USER = userName;
+}
+
+/**
+ * Execute the onAfterUserCreateEvent every time a User is created using the svySecurityUX console.
+ * Allow the developer to perform additional action whenever an user is created, as sending an email to the user
+ * 
+ * @param {Function} onAfterUserCreateEvent
+ * @public
+ *
+ * @properties={typeid:24,uuid:"8DF58EF7-640D-40C8-B816-BF1B8701A15B"}
+ */
+function addAfterUserCreateListener(onAfterUserCreateEvent) {
+	scopes.svyEventManager.addListener(SVY_SECURITY_EVENTS.AFTER_USER_CREATE, SVY_SECURITY_EVENTS.AFTER_USER_CREATE, onAfterUserCreateEvent);
+}
+
+
+/**
+ * @param {Function} onAfterUserCreateEvent
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"263D877C-1C9C-434B-B90B-BFA6FF39766D"}
+ */
+function removeAfterUserCreateListener(onAfterUserCreateEvent) {
+	scopes.svyEventManager.removeListener(SVY_SECURITY_EVENTS.AFTER_USER_CREATE, SVY_SECURITY_EVENTS.AFTER_USER_CREATE, onAfterUserCreateEvent);
+}
+
+
+/**
+ * DO NOT CALL THIS FUNCTION
+ * @public 
+ * @param {String} userName
+ * @param {String} tenantName
+ *
+ * @properties={typeid:24,uuid:"0F18B47F-4F41-44C1-A94D-7C6FC9DD675C"}
+ */
+function triggerAfterUserCreate(userName, tenantName) {
+	scopes.svyEventManager.fireEvent(SVY_SECURITY_EVENTS.AFTER_USER_CREATE, SVY_SECURITY_EVENTS.AFTER_USER_CREATE, [userName, tenantName]);
 }

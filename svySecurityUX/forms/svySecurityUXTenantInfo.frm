@@ -17,11 +17,50 @@ width:"80"
 styleClass:"h5 text-tertiary text-center",
 text:"SESSIONS"
 },
-name:"label_9cc",
+name:"labelSessions",
 styleClass:"h5 text-tertiary text-center",
 typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"047778E8-7E8A-40D1-838D-59F2F0F59EF8"
+},
+{
+cssPosition:"158,30,-1,175,0,22",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"22",
+left:"175",
+right:"30",
+top:"158",
+width:"0"
+},
+text:"%%m_LockReasonText%%",
+toolTipText:"Lock reason"
+},
+name:"labelLockReason",
+typeName:"bootstrapcomponents-label",
+typeid:47,
+uuid:"0ADC4FD8-B66C-4939-920D-36C9E3861E50"
+},
+{
+cssPosition:"158,-1,-1,23,122,22",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"22",
+left:"23",
+right:"-1",
+top:"158",
+width:"122"
+},
+styleClass:"border-success text-success border-default text-center",
+text:"%%m_LockStausText%%"
+},
+name:"labelStatus",
+styleClass:"border-success text-success border-default text-center",
+typeName:"bootstrapcomponents-label",
+typeid:47,
+uuid:"0BA3025A-65CB-4894-975D-A63778B38607"
 },
 {
 cssPosition:"-1,calc(16% - 25px),34,-1,50,50",
@@ -37,21 +76,21 @@ width:"50"
 styleClass:"btn h4 font-weight-bold btn-default btn-round",
 text:"%%activeSessions%%"
 },
-name:"button_4",
+name:"iconActiveSessions",
 styleClass:"btn h4 font-weight-bold btn-default btn-round",
 typeName:"bootstrapcomponents-button",
 typeid:47,
 uuid:"0E8DFAED-C4CF-4A2D-B3E6-57A47B2901FD"
 },
 {
-cssPosition:"150,15,160,15,0,0",
+cssPosition:"278,15,160,15,0,0",
 json:{
 cssPosition:{
 bottom:"160",
 height:"0",
 left:"15",
 right:"15",
-top:"150",
+top:"278",
 width:"0"
 },
 type:"bar"
@@ -74,6 +113,7 @@ width:"0"
 },
 styleClass:"border-top"
 },
+name:"dividerTop",
 styleClass:"border-top",
 typeName:"bootstrapcomponents-label",
 typeid:47,
@@ -91,9 +131,9 @@ top:"-1",
 width:"80"
 },
 styleClass:"h5 text-tertiary text-center",
-text:"LOCKED"
+text:"LOCK"
 },
-name:"label_9",
+name:"labelLocked",
 styleClass:"h5 text-tertiary text-center",
 typeName:"bootstrapcomponents-label",
 typeid:47,
@@ -110,33 +150,14 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-lock h1 text-danger",
-onActionMethodID:"AB106273-1B8B-4BF5-A343-7E148F1F7A38"
+faclass:"fa fa-lock fa-3x text-danger",
+onActionMethodID:"AB106273-1B8B-4BF5-A343-7E148F1F7A38",
+styleclass:"clickable"
 },
 name:"faLocked",
 typeName:"servoyextra-fontawesome",
 typeid:47,
 uuid:"3874D9F8-BDDA-4D99-AD92-A20B23A29845"
-},
-{
-cssPosition:"10,10,-1,10,0,50",
-json:{
-cssPosition:{
-bottom:"-1",
-height:"50",
-left:"10",
-right:"10",
-top:"10",
-width:"0"
-},
-styleClass:"h1 font-weight-bold text-primary",
-text:"%%display_name%%"
-},
-name:"labelDisplayName",
-styleClass:"h1 font-weight-bold text-primary",
-typeName:"bootstrapcomponents-label",
-typeid:47,
-uuid:"42C3F55D-D06D-4EE4-A762-9C7D09575D82"
 },
 {
 cssPosition:"-1,-1,30,calc(49% - 25px),50,50",
@@ -149,35 +170,38 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-share-alt h1 text-primary",
+faclass:"fa fa-share-alt fa-3x text-primary",
 onActionMethodID:null,
 size:{
 height:25,
 width:25
-}
+},
+visible:false
 },
 name:"faMaster",
 size:"25,25",
 typeName:"servoyextra-fontawesome",
 typeid:47,
-uuid:"44594634-30FD-449A-91C4-C1C72B36E051"
+uuid:"44594634-30FD-449A-91C4-C1C72B36E051",
+visible:false
 },
 {
-cssPosition:"79,10,-1,22,0,40",
+cssPosition:"79,10,-1,22,0,34",
 json:{
 cssPosition:{
 bottom:"-1",
-height:"40",
+height:"34",
 left:"22",
 right:"10",
 top:"79",
 width:"0"
 },
-styleClass:"h4",
-text:"%%tenant_name%%"
+styleClass:"h3",
+text:"%%tenant_name%%",
+toolTipText:"Tenant Name"
 },
 name:"labelName",
-styleClass:"h4",
+styleClass:"h3",
 typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"54AAEEC9-4471-4F6F-B77A-15A35F8C8DC3"
@@ -201,11 +225,73 @@ width:"0"
 },
 styleClass:"border-top"
 },
-name:"label_5",
+name:"dividerBottom",
 styleClass:"border-top",
 typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"69CBB314-1854-453A-A5D4-50D58B7DD7C7"
+},
+{
+cssPosition:"188,30,-1,55,0,31",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"31",
+left:"55",
+right:"30",
+top:"188",
+width:"0"
+},
+text:"%%creation_datetime%%",
+toolTipText:"Created by"
+},
+name:"labelCreatedOn",
+typeName:"bootstrapcomponents-label",
+typeid:47,
+uuid:"90DC6A14-7BBF-42E3-A6EA-2BA3BA963490"
+},
+{
+cssPosition:"218,30,-1,55,0,31",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"31",
+left:"55",
+right:"30",
+top:"218",
+width:"0"
+},
+text:"%%creation_user_name%%",
+toolTipText:"Created by"
+},
+name:"labelCreatedBy",
+typeName:"bootstrapcomponents-label",
+typeid:47,
+uuid:"97CE9311-C7E3-4C9F-A90D-8C08C2CEE9E3"
+},
+{
+cssPosition:"188,-1,-1,25,33,31",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"31",
+left:"25",
+right:"-1",
+top:"188",
+width:"33"
+},
+faclass:"far fa-calendar-plus",
+size:{
+height:25,
+width:25
+},
+toolTipText:"Created on"
+},
+name:"iconCreatedOn",
+size:"25,25",
+typeName:"servoyextra-fontawesome",
+typeid:47,
+uuid:"9E698A92-1C62-4534-9DAA-2F7F5DD9D454"
 },
 {
 cssPosition:"-1,-1,15,calc(49% - 40px),80,15",
@@ -219,13 +305,81 @@ top:"-1",
 width:"80"
 },
 styleClass:"h5 text-tertiary text-center",
-text:"MASTER"
+text:"MASTER",
+visible:false
 },
 name:"labelMaster",
 styleClass:"h5 text-tertiary text-center",
 typeName:"bootstrapcomponents-label",
 typeid:47,
-uuid:"A2633EB5-C332-4422-8F87-F9A927798101"
+uuid:"A2633EB5-C332-4422-8F87-F9A927798101",
+visible:false
+},
+{
+cssPosition:"10,10,-1,10,0,36",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"36",
+left:"10",
+right:"10",
+top:"10",
+width:"0"
+},
+styleClass:"h2 text-primary",
+text:"Tenant"
+},
+name:"labelNamec",
+styleClass:"h2 text-primary",
+typeName:"bootstrapcomponents-label",
+typeid:47,
+uuid:"AD5D6877-FF5B-43C4-9A0D-4E031FB6BBFA"
+},
+{
+cssPosition:"117,56,-1,22,0,28",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"28",
+left:"22",
+right:"56",
+top:"117",
+width:"0"
+},
+onActionMethodID:"C5E5D835-BB76-4DB3-8175-36CF2472012E",
+styleClass:"h4 text-tertiary clickable",
+text:"%%display_name%% <i class=\"padding-left-10 fa fa-pencil fa-sm\"><\/i>",
+toolTipText:"Display Name"
+},
+name:"labelDisplayName",
+styleClass:"h4 text-tertiary clickable",
+typeName:"bootstrapcomponents-label",
+typeid:47,
+uuid:"BA38AA8C-D797-4D99-8A82-5256AF326F54"
+},
+{
+cssPosition:"218,-1,-1,25,33,31",
+json:{
+cssPosition:{
+bottom:"-1",
+height:"31",
+left:"25",
+right:"-1",
+top:"218",
+width:"33"
+},
+faclass:"fas fa-user-plus",
+size:{
+height:25,
+width:25
+},
+toolTipText:"Created by"
+},
+name:"iconCreatedBy",
+size:"25,25",
+typeName:"servoyextra-fontawesome",
+typeid:47,
+uuid:"E040DE17-BFEA-462C-AF75-FE3D6A06BA68"
 },
 {
 cssPosition:"-1,-1,30,calc(16% - 25px),50,50",
@@ -238,12 +392,13 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-lock-open h1 text-success",
+faclass:"fa fa-lock-open fa-3x text-success",
 onActionMethodID:"4286147E-324E-48B2-80A9-1F5344A0A1CF",
 size:{
 height:25,
 width:25
-}
+},
+styleclass:"clickable"
 },
 name:"faUnlocked",
 size:"25,25",

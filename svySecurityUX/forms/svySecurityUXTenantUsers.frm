@@ -49,7 +49,7 @@ cssPosition:"50,0,60,0,0,50",
 json:{
 columns:[
 {
-dataprovider:"display_name",
+dataprovider:"user_name",
 filterType:"TEXT",
 svyUUID:"2FD29696-090D-4A72-887B-7A763EBC27C9"
 }
@@ -103,7 +103,7 @@ right:"30",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-long-arrow-right text-tertiary h4 clickable",
+faclass:"fa fa-long-arrow-right text-tertiary fa-lg clickable",
 onActionMethodID:"741696D2-C10F-43F0-AF6E-ABB9C89AD253",
 size:{
 height:25,

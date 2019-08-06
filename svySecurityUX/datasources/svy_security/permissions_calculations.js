@@ -3,8 +3,8 @@
  */
 function styleClassIsGrantedForSelectedRole() {
 	if (utils.hasRecords(permissions_to_roles_permissions_ux_selected_role)) {
-		return "fa fa-check-circle text-success h4";
+		return "fa fa-check-circle text-success fa-lg";
 	} else {
-		return "fas fa-minus-circle text-tertiary h4";
+		return "fas fa-minus-circle text-tertiary fa-lg";
 	}
 }

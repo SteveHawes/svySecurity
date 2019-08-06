@@ -10,15 +10,15 @@ typeid:19,
 uuid:"0D516707-DFBE-4FF6-967A-2F2276F06C5A"
 },
 {
-cssPosition:"32,-1,28,24,calc( 50% - 45px),30",
+cssPosition:"30,-1,30,30,calc( 50% - 45px),30",
 json:{
 containedForm:"59C44C2D-CAD4-414F-9B26-E2F43BD8B846",
 cssPosition:{
-bottom:"28",
+bottom:"30",
 height:"30",
-left:"24",
+left:"30",
 right:"-1",
-top:"32",
+top:"30",
 width:"calc( 50% - 45px)"
 },
 relationName:"tenants_to_users_ux",

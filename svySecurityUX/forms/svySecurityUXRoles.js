@@ -43,6 +43,8 @@ function onActionNewRole(event) {
 	
 	// hide role
 	elements.fldNewRole.visible = true;
+	elements.iconConfirmNew.visible = true;
+	elements.iconCancelNew.visible = true;
 
 	elements.btnNewRole.visible = false;
 	elements.iconNewRole.visible = false;
@@ -104,11 +106,31 @@ function createRole() {
 		}
 	}
 
+	resetNewRoleFields();
+}
+
+/**
+
+ * @protected
+ *
+ * @properties={typeid:24,uuid:"AE04F250-83D1-49C2-8A3D-B21979AC4AEE"}
+ */
+function onActionCancelNewRole() {
+	resetNewRoleFields();
+}
+
+/**
+ * @protected 
+ * @properties={typeid:24,uuid:"56F6D2C9-C3AD-4380-B373-FF7D28474270"}
+ */
+function resetNewRoleFields() {
 	newRoleName = null;
 	
 	// hide role
 	elements.fldNewRole.visible = false;
 	elements.fldNewRole.removeStyleClass("form-invalid");
+	elements.iconConfirmNew.visible = false;
+	elements.iconCancelNew.visible = false;
 	//elements.errorNewRole.text = null;
 	//elements.errorNewRole.visible = false;
 
@@ -125,6 +147,15 @@ function createRole() {
  * @properties={typeid:24,uuid:"0818F08B-71A3-40D8-A97C-D4FC572771DD"}
  */
 function onActionDeleteRole() {
-	var tenant = scopes.svySecurity.getTenant()
-	tenant.deleteRole(foundset.role_name);
+	
+	var msg = "Deletes the specified role from this tenant."
+	msg += "All associated permissions and grants to users are removed immediately. Users with active sessions will be partially affected, will be fully affected at next log-in."
+
+	var answer = plugins.dialogs.showQuestionDialog("Do you wish to delete the Role " + role_name, msg, "Yes", "No");
+	if (answer == "Yes") {
+		var tenant = scopes.svySecurity.getTenant()
+		tenant.deleteRole(foundset.role_name);
+	}
+	
+
 }
