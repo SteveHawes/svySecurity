@@ -197,6 +197,6 @@ function onCellClick(foundsetindex, columnindex, record, event) {
 	if (column.id == "edit") {
 		// navigate to the given product
 		var item = new scopes.svyNavigation.NavigationItem(scopes.svySecurityUX.SVY_SECURITY_UX.USER);
-		scopes.svyNavigation.open(item);
+		scopes.svyNavigation.open(item, foundset.getSelectedRecord(), scopes.svyNavigation.NAVIGATION_SELECTION_TYPE.LOAD_RECORDS);
 	}
 }
