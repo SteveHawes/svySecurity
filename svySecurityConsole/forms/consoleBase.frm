@@ -1,9 +1,7 @@
-customProperties:"formComponent:false,\
-useCssPosition:true",
+customProperties:"formComponent:false",
 encapsulation:60,
 items:[
 {
-cssPosition:"40,-1,-1,10,40,40",
 formIndex:1,
 location:"10,40",
 name:"btnHome",
@@ -19,7 +17,6 @@ typeid:7,
 uuid:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0"
 },
 {
-cssPosition:"40,-1,-1,750,40,40",
 formIndex:20,
 location:"750,40",
 name:"btnLogout",
@@ -44,7 +41,6 @@ uuid:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733"
 },
 {
 anchors:11,
-cssPosition:"30,0,-1,0,800,60",
 location:"0,30",
 name:"lblHeader",
 size:"800,60",
