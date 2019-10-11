@@ -82,7 +82,7 @@ var tenantName = '';
  * 
  * @properties={typeid:24,uuid:"2F8D781B-F5CB-46E4-9D07-984A8E42B71B"}
  */
-function login(){
+function login() {
 	
 	if(!tenantName){
 		onLoginError(ERROR_CODES.TENANT_NOT_SPECIFIED);
