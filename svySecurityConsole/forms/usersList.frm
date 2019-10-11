@@ -1,8 +1,10 @@
-customProperties:"formComponent:false",
+customProperties:"formComponent:false,\
+useCssPosition:true",
 dataSource:"db:/svy_security/users",
 extendsID:"EAE3DC77-8EEA-41E2-8564-F52829D98C82",
 items:[
 {
+cssPosition:"160,10,-109,10,780,429",
 customProperties:"",
 extendsID:"904AF726-ED01-443E-A94B-4F28A5F4D28D",
 json:{
@@ -34,6 +36,14 @@ svyUUID:"650569B6-E80C-4499-92A3-D5B98A63A659",
 width:"180"
 }
 ],
+cssPosition:{
+bottom:"-109",
+height:"429",
+left:"10",
+right:"10",
+top:"160",
+width:"780"
+},
 foundset:{
 foundsetSelector:""
 }

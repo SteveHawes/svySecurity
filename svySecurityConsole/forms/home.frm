@@ -8,11 +8,13 @@ onShowMethodID:{\
 arguments:null,\
 parameters:null\
 }\
-}",
+},\
+useCssPosition:true",
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
 anchors:11,
+cssPosition:"90,0,-1,0,800,42",
 formIndex:-5,
 location:"0,90",
 name:"lblToolbar",
@@ -24,6 +26,7 @@ uuid:"0EEE1D2C-17B4-439B-B13D-E8EB1E8ADA79"
 },
 {
 anchors:9,
+cssPosition:"267,-1,-1,540,200,30",
 formIndex:1,
 location:"540,267",
 name:"btnSessionsText",
@@ -40,6 +43,7 @@ uuid:"0EF0D821-1425-4D90-8C6C-0B03EF8EBF2C"
 },
 {
 anchors:9,
+cssPosition:"177,-1,-1,540,200,120",
 dataProviderID:"m_SessionCount",
 location:"540,177",
 name:"btnSessionsCount",
@@ -55,6 +59,7 @@ uuid:"1319C3F3-FB2B-4146-B070-DF4EC1751A3B"
 },
 {
 anchors:9,
+cssPosition:"177,-1,-1,60,200,120",
 dataProviderID:"m_TenantCount",
 location:"60,177",
 name:"btnTenantsCount",
@@ -69,6 +74,7 @@ typeid:7,
 uuid:"433EC10B-C328-4AE7-AE9B-952DB97912D1"
 },
 {
+cssPosition:"6,-1,-1,553,240,19",
 location:"553,6",
 name:"lblVersionInfo",
 size:"240,19",
@@ -78,7 +84,16 @@ typeid:7,
 uuid:"48B3F412-3D42-4ED3-A3AA-638B48E608F0"
 },
 {
+cssPosition:"331,-1,-1,20,370,250",
 json:{
+cssPosition:{
+bottom:"-1",
+height:"250",
+left:"20",
+right:"-1",
+top:"331",
+width:"370"
+},
 legendLabel:"Users by tenant",
 location:{
 x:20,
@@ -100,6 +115,7 @@ uuid:"76BA0369-123D-425F-BAE6-83D92021AF7A"
 },
 {
 anchors:3,
+cssPosition:"90,669,-1,-1,130,40",
 formIndex:1,
 location:"1,90",
 name:"btnCreateTenant",
@@ -113,6 +129,7 @@ uuid:"874CC822-C563-4D4A-A01A-21AD378AD3A1"
 },
 {
 anchors:9,
+cssPosition:"267,-1,-1,300,200,30",
 formIndex:1,
 location:"300,267",
 name:"btnUsersText",
@@ -129,6 +146,7 @@ uuid:"8953B999-591E-4ABC-8A55-BFC3D6B5A96D"
 },
 {
 anchors:9,
+cssPosition:"267,-1,-1,60,200,30",
 location:"60,267",
 name:"btnTenantsText",
 onActionMethodID:"17628FA9-EFC8-4091-BFE4-637266BF5B3B",
@@ -143,7 +161,16 @@ typeid:7,
 uuid:"943A1322-EAF8-4B5E-8DF0-DEEA934AA1B4"
 },
 {
+cssPosition:"331,-1,-1,410,370,250",
 json:{
+cssPosition:{
+bottom:"-1",
+height:"250",
+left:"410",
+right:"-1",
+top:"331",
+width:"370"
+},
 location:{
 x:410,
 y:331
@@ -163,6 +190,7 @@ uuid:"9EDAF965-00C1-41C6-BEC3-AE629C3E8758"
 },
 {
 anchors:9,
+cssPosition:"177,-1,-1,300,200,120",
 dataProviderID:"m_UserCount",
 location:"300,177",
 name:"btnUsersCount",
@@ -177,6 +205,7 @@ typeid:7,
 uuid:"B139D32E-9DD5-4A39-8D71-0BE487E3C821"
 },
 {
+cssPosition:"40,-1,-1,10,40,40",
 extendsID:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0",
 showClick:true,
 showFocus:false,
@@ -186,6 +215,7 @@ visible:false
 },
 {
 anchors:3,
+cssPosition:"90,534,-1,-1,130,40",
 formIndex:1,
 location:"136,90",
 name:"btnViewProperties",
@@ -198,6 +228,7 @@ typeid:7,
 uuid:"C6A5FBB5-722A-48BF-82CE-4CACC4461657"
 },
 {
+cssPosition:"91,-1,-1,473,320,40",
 displaysTags:true,
 formIndex:1,
 horizontalAlignment:4,
@@ -217,6 +248,7 @@ uuid:"EF4AFD36-B60B-4610-8BA2-64D6B952CD3B"
 },
 {
 anchors:3,
+cssPosition:"90,401,-1,-1,130,40",
 formIndex:1,
 location:"269,90",
 name:"btnViewNavigation",

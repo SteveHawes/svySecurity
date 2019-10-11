@@ -1,8 +1,10 @@
-customProperties:"formComponent:false",
+customProperties:"formComponent:false,\
+useCssPosition:true",
 dataSource:"db:/svy_security/sessions",
 extendsID:"EAE3DC77-8EEA-41E2-8564-F52829D98C82",
 items:[
 {
+cssPosition:"160,10,-109,10,780,429",
 customProperties:"",
 extendsID:"904AF726-ED01-443E-A94B-4F28A5F4D28D",
 json:{
@@ -41,6 +43,14 @@ headerText:"Duration",
 svyUUID:"6324D9B0-A03B-48C3-AB32-F32D9722A90E"
 }
 ],
+cssPosition:{
+bottom:"-109",
+height:"429",
+left:"10",
+right:"10",
+top:"160",
+width:"780"
+},
 foundset:{
 foundsetSelector:""
 },
@@ -52,6 +62,7 @@ typeid:47,
 uuid:"0E399FAD-0DCF-4CAA-A400-40F7229FB9E9"
 },
 {
+cssPosition:"40,-1,-1,60,40,40",
 location:"60,40",
 name:"btnShowParentScreen",
 onActionMethodID:"25616BFD-CD29-4F48-8F04-109A19DE86CB",

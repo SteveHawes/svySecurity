@@ -1,8 +1,10 @@
-customProperties:"formComponent:false",
+customProperties:"formComponent:false,\
+useCssPosition:true",
 dataSource:"db:/svy_security/tenants",
 extendsID:"EAE3DC77-8EEA-41E2-8564-F52829D98C82",
 items:[
 {
+cssPosition:"95,6,-1,-1,30,30",
 extendsID:"B20C04CC-B11B-43A5-86DD-99754C83F78C",
 showClick:false,
 showFocus:false,
@@ -11,6 +13,7 @@ uuid:"05FE5305-D446-40A1-AAB4-3413872EEA09"
 },
 {
 anchors:3,
+cssPosition:"90,407,-1,-1,130,40",
 location:"263,90",
 name:"btnCreateSlave",
 onActionMethodID:"D5A99C94-81ED-4921-8BFD-BE98A30E8D06",
@@ -22,6 +25,7 @@ typeid:7,
 uuid:"3A83C210-CA96-4977-BE46-A7AEE4E18B36"
 },
 {
+cssPosition:"160,10,-109,10,780,429",
 customProperties:"methods:{\
 onCellClick:{\
 arguments:null,\
@@ -54,6 +58,14 @@ headerText:"Master",
 svyUUID:"319133A1-2190-418E-AF85-F4891434881E"
 }
 ],
+cssPosition:{
+bottom:"-109",
+height:"429",
+left:"10",
+right:"10",
+top:"160",
+width:"780"
+},
 foundset:{
 foundsetSelector:""
 },
@@ -64,6 +76,7 @@ uuid:"977AD6AF-8D39-4EE3-B245-ADD77FDBAC3B"
 },
 {
 anchors:3,
+cssPosition:"90,669,-1,-1,130,40",
 location:"1,90",
 name:"btnCreateTenant",
 onActionMethodID:"8A300CEF-68CA-4426-8996-A7207FDDA5F9",
@@ -76,6 +89,7 @@ uuid:"A3003031-9BD0-4F9F-93E6-A8A9117762C6"
 },
 {
 anchors:3,
+cssPosition:"90,538,-1,-1,130,40",
 location:"132,90",
 name:"btnCreateSlavec",
 onActionMethodID:"B329E8C1-AF47-4049-A224-F6AF1A40DA38",

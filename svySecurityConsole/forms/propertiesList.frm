@@ -1,8 +1,10 @@
-customProperties:"formComponent:false",
+customProperties:"formComponent:false,\
+useCssPosition:true",
 dataSource:"db:/svy_security/svy_properties",
 extendsID:"EAE3DC77-8EEA-41E2-8564-F52829D98C82",
 items:[
 {
+cssPosition:"90,0,-1,0,800,42",
 extendsID:"9442A769-F83F-4A16-BEDF-1E64F70F8603",
 formIndex:0,
 location:"0,90",
@@ -10,6 +12,7 @@ typeid:7,
 uuid:"57B1A9A4-8E7F-41E2-BCB1-080C94EED2AD"
 },
 {
+cssPosition:"91,-1,-1,1,130,40",
 formIndex:3,
 location:"1,91",
 name:"btnNew",
@@ -21,6 +24,7 @@ typeid:7,
 uuid:"718826A3-6ADC-4619-98D6-A2D4BB1E3543"
 },
 {
+cssPosition:"160,10,-109,10,780,429",
 customProperties:"",
 extendsID:"904AF726-ED01-443E-A94B-4F28A5F4D28D",
 json:{
@@ -45,6 +49,14 @@ svyUUID:"0DD26724-5088-40AB-BFD5-5B374DA7994E",
 width:"160"
 }
 ],
+cssPosition:{
+bottom:"-109",
+height:"429",
+left:"10",
+right:"10",
+top:"160",
+width:"780"
+},
 foundset:{
 foundsetSelector:""
 }

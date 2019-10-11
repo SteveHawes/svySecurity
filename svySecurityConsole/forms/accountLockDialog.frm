@@ -1,7 +1,9 @@
-customProperties:"formComponent:false",
+customProperties:"formComponent:false,\
+useCssPosition:true",
 encapsulation:60,
 items:[
 {
+cssPosition:"159,-1,-1,169,378,63",
 location:"169,159",
 name:"lblLockDurationInfo",
 size:"378,63",
@@ -10,6 +12,7 @@ typeid:7,
 uuid:"0E1F8F89-27AF-4590-87A4-130A6D8A6A70"
 },
 {
+cssPosition:"133,-1,-1,398,80,20",
 labelFor:"fldLockDuration",
 location:"398,133",
 name:"lblLockDurationMinutes",
@@ -19,6 +22,7 @@ typeid:7,
 uuid:"4305F70A-B763-4056-8688-93B034D0FEEB"
 },
 {
+cssPosition:"261,-1,-1,335,125,40",
 location:"335,261",
 name:"btnLock",
 onActionMethodID:"A75DBCBE-D228-4191-BF4E-26BCA0CC6349",
@@ -29,6 +33,7 @@ typeid:7,
 uuid:"5C112033-31AA-4AFD-A74F-F42FAFD4EB8A"
 },
 {
+cssPosition:"128,-1,-1,167,223,30",
 dataProviderID:"m_LockDurationMinutes",
 location:"167,128",
 name:"fldLockDuration",
@@ -38,6 +43,7 @@ typeid:4,
 uuid:"7A71E875-4822-4A17-9E3D-87341A4BFEB8"
 },
 {
+cssPosition:"133,-1,-1,54,137,20",
 labelFor:"fldLockDuration",
 location:"54,133",
 name:"lblLockDuration",
@@ -48,6 +54,7 @@ typeid:7,
 uuid:"94065C50-CCC0-49B1-B0D0-48978CFD9C16"
 },
 {
+cssPosition:"260,-1,-1,148,125,40",
 location:"148,260",
 name:"btnCancel",
 onActionMethodID:"F1D74EAA-5219-4F86-BD63-621C0A9265AC",
@@ -64,6 +71,7 @@ typeid:19,
 uuid:"BF591FBB-42F2-469B-9FF9-475E41A7F517"
 },
 {
+cssPosition:"57,-1,-1,167,376,30",
 dataProviderID:"m_LockReason",
 format:"|#(50)",
 location:"167,57",
@@ -74,6 +82,7 @@ typeid:4,
 uuid:"F954C091-6F99-4537-93CA-08735F1D0C68"
 },
 {
+cssPosition:"62,-1,-1,56,130,20",
 labelFor:"fldLockReason",
 location:"56,62",
 name:"lblLockReason",

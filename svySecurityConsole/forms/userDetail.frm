@@ -105,7 +105,7 @@ typeid:7,
 uuid:"2C19B69E-D56F-4978-A8FA-4FCCBCA7AF67"
 },
 {
-cssPosition:"693,-1,-1,194,445,26",
+cssPosition:"670,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,670",
 name:"lblTenantInfo",
@@ -115,7 +115,7 @@ typeid:7,
 uuid:"38BFBAD5-FC52-4811-BA36-B3F9C3195B5B"
 },
 {
-cssPosition:"655,-1,-1,654,30,30",
+cssPosition:"618,-1,-1,654,30,30",
 location:"654,618",
 name:"btnEditEmail",
 onActionMethodID:"6E5C3C35-1DD1-4D86-A07E-B2F800ADA993",
@@ -170,7 +170,7 @@ typeid:7,
 uuid:"67105928-9981-485C-8EEE-9509D79EDEB4"
 },
 {
-cssPosition:"725,-1,-1,194,445,26",
+cssPosition:"702,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,702",
 name:"lblCreationInfo",
@@ -180,7 +180,7 @@ typeid:7,
 uuid:"6FCCF2C3-0397-4F8D-B7F5-DD3BAEF48C02"
 },
 {
-cssPosition:"783,-1,-1,194,445,26",
+cssPosition:"760,-1,-1,194,445,26",
 dataProviderID:"m_LockReasonText",
 location:"194,760",
 name:"lblLockReason",
@@ -189,7 +189,7 @@ typeid:7,
 uuid:"88F39AD0-96EC-437B-9DE3-33E21ECBDBAC"
 },
 {
-cssPosition:"695,-1,-1,56,133,20",
+cssPosition:"672,-1,-1,56,133,20",
 labelFor:"",
 location:"56,672",
 name:"lblStatus",
@@ -258,7 +258,7 @@ typeid:47,
 uuid:"A9EC490D-8E77-4C57-B03D-016AC6288DC3"
 },
 {
-cssPosition:"659,-1,-1,56,133,20",
+cssPosition:"623,-1,-1,56,133,20",
 labelFor:"fldDisplayName",
 location:"56,623",
 name:"lblEmail",
@@ -286,7 +286,7 @@ typeid:4,
 uuid:"BC52BEFA-C877-4EAA-B37D-32BAA88A259E"
 },
 {
-cssPosition:"754,-1,-1,194,445,26",
+cssPosition:"731,-1,-1,194,445,26",
 dataProviderID:"m_LockStausText",
 location:"194,731",
 name:"lblLockInfo",
@@ -324,7 +324,7 @@ typeid:7,
 uuid:"D9D11D5E-199A-45C7-AFC8-C683361E7116"
 },
 {
-cssPosition:"655,-1,-1,194,445,30",
+cssPosition:"618,-1,-1,194,445,30",
 dataProviderID:"email",
 editable:false,
 location:"194,618",

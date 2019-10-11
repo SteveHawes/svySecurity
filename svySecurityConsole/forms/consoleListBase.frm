@@ -4,11 +4,13 @@ onShowMethodID:{\
 arguments:null,\
 parameters:null\
 }\
-}",
+},\
+useCssPosition:true",
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
 anchors:3,
+cssPosition:"95,5,-1,-1,320,30",
 dataProviderID:"searchText",
 formIndex:1,
 location:"475,95",
@@ -21,6 +23,7 @@ uuid:"174AB9A8-163B-409C-8FCD-B029D912CE06"
 },
 {
 anchors:15,
+cssPosition:"160,10,-109,10,780,429",
 json:{
 anchors:15,
 columns:[
@@ -29,6 +32,14 @@ headerText:"header",
 svyUUID:"8E12BA4C-30F6-4C4F-BF65-36B11942A1F8"
 }
 ],
+cssPosition:{
+bottom:"-109",
+height:"429",
+left:"10",
+right:"10",
+top:"160",
+width:"780"
+},
 location:{
 x:10,
 y:160
@@ -49,6 +60,7 @@ uuid:"904AF726-ED01-443E-A94B-4F28A5F4D28D"
 },
 {
 anchors:11,
+cssPosition:"90,0,-1,0,800,42",
 formIndex:-5,
 location:"0,90",
 name:"lblToolbar",
@@ -60,6 +72,7 @@ uuid:"9442A769-F83F-4A16-BEDF-1E64F70F8603"
 },
 {
 anchors:3,
+cssPosition:"95,6,-1,-1,30,30",
 formIndex:2,
 location:"764,95",
 name:"btnShowAll",
