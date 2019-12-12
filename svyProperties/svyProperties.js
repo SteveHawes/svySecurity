@@ -39,10 +39,34 @@ var MAX_VALUE_LENGTH = 50000000;
 var MAX_DISPLAYNAME_LENGTH = 500;
 
 /**
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"B9F3592D-ECF0-49C2-9795-CC5678B5ED59"}
+ */
+var IGNORE_PARAMETER = 'ignore-query-parameter';
+
+/**
  * @private
  * @properties={typeid:35,uuid:"49CEE483-8E4C-4EA3-B0B6-43276C956D47",variableType:-4}
  */
 var log = scopes.svyLogManager.getLogger("com.servoy.svyproperties");
+
+/**
+ * @type {String}
+ * @private 
+ *
+ * @properties={typeid:35,uuid:"C3DD2F6E-F232-4070-8CF3-9C02BBB7CF67"}
+ */
+var activeUserName;
+
+/**
+ * @type {String}
+ * @private 
+ *
+ * @properties={typeid:35,uuid:"30EF256B-D6ED-4975-8BBF-7F02F3BE46EF"}
+ */
+var activeTenantName;
 
 /**
  * If false then when saving or deleting security-related records
@@ -93,25 +117,36 @@ function changeExternalDBTransactionSupportFlag(mustSupportExternalTransactions)
  * @AllowToRunInFind
  */
 function Property(record) {
+	if (!record) {
+		throw new Error('Property record is not specified');
+	}
 	
 	/** 
 	 * @protected 
 	 * @type {JSRecord<db:/svy_security/svy_properties>} 
 	 * */
 	this.record = record;
-	
-	if (!record) {
-		throw new Error('Property record is not specified');
-	}
+
+}
+
+/**
+ * @constructor 
+ * @private 
+ * @properties={typeid:24,uuid:"562A35E1-6C6C-4D39-8487-F95725F0E8F2"}
+ */
+function initProperty() {
+	Property.prototype = Object.create(Property.prototype);
+	Property.prototype.constructor = Property;
 	
     /**
      * Gets the property uuid for this property.
      *
      * @public
      * @return {UUID} The property uuid of this property.
+     * @this {Property}
      */
-    this.getPropertyUUID = function() {
-        return record.property_uuid;
+	Property.prototype.getPropertyUUID = function() {
+        return this.record.property_uuid;
     }
 	
     /**
@@ -119,9 +154,10 @@ function Property(record) {
      *
      * @public
      * @return {String} The property value of this property. Can be null if a display name is not set.
+     * @this {Property}
      */
-    this.getDisplayName = function() {
-        return record.display_name;
+    Property.prototype.getDisplayName = function() {
+        return this.record.display_name;
     }
     
     /**
@@ -129,13 +165,14 @@ function Property(record) {
      *
      * @public
      * @return {Property} The property uuid of this property.
+     * @this {Property}
      */
-    this.setDisplayName = function(displayName) {
+    Property.prototype.setDisplayName = function(displayName) {
     	if (!textLengthIsValid(displayName, MAX_DISPLAYNAME_LENGTH)) {
     		throw new Error(utils.stringFormat('DisplayName must be between 1 and %1$s characters long.', [MAX_DISPLAYNAME_LENGTH]));
     	}
-        record.display_name = displayName;
-        saveRecord(record);
+    	this.record.display_name = displayName;
+        saveRecord(this.record);
         return this;
     }
 	
@@ -144,9 +181,10 @@ function Property(record) {
      *
      * @public
      * @return {String} The property value of this property. Can be null if a property value is not set.
+     * @this {Property}
      */
-    this.getPropertyValue = function() {
-        return record.property_value;
+    Property.prototype.getPropertyValue = function() {
+        return this.record.property_value;
     }
 
     /**
@@ -155,51 +193,358 @@ function Property(record) {
      * @public
      * @param {String} propertyValue 
      * @return {Property} This property for call-chaining support.
+     * @this {Property}
      */
-    this.setPropertyValue = function(propertyValue) {
-    	
+    Property.prototype.setPropertyValue = function(propertyValue) {
     	if (!textLengthIsValid(propertyValue, MAX_VALUE_LENGTH)) {
     		throw new Error(utils.stringFormat('PropertyValue must be between 0 and %1$s characters long.', [MAX_VALUE_LENGTH]));
     	}
     	
-        record.property_value = propertyValue;
-        saveRecord(record);
+    	this.record.property_value = propertyValue;
+        saveRecord(this.record);
         return this;
     }
     
     /**
-     * Gets the display name for this property.
+     * Gets the tenant name for this property.
      *
      * @public
      * @return {String} The property value of this property. Can be null if a display name is not set.
+     * @this {Property}
      */
-    this.getTenantName = function() {
-        return record.tenant_name;
+    Property.prototype.getTenantName = function() {
+        return this.record.tenant_name;
     }
-	
+    
+    /**
+     * Gets the user name for this property.
+     *
+     * @public
+     * @return {String} The property value of this property. Can be null if a display name is not set.
+     * @this {Property}
+     */
+    Property.prototype.getUserName = function() {
+        return this.record.user_name;
+    }    
+    
+    /**
+     * Immediately and permanently deletes this property.
+     * @note USE WITH CAUTION! There is no undo for this operation.
+     * 
+     * @public 
+     * @return {Boolean} true if property could be deleted
+     * @this {Property}
+     */
+    Property.prototype.deleteProperty = function() {
+    	try {
+	    	return deleteRecord(this.record);
+        } catch (e) {
+        	log.error(utils.stringFormat('Could not delete property %1$. Unknown error: %2$. Check log.', [this.getPropertyUUID(), e.message]));
+            throw e;
+        }
+    }
 }
 
 /**
- * @param propertyNameSpace
- * @param propertyValue
- * @param [propertyType]
- * @param [tenantName]
- * @param [userName]
+ * Sets the user and tenant name for the logged in user<br>
+ * Both are used in all convenience methods to get or set properties for the user or the tenant<br>
+ * When svySecurity is used, this is called automatically after login
+ * 
+ * @param {String} userName the name of the active user for which user related properties are stored
+ * @param {String} [tenantName] the name of the tenant of the active user
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"5034AE07-D459-4B84-A351-9AD78D6986D8"}
+ */
+function setUserName(userName, tenantName) {
+	activeUserName = userName;
+	activeTenantName = tenantName;
+}
+
+/**
+ * Returns the property with the given key and type for the user set via <code>setUserName()</code>
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * 
+ * @return {Property} the property found or null if not found
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"784F54F9-57F4-4349-8C81-F04F315A7F33"}
+ */
+function getUserProperty(propertyKey, propertyType) {
+	if (!activeUserName) {
+		throw new Error('No user name set in svyProperties. Make sure a user name is set by calling setUserName().');
+	}
+	return getProperty(propertyKey, propertyType, activeTenantName, activeUserName);
+}
+
+/**
+ * Returns the value of the property with the given key and type for the user set via <code>setUserName()</code>
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * 
+ * @return {String} the value of the property found or null if not found
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"8EB62BF0-4854-4FAA-B655-D750ACC63AAC"}
+ */
+function getUserPropertyValue(propertyKey, propertyType) {
+	if (!activeUserName) {
+		throw new Error('No user name set in svyProperties. Make sure a user name is set by calling setUserName().');
+	}
+	var property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName);
+	if (property) {
+		return property.getPropertyValue();
+	} else {
+		return null;
+	}
+}
+
+/**
+ * Returns the tenant wide property with the given key and type for the tenant set via <code>setUserName()</code><br>
+ * Tenant wide properties are properties where the user name is not set
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * 
+ * @return {Property} the property found or null if not found
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"2535BE78-C669-47E6-805C-A794F8750C90"}
+ */
+function getTenantProperty(propertyKey, propertyType) {
+	if (!activeTenantName) {
+		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
+	}
+	return getProperty(propertyKey, propertyType, activeTenantName, null);
+}
+
+/**
+ * Returns the value of the tenant wide property with the given key and type for the tenant set via <code>setUserName()</code><br>
+ * Tenant wide properties are properties where the user name is not set
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * 
+ * @return {String} the value of the property found or null if not found
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"DFFAF6A5-16FD-4141-8E02-8271D602986B"}
+ */
+function getTenantPropertyValue(propertyKey, propertyType) {
+	if (!activeTenantName) {
+		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
+	}
+	var property = getProperty(propertyKey, propertyType, activeTenantName, null);
+	if (property) {
+		return property.getPropertyValue();
+	} else {
+		return null;
+	}
+}
+
+/**
+ * Returns the global property with the given key and type<br>
+ * Global properties are properties where the tenant and user name is not set
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * 
+ * @return {Property} the property found or null if not found
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"86FF4B96-8D1E-4499-B62C-7E3073930E4A"}
+ */
+function getGlobalProperty(propertyKey, propertyType) {
+	return getProperty(propertyKey, propertyType, null, null);
+}
+
+/**
+ * Returns the value of the global property with the given key and type<br>
+ * Global properties are properties where the tenant and user name is not set
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * 
+ * @return {String} the value of the property found or null if not found
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"F7E35C5D-B22F-4798-AAE8-F1C498699E30"}
+ */
+function getGlobalPropertyValue(propertyKey, propertyType) {
+	var property = getProperty(propertyKey, propertyType, null, null);
+	if (property) {
+		return property.getPropertyValue();
+	} else {
+		return null;
+	}
+}
+
+/**
+ * Returns the property with the given key and type or null if not found<br>
+ * All parameters given need to match exactly
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * @param {String} [tenantName] the tenant name for which this property is stored
+ * @param {String} [userName] the user name for which this property is stored
+ * 
+ * @return {Property} the property found or null if not found
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"623D678C-543A-45DE-99BA-27027352B03C"}
+ */
+function getProperty(propertyKey, propertyType, tenantName, userName) {
+	if (!propertyKey || !propertyType) {
+		if (!propertyKey) {
+			throw new Error('No propertyKey provided');
+		}
+		if (!propertyType) {
+			throw new Error('No propertyType provided');
+		}
+	}
+	var query = datasources.db.svy_security.svy_properties.createSelect();
+	query.result.addPk();
+	query.where.add(query.columns.property_namespace.eq(propertyKey));
+	query.where.add(query.columns.property_type.eq(propertyType));
+	if (userName) {
+		query.where.add(query.columns.user_name.eq(userName));
+	} else {
+		query.where.add(query.columns.user_name.isNull);		
+	}
+	if (tenantName) {
+		query.where.add(query.columns.tenant_name.eq(tenantName));
+	} else {
+		query.where.add(query.columns.tenant_name.isNull);		
+	}
+	var fs = datasources.db.svy_security.svy_properties.getFoundSet();
+	fs.loadRecords(query);
+	
+	if (utils.hasRecords(fs)) {
+		if (fs.getSize() > 1) {
+			log.warn('More than one property found for propertyKey "{}", propertyType "{}", tenantName "{}" and userName "{}"', propertyKey, propertyType, tenantName, userName);
+		}
+		return new Property(fs.getRecord(1));
+	} else {
+		return null;
+	}
+}
+
+/**
+ * Sets the given value to the user property with the given key and type or creates a new property if not found
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * @param {String} value the string value of the property
  * 
  * @return {Property}
+ * 
  * @public 
+ *
+ * @properties={typeid:24,uuid:"9D0EB628-D482-4953-BC52-1F30601E590C"}
+ */
+function setUserProperty(propertyKey, propertyType, value) {
+	if (!activeUserName) {
+		throw new Error('No user name set in svyProperties. Make sure a user name is set by calling setUserName().');
+	}
+	return setProperty(propertyKey, propertyType, value, activeUserName, activeTenantName);
+}
+
+/**
+ * Sets the given value to the tenant wide property with the given key and type or creates a new property if not found<br>
+ * Tenant wide properties are properties where the user name is not set
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * @param {String} value the string value of the property
+ * 
+ * @return {Property}
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"7B71FEFD-50AF-413B-BF62-17D372CE98CE"}
+ */
+function setTenantProperty(propertyKey, propertyType, value) {
+	if (!activeTenantName) {
+		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
+	}
+	return setProperty(propertyKey, propertyType, value, null, activeTenantName);
+}
+
+/**
+ * Sets the given value to the global property with the given key and type or creates a new property if not found<br>
+ * Global properties are properties where the tenant and user name is not set
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * @param {String} value the string value of the property
+ * 
+ * @return {Property}
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"3E48CC2C-F3B6-4462-9CB2-3D69D5F69B27"}
+ */
+function setGlobalProperty(propertyKey, propertyType, value) {
+	return setProperty(propertyKey, propertyType, value, null, null);
+}
+
+/**
+ * Sets the given value to the property with the given key and type or creates a new property if not found
+ * 
+ * @param {String} propertyKey the identifier for the property
+ * @param {String} propertyType the type of property (typically an enum value)
+ * @param {String} value the string value of the property
+ * @param {String} userName the user name for which this property is stored
+ * @param {String} tenantName the tenant name for which this property is stored
+ * 
+ * @return {Property}
+ * 
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"C64333B6-744C-4F07-ACBF-31DF4BD627F3"}
+ */
+function setProperty(propertyKey, propertyType, value, userName, tenantName) {
+	var property = getOrCreateProperty(propertyKey, propertyType, tenantName, userName, value);
+	return property.setPropertyValue(value);
+}
+
+/**
+ * Creates a new property for with the given name space
+ * 
+ * @param {String} propertyKey
+ * @param {String} propertyType
+ * @param {String} propertyValue
+ * @param {String} [tenantName]
+ * @param {String} [userName]
+ * 
+ * @return {Property}
+ * @private  
  * 
  * @throws {Error, scopes.svyDataUtils.ValueNotUniqueException}
  *
  * @properties={typeid:24,uuid:"08D8D77A-FC88-453D-A9CA-9B320A9CF2F3"}
  */
-function createProperty(propertyNameSpace, propertyValue, propertyType, tenantName, userName) {
-	if (!propertyNameSpace) {
-		throw new Error('PropertyName name cannot be null or empty');
+function createProperty(propertyKey, propertyType, propertyValue, tenantName, userName) {
+	if (!propertyKey) {
+		throw new Error('propertyKey cannot be null or empty');
+	}
+	if (!propertyType) {
+		throw new Error('propertyType cannot be null or empty');
 	}
 
-	if (!textLengthIsValid(propertyNameSpace, MAX_NAMESPACE_LENGTH)) {
-		throw new Error(utils.stringFormat('PropertyNameSpace must be between 0 and %1$s characters long.', [MAX_NAMESPACE_LENGTH]));
+	if (!textLengthIsValid(propertyKey, MAX_NAMESPACE_LENGTH)) {
+		throw new Error(utils.stringFormat('PropertyKey must be between 0 and %1$s characters long.', [MAX_NAMESPACE_LENGTH]));
 	}
 
 	if (!textLengthIsValid(propertyValue, MAX_VALUE_LENGTH)) {
@@ -221,143 +566,195 @@ function createProperty(propertyNameSpace, propertyValue, propertyType, tenantNa
 	var fs = datasources.db.svy_security.svy_properties.getFoundSet();
 
 	// Check if value is unique values
-	var fsExists = scopes.svyDataUtils.getFoundSetWithExactValues(fs.getDataSource(), ["property_namespace", "property_type", "tenant_name", "user_name"], [propertyNameSpace, propertyType, tenantName, userName]);
+	var fsExists = scopes.svyDataUtils.getFoundSetWithExactValues(fs.getDataSource(), ["property_namespace", "property_type", "tenant_name", "user_name"], [propertyKey, propertyType, tenantName, userName]);
 	if (fsExists.getSize()) {
 		// return the exception here !?
 		throw new scopes.svyDataUtils.ValueNotUniqueException("There is already a property for values", fsExists);
 	}
 
 	var rec = fs.getRecord(fs.newRecord(false, false));
-	rec.property_namespace = propertyNameSpace;
+	rec.property_namespace = propertyKey;
 	rec.property_type = propertyType;
 	rec.property_value = propertyValue;
 	rec.tenant_name = tenantName;
 	rec.user_name = userName;
 
-	saveRecord(rec)
-	var property = new Property(rec);
-	return property;
+	saveRecord(rec);
+	
+	return new Property(rec);
 }
 
 /**
- * @param propertyNameSpace
- * @param [propertyType]
+ * Gets the property with the given name space or creates one if not found
+ * 
+ * @param propertyKey
+ * @param propertyType
  * @param [tenantName]
  * @param [userName]
+ * @param [propertyValue]
  * 
  * @return {Property}
- * @public 
+ * @private  
  * 
  * throws an exception if multiple properties are found matching parameters values
  *
  * @properties={typeid:24,uuid:"61F0F863-A1D0-4B21-944D-63DEAC9B8FA7"}
  */
-function getOrCreateProperty(propertyNameSpace, propertyType, tenantName, userName) {
-	// Check if value is unique values
-	/** @type {JSFoundSet<db:/svy_security/svy_properties>} */
-	var fsExists = scopes.svyDataUtils.getFoundSetWithExactValues(datasources.db.svy_security.svy_properties.getDataSource(), ["property_namespace", "property_type", "tenant_name", "user_name"], [propertyNameSpace, propertyType, tenantName, userName]);
-	if (fsExists.getSize() == 1) {
-		return new Property(fsExists.getRecord(1));
-	} else if (fsExists.getSize() > 1) {
-		throw "Case not handled yet, what is expected to happen here ?!"
+function getOrCreateProperty(propertyKey, propertyType, tenantName, userName, propertyValue) {
+	var property = getProperty(propertyKey, propertyType, tenantName, userName);
+	if (!property) {
+		return createProperty(propertyKey, propertyType, propertyValue, tenantName, userName);
 	} else {
-		return createProperty(propertyNameSpace, null, propertyType, tenantName, userName);
+		return property;
 	}
 }
 
 /**
- * Returns the Property with the given propertyUUID
- * @param {UUID|String} propertyUUID the UUID of the property (as UUID or as a UUIDString)
+ * Returns the Property with the given property UUID
+ * @param {UUID|String} propertyId the UUID of the property (as UUID or as a UUIDString)
  * 
  * @return {Property}
- * @public 
+ * @private  
  *
  * @properties={typeid:24,uuid:"84BA0C4F-0953-4228-9CC4-548E891B7AB0"}
  */
-function getProperty(propertyUUID) {
-    if (propertyUUID instanceof String) {
-        /**
-         * @type {String}
-         * @private
-         */
-        var propertyString = propertyUUID;
-        propertyUUID = getProperty(application.getUUID(propertyString));
+function getPropertyById(propertyId) {
+    if (propertyId instanceof String) {
+        /** @type {String} */
+        var propertyString = propertyId;
+        propertyId = application.getUUID(propertyString);
     }
-	
-	/** @type {JSRecord<db:/svy_security/svy_properties>} */
-	var rec = scopes.svyDataUtils.getRecord(datasources.db.svy_security.svy_properties.getDataSource(),[propertyUUID]);
-	if (rec) {
-		return new Property(rec)
-	} else {
-		// TODO shall i throw an exception here ?
-		return null;
-	}
+    
+    var fs = datasources.db.svy_security.svy_properties.getFoundSet();
+    fs.loadRecords(propertyId);
+    
+    if (utils.hasRecords(fs)) {
+    	return new Property(fs.getSelectedRecord());
+    } else {
+    	return null;
+    }
 }
 
-
 /**
- * @param {String} propertyNameSpace
- * @param {String} [propertyType] should be an exact match
- * @param {String} [tenantName] should be an exact match
- * @param {String} [userName] should be an exact match
+ * Returns all properties with the given key and type, optional tenant and user name<br>
+ * 
+ * If tenantName is not provided, it will not be queried; if a null value is provided, only global properties are returned<br>
+ * If userName is not provided, it will not be queried; if a null value is provided, only tenant wide properties are returned<br>
+ * 
+ * @param {String} propertyKey can contain % placeholders for like searches
+ * @param {String} [propertyType] has to match exactly
+ * @param {String} [tenantName] has to match exactly
+ * @param {String} [userName] has to match exactly
  * 
  * @return {Array<Property>}
  * @public 
  *
  * @properties={typeid:24,uuid:"7F95F54F-D932-4226-AA75-60841D07CBF4"}
  */
-function getProperties(propertyNameSpace, propertyType, tenantName, userName) {
-	if (propertyNameSpace == null || propertyNameSpace == undefined) {
-		throw "PropertyNameSpace required";
+function getProperties(propertyKey, propertyType, tenantName, userName) {
+	if ((propertyKey == null || propertyKey == undefined)) {
+		throw new Error("propertyKey required");
 	}
 	
-	// Check if value is unique values
-	/** @type {Array<String>} */
-	var queryColumns = [];
-	var queryValues = [];
-	
-	if (propertyType !== null && propertyType !== undefined) {
-		queryColumns.push("property_type");
-		queryValues.push(propertyType);
+	if (arguments.length <= 2) {
+		//tenant not given - will be ignored
+		tenantName = IGNORE_PARAMETER;
+	}
+	if (arguments.length <= 3) {
+		//user not given - will be ignored
+		userName = IGNORE_PARAMETER;
 	}
 	
-	if (tenantName !== null && tenantName !== undefined) {
-		queryColumns.push("tenant_name");
-		queryValues.push(tenantName);
+	return loadProperties(propertyKey, propertyType, tenantName, userName);
+}
+
+/**
+ * Returns all properties of the given type, optional tenant and user name<br>
+ * 
+ * If tenantName is not provided, it will not be queried; if a null value is provided, only global properties are returned<br>
+ * If userName is not provided, it will not be queried; if a null value is provided, only tenant wide properties are returned<br>
+ * 
+ * @param {String} propertyType has to match exactly
+ * @param {String} [tenantName] has to match exactly
+ * @param {String} [userName] has to match exactly
+ * 
+ * @return {Array<Property>}
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"82C26D51-AD85-47DD-98D6-7CE2B8449EF0"}
+ */
+function getPropertiesByType(propertyType, tenantName, userName) {
+	if ((propertyType == null || propertyType == undefined)) {
+		throw new Error("propertyType required");
 	}
 	
-	if (userName !== null && userName !== undefined) {
-		queryColumns.push("user_name");
-		queryValues.push(userName);
+	if (arguments.length <= 1) {
+		//tenant not given - will be ignored
+		tenantName = IGNORE_PARAMETER;
+	}
+	if (arguments.length <= 2) {
+		//user not given - will be ignored
+		userName = IGNORE_PARAMETER;
 	}
 	
+	return loadProperties(null, propertyType, tenantName, userName);
+}
+
+/**
+ * @param {String} propertyKey
+ * @param {String} propertyType
+ * @param {String} tenantName will not be queried if IGNORE_PARAMETER, else will ask for exact match or is null
+ * @param {String} userName will not be queried if IGNORE_PARAMETER, else will ask for exact match or is null
+ * 
+ * @return {Array<Property>}
+ * 
+ * @private 
+ *
+ * @properties={typeid:24,uuid:"4CCA87D6-FC62-442B-9F66-A17DD48BBAF7"}
+ */
+function loadProperties(propertyKey, propertyType, tenantName, userName) {
 	var query = datasources.db.svy_security.svy_properties.createSelect();
-	if (propertyNameSpace.indexOf("%") > -1) {
-		query.where.add(query.columns.property_namespace.like(propertyNameSpace));
-	} else {
-		query.where.add(query.columns.property_namespace.eq(propertyNameSpace));
-	}
+	query.result.addPk();
 	
-	for (var j = 0; j < queryColumns.length; j++) {
-		if (queryValues[j] == null) {
-			query.where.add(query.getColumn(queryColumns[j]).isNull);
+	if (propertyKey) {
+		if (propertyKey.indexOf("%") > -1) {
+			query.where.add(query.columns.property_namespace.like(propertyKey));
 		} else {
-			query.where.add(query.getColumn(queryColumns[j]).eq(queryValues[j]));
+			query.where.add(query.columns.property_namespace.eq(propertyKey));
 		}
 	}
 	
-	/** @type {JSFoundSet<db:/svy_security/svy_properties>} */
-	var fsExists = databaseManager.getFoundSet(query);
+	if (propertyType) {
+		query.where.add(query.columns.property_type.eq(propertyType));
+	}
+	
+	if (tenantName !== IGNORE_PARAMETER) {
+		if (!tenantName) {
+			query.where.add(query.columns.tenant_name.isNull);
+		} else {
+			query.where.add(query.columns.tenant_name.eq(tenantName));			
+		}
+	}
+	
+	if (userName !== IGNORE_PARAMETER) {
+		if (!userName) {
+			query.where.add(query.columns.user_name.isNull);
+		} else {
+			query.where.add(query.columns.user_name.eq(tenantName));			
+		}
+	}
+	
+	var fsProperties = datasources.db.svy_security.svy_properties.getFoundSet();
+	fsProperties.loadRecords(query);
 	var result = [];
 	
-	for (var i = 1; i <= fsExists.getSize(); i++) {
-		var record = fsExists.getRecord(i);
+	for (var i = 1; i <= fsProperties.getSize(); i++) {
+		var record = fsProperties.getRecord(i);
 		result.push(new Property(record));
 	}
 	
 	return result;
 }
-
 
 /**
  * Immediately and permanently deletes the specified property.
@@ -373,39 +770,30 @@ function deleteProperty(property) {
     if (!property) {
         throw 'Property cannot be null';
     }
+    
+    /** @type {Property} */
+    var prop;
     if (property instanceof String) {
-        /**
-         * @type {String}
-         * @private
-         */
+        /** @type {String} */
         var propertyString = property;
-        property = getProperty(application.getUUID(propertyString));
-    }
-    if (property instanceof UUID) {
-        /**
-         * @type {UUID}
-         * @private
-         */
+        prop = getPropertyById(application.getUUID(propertyString));
+    } else if (property instanceof UUID) {
+        /** @type {UUID} */
         var propertyUUID = property;
-        property = getProperty(propertyUUID);
+        prop = getPropertyById(propertyUUID);
+    } else {
+    	prop = property;
     }
 
-    // get foundset
-    var fs = datasources.db.svy_security.svy_properties.getFoundSet();
-    var qry = datasources.db.svy_security.svy_properties.createSelect();
-    qry.where.add(qry.columns.property_uuid.eq(property.getPropertyUUID()));
-    fs.loadRecords(qry);
-
-    if (fs.getSize() == 0) {
-        log.error('Could not delete tenant. Could not find property {}.', property.getPropertyUUID());
+    if (!prop) {
+        log.error('Could not delete property because it could not be found.');
         return false;
     }
 
     try {
-        deleteRecord(fs.getRecord(1));
-        return true;
+        return prop.deleteProperty();
     } catch (e) {
-    	log.error(utils.stringFormat('Could not delete tenant %1$. Unkown error: %2$. Check log.', [property.getPropertyUUID(), e.message]));
+    	log.error(utils.stringFormat('Could not delete property. Unkown error: %2$. Check log.', [e.message]));
         throw e;
     }
 }
@@ -452,7 +840,6 @@ function saveRecord(record) {
 	var startedLocalTransaction = false;
 
 	if (databaseManager.hasTransaction()) {
-		log.debug('Detected external database transaction.');
 		if (!supportExternalDBTransaction) {
 			throw new Error('External database transactions are not allowed.');
 		}
@@ -482,6 +869,7 @@ function saveRecord(record) {
  * Utility to delete record with errors thrown
  * @private
  * @param {JSRecord} record
+ * @return {Boolean}
  *
  * @properties={typeid:24,uuid:"8A2071D7-F4ED-40D7-8285-B3B206DB74CE"}
  */
@@ -489,7 +877,6 @@ function deleteRecord(record) {
     var startedLocalTransaction = false;
 
     if (databaseManager.hasTransaction()) {
-        log.debug('Detected external database transaction.');
         if (!supportExternalDBTransaction) {
             throw new Error('External database transactions are not allowed.');
         }
@@ -512,4 +899,17 @@ function deleteRecord(record) {
         databaseManager.rollbackTransaction();
         throw e;
     }
+    
+    return true;
 }
+
+/**
+ * Initializes the scope.
+ * NOTE: This var must remain at the BOTTOM of the file.
+ * @private
+ * @SuppressWarnings (unused)
+ * @properties={typeid:35,uuid:"2F61DF4C-81DC-4ECF-BB8E-5E4681DFD387",variableType:-4}
+ */
+var init = (function() {
+	initProperty();
+})();

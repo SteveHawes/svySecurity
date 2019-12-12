@@ -2379,6 +2379,8 @@ function initSession(user) {
     activeTenantName = user.getTenant().getName();
     sessionID = sessionRec.id.toString();
 
+    //set user and tenant name in svyProperties
+    scopes.svyProperties.setUserName(activeUserName, activeTenantName);
 }
 
 /**
@@ -2626,7 +2628,6 @@ function getVersion() {
  */
 function createSampleData(){
 	if (!getTenants().length) {
-
 		logInfo('No security data found. Default data will be created');
 		var tenant = createTenant(DEFAULT_TENANT);
 		var user = tenant.createUser(DEFAULT_TENANT);
