@@ -1,7 +1,7 @@
 /**
  * @public
  * @param {String} tenantName
- * @param {svychartjs-chart|svychartjs-chart_abs} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  *
  * @properties={typeid:24,uuid:"32738348-D594-46AE-8F78-FD6263C40428"}
  */
@@ -113,7 +113,7 @@ function createChartTotalTenantUsageOverTimeMonths(tenantName, chart){
  * @public
  * @param {String} tenantName
  * @param {String} userName
- * @param {svychartjs-chart} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  *
  * @properties={typeid:24,uuid:"4717A3D5-AEB9-4BA9-B405-44270722C904"}
  */

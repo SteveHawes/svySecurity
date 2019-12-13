@@ -1,4 +1,12 @@
 /**
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"C58A8189-3755-4D5C-B0B6-7543797507E4"}
+ */
+var SVY_SECURITY_UX_VERSION = '1.3.0';
+
+/**
  * @protected 
  * @type {String}
  *
@@ -36,8 +44,8 @@ var SVY_SECURITY_EVENTS = {
 };
 
 /**
- * This function should be used only by svySecurityUX module, do not call this function
- * @protected 
+ * WARNING: DO NOT CALL THIS FUNCTION
+ * This function is used internally by svySecurityUX module, do not call this function
  * @param {String} roleName
  *
  * @properties={typeid:24,uuid:"C572C7BE-70FF-463D-AF50-11EDA5AB2F82"}
@@ -47,8 +55,8 @@ function setSelectedRole(roleName) {
 }
 
 /**
- * This function should be used only by svySecurityUX module, do not call this function
- * @protected 
+ * WARNING: DO NOT CALL THIS FUNCTION
+ * This function is used internally by svySecurityUX module, do not call this function
  * @param {String} userName
  *
  * @properties={typeid:24,uuid:"1712A6B6-CA27-4839-A202-E34DA2E7A668"}
@@ -63,6 +71,21 @@ function setSelectedUser(userName) {
  * 
  * @param {Function} onAfterUserCreateEvent
  * @public
+ * 
+ * @example <pre>
+ * 
+ * function onSolutionOpen(arg, queryParams) {
+ *   // run onAfterUserCreate when a user is created from the svySecurityUX templates
+ *   scopes.svySecurityUX.addAfterUserCreateListener(onAfterUserCreate);
+ * }
+ * 
+ * function onAfterUserCreate(userName, tenantName) {
+ *	var user = scopes.svySecurity.getUser(userName, tenantName);
+ *  // send a registration email to every created user
+ *	if (scopes.yourScope.yourSendRegistrationEmailFunction(user)) {
+ *		plugins.webnotificationsToastr.success("An invitation email has been sent to the new user " + userName, "Invitation sent");
+ *	}
+ * }</pre>
  *
  * @properties={typeid:24,uuid:"8DF58EF7-640D-40C8-B816-BF1B8701A15B"}
  */
@@ -72,6 +95,7 @@ function addAfterUserCreateListener(onAfterUserCreateEvent) {
 
 
 /**
+ * 
  * @param {Function} onAfterUserCreateEvent
  * @public 
  *
@@ -83,8 +107,9 @@ function removeAfterUserCreateListener(onAfterUserCreateEvent) {
 
 
 /**
- * DO NOT CALL THIS FUNCTION
- * @public 
+ * WARNING: DO NOT CALL THIS FUNCTION
+ * This function is called internally by the svySecurityUX module whenever a user is created via it's templates
+ *  
  * @param {String} userName
  * @param {String} tenantName
  *
@@ -92,4 +117,14 @@ function removeAfterUserCreateListener(onAfterUserCreateEvent) {
  */
 function triggerAfterUserCreate(userName, tenantName) {
 	scopes.svyEventManager.fireEvent(SVY_SECURITY_EVENTS.AFTER_USER_CREATE, SVY_SECURITY_EVENTS.AFTER_USER_CREATE, [userName, tenantName]);
+}
+
+/**
+ * Gets the version of this module
+ * @public 
+ * @return {String} the version of the module using the format Major.Minor.Revision
+ * @properties={typeid:24,uuid:"6770927E-4C75-416D-B83E-1399931F78A6"}
+ */
+function getVersion() {
+    return SVY_SECURITY_UX_VERSION;
 }
