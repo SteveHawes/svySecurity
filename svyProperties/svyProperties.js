@@ -254,7 +254,15 @@ function initProperty() {
  * @param {String} [tenantName] the name of the tenant of the active user
  * 
  * @public 
- *
+ * 
+ * @example <pre>
+ * function onSolutionOpen(arg, queryParams) {
+ *   // don't set the tenant if the solution doesn't support multi-tenancy
+ *   // scopes.svyProperties.setUserName(loggedUserName);
+ * 
+ *   scopes.svyProperties.setUserName(loggedUniqueUserName, loggedUniqueTenantName);
+ * }
+ * </pre>
  * @properties={typeid:24,uuid:"5034AE07-D459-4B84-A351-9AD78D6986D8"}
  */
 function setUserName(userName, tenantName) {
@@ -271,6 +279,16 @@ function setUserName(userName, tenantName) {
  * @return {Property} the property found or null if not found
  * 
  * @public 
+ * 
+ * @example<pre>
+ * function onShow(firstShow, event) {
+ * 	var propertyKey = application.getSolutionName() + "-" + controller.getName() + "-" + elements.table.getName();
+ *	var columnState = scopes.svyProperties.getUserProperty(propertyKey, 'table-state');
+ *	
+ *	// restore the ng-grid state 
+ *	if (columnState) elements.table.restoreColumnState(columnState.getPropertyValue());
+ * }
+ * </pre>
  *
  * @properties={typeid:24,uuid:"784F54F9-57F4-4349-8C81-F04F315A7F33"}
  */
@@ -290,6 +308,16 @@ function getUserProperty(propertyKey, propertyType) {
  * @return {String} the value of the property found or null if not found
  * 
  * @public 
+ * 
+ * @example<pre>
+ * function onShow(firstShow, event) {
+ * 	var propertyKey = application.getSolutionName() + "-" + controller.getName() + "-" + elements.table.getName();
+ *	var columnState = scopes.svyProperties.getUserPropertyValue(propertyKey, 'table-state');
+ *	
+ *	// restore the ng-grid state 
+ *	if (columnState) elements.table.restoreColumnState(columnState);
+ * }
+ * </pre>
  *
  * @properties={typeid:24,uuid:"8EB62BF0-4854-4FAA-B655-D750ACC63AAC"}
  */
@@ -450,6 +478,14 @@ function getProperty(propertyKey, propertyType, tenantName, userName) {
  * @return {Property}
  * 
  * @public 
+ * 
+ * @example<pre>
+ * //persist the state of the NG Grid as user property  
+ * function onColumnStateChanged(columnState) {
+ *	 var propertyNameSpace = application.getSolutionName() + "-" + controller.getName() + "." + elements.table.getName();	
+ *	 scopes.svyProperties.setUserProperty(propertyNameSpace, 'table-state', columnState);
+ * }
+ * </pre>
  *
  * @properties={typeid:24,uuid:"9D0EB628-D482-4953-BC52-1F30601E590C"}
  */
