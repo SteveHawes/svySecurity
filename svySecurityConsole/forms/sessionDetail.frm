@@ -4,11 +4,13 @@ onShowMethodID:{\
 arguments:null,\
 parameters:null\
 }\
-}",
+},\
+useCssPosition:true",
 dataSource:"db:/svy_security/sessions",
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
+cssPosition:"203,-1,-1,530,91,26",
 labelFor:"duration_text",
 location:"530,203",
 name:"duration_text_label",
@@ -19,6 +21,7 @@ typeid:7,
 uuid:"06CA961C-6BAC-48B6-B300-A37D7132A9B6"
 },
 {
+cssPosition:"113,-1,-1,147,359,26",
 dataProviderID:"tenant_name",
 editable:false,
 location:"147,113",
@@ -29,6 +32,7 @@ typeid:4,
 uuid:"0E15C0AE-7DBF-4485-A820-544458DFFF95"
 },
 {
+cssPosition:"143,-1,-1,27,110,26",
 labelFor:"user_name",
 location:"27,143",
 name:"user_name_label",
@@ -39,6 +43,7 @@ typeid:7,
 uuid:"13B81A42-9584-4B2F-92C3-E1CEE9FE1668"
 },
 {
+cssPosition:"143,-1,-1,147,359,26",
 dataProviderID:"user_name",
 editable:false,
 location:"147,143",
@@ -50,6 +55,7 @@ uuid:"1A76B143-80DC-4FBC-B97E-83AB24292185"
 },
 {
 anchors:14,
+cssPosition:"-1,40,-102,40,720,37",
 location:"40,545",
 name:"lblMapInfo",
 size:"720,37",
@@ -59,6 +65,7 @@ uuid:"51A63E97-CB7C-4EE4-9322-22093BF1A5C8",
 visible:false
 },
 {
+cssPosition:"113,-1,-1,630,143,26",
 dataProviderID:"session_start",
 editable:false,
 location:"630,113",
@@ -69,6 +76,7 @@ typeid:4,
 uuid:"5DBC80EB-2266-485C-B1C2-522397B15C4F"
 },
 {
+cssPosition:"233,-1,-1,147,359,26",
 dataProviderID:"id",
 editable:false,
 location:"147,233",
@@ -79,6 +87,7 @@ typeid:4,
 uuid:"6450A973-6A68-414F-ACA2-B5B536E7B847"
 },
 {
+cssPosition:"203,-1,-1,27,110,26",
 labelFor:"servoy_client_id",
 location:"27,203",
 name:"servoy_client_id_label",
@@ -89,6 +98,7 @@ typeid:7,
 uuid:"692D00E2-8F75-4C32-87C5-022B7F10AF3C"
 },
 {
+cssPosition:"203,-1,-1,630,143,26",
 dataProviderID:"duration_text",
 editable:false,
 location:"630,203",
@@ -98,6 +108,7 @@ typeid:4,
 uuid:"6975658B-B74B-4163-A2E1-7EF558B3F65C"
 },
 {
+cssPosition:"143,-1,-1,630,143,26",
 dataProviderID:"session_end",
 editable:false,
 location:"630,143",
@@ -108,6 +119,7 @@ typeid:4,
 uuid:"73880BC5-568D-421B-84E5-02D987CB835E"
 },
 {
+cssPosition:"203,-1,-1,147,359,26",
 dataProviderID:"servoy_client_id",
 editable:false,
 location:"147,203",
@@ -118,6 +130,7 @@ typeid:4,
 uuid:"94C36B9E-E0D5-49B6-8959-8AB9C19FB496"
 },
 {
+cssPosition:"143,-1,-1,530,91,26",
 labelFor:"session_end",
 location:"530,143",
 name:"session_end_label",
@@ -128,6 +141,7 @@ typeid:7,
 uuid:"A1B2BFAC-5E96-4A68-BA63-1A342940A761"
 },
 {
+cssPosition:"173,-1,-1,630,143,26",
 dataProviderID:"last_client_ping",
 editable:false,
 location:"630,173",
@@ -138,6 +152,7 @@ typeid:4,
 uuid:"A6CB0972-2AC2-4495-B6D2-54C2D4D878AA"
 },
 {
+cssPosition:"173,-1,-1,530,91,26",
 labelFor:"last_client_ping",
 location:"530,173",
 name:"last_client_ping_label",
@@ -148,6 +163,7 @@ typeid:7,
 uuid:"AB3DED9D-9BDE-4160-9D3A-2272478B54E1"
 },
 {
+cssPosition:"113,-1,-1,530,91,26",
 labelFor:"session_start",
 location:"530,113",
 name:"session_start_label",
@@ -158,6 +174,7 @@ typeid:7,
 uuid:"B341F6F5-D94D-41A5-A67B-BAECF6D8048F"
 },
 {
+cssPosition:"113,-1,-1,27,110,26",
 labelFor:"tenant_name",
 location:"27,113",
 name:"tenant_name_label",
@@ -168,6 +185,7 @@ typeid:7,
 uuid:"C02D4282-A94A-44EC-BE08-867EF4748587"
 },
 {
+cssPosition:"263,-1,-1,147,627,60",
 dataProviderID:"user_agent_string",
 displayType:1,
 editable:false,
@@ -179,6 +197,7 @@ typeid:4,
 uuid:"C3A7B2F8-BF56-4D8A-9DF4-3079ED453A61"
 },
 {
+cssPosition:"263,-1,-1,27,110,26",
 labelFor:"user_agent_string",
 location:"27,263",
 name:"user_agent_string_label",
@@ -189,6 +208,7 @@ typeid:7,
 uuid:"E1089100-66ED-4DE3-BB81-6A62294739E9"
 },
 {
+cssPosition:"233,-1,-1,27,110,26",
 labelFor:"id",
 location:"27,233",
 name:"id_label",
@@ -199,6 +219,7 @@ typeid:7,
 uuid:"E1B801BD-402D-445B-B722-31702D04E2B0"
 },
 {
+cssPosition:"40,-1,-1,60,40,40",
 location:"60,40",
 name:"btnShowSessionList",
 onActionMethodID:"9E331313-2F3F-4810-8CE1-DE213202DBE9",
@@ -215,9 +236,18 @@ uuid:"ED86F752-56E1-4325-AC7C-BAEFC20EF4D3"
 },
 {
 anchors:15,
+cssPosition:"337,10,-110,10,780,253",
 json:{
 anchors:15,
 apiKey:"m_GoogleAPIKey",
+cssPosition:{
+bottom:"-110",
+height:"253",
+left:"10",
+right:"10",
+top:"337",
+width:"780"
+},
 location:{
 x:10,
 y:337
@@ -237,6 +267,7 @@ typeid:47,
 uuid:"EFDAF0FD-1436-4747-9036-D01DAB3B2B2A"
 },
 {
+cssPosition:"173,-1,-1,147,359,26",
 dataProviderID:"ip_address",
 editable:false,
 location:"147,173",
@@ -247,6 +278,7 @@ typeid:4,
 uuid:"F38DAC14-5243-4E16-8652-A6E6E4450F2C"
 },
 {
+cssPosition:"173,-1,-1,27,110,26",
 labelFor:"ip_address",
 location:"27,173",
 name:"ip_address_label",

@@ -1,6 +1,7 @@
 columns:[
 {
 allowNull:false,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:8,
 dataType:12,
 flags:1,
@@ -11,6 +12,7 @@ titleText:"Tenant Name"
 },
 {
 allowNull:false,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:0,
 dataType:12,
 flags:1,
@@ -20,6 +22,7 @@ titleText:"User Name"
 },
 {
 allowNull:true,
+compatibleColumnTypes:"[[-9,36,0]]",
 creationOrderIndex:10,
 dataType:12,
 length:36,
@@ -44,6 +47,7 @@ titleText:"Created"
 allowNull:false,
 autoEnterSubType:2,
 autoEnterType:1,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:9,
 dataType:12,
 length:50,
@@ -51,11 +55,19 @@ name:"creation_user_name"
 },
 {
 allowNull:true,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:2,
 dataType:12,
 length:50,
 name:"display_name",
 titleText:"Display Name"
+},
+{
+allowNull:true,
+creationOrderIndex:12,
+dataType:12,
+length:254,
+name:"email"
 },
 {
 allowNull:true,
@@ -71,6 +83,7 @@ name:"lock_flag"
 },
 {
 allowNull:true,
+compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:6,
 dataType:12,
 length:50,
@@ -87,6 +100,7 @@ titleText:"Modified"
 },
 {
 allowNull:true,
+compatibleColumnTypes:"[[-9,64,0]]",
 creationOrderIndex:1,
 dataType:12,
 length:64,

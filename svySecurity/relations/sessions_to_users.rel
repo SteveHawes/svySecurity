@@ -1,7 +1,8 @@
 encapsulation:2,
 foreignDataSource:"db:/svy_security/users",
 items:[
-{foreignColumnName:"user_name",primaryDataProviderID:"user_name",typeid:23,uuid:"A59D0647-56DA-41E2-9304-59CB9713A709"}
+{foreignColumnName:"user_name",primaryDataProviderID:"user_name",typeid:23,uuid:"A59D0647-56DA-41E2-9304-59CB9713A709"},
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"ED035E71-0E37-4A84-9778-6EB3F7DFFA71"}
 ],
 joinType:1,
 name:"sessions_to_users",

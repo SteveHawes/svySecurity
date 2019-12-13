@@ -340,3 +340,22 @@ function onActionTenantUsersList(event) {
 function onActionViewRoles(event) {
     forms.userRoles.show(foundset);
 }
+
+/**
+
+ * @protected
+ *
+ * @properties={typeid:24,uuid:"6E5C3C35-1DD1-4D86-A07E-B2F800ADA993"}
+ */
+function onActionEditEmail() {
+    if (tenant_name && user_name) {
+        var newEmail = plugins.dialogs.showInputDialog('Edit User', utils.stringFormat('Enter email for user "%1$s"', [user_name]), email);
+        if (newEmail) {
+            var user = scopes.svySecurity.getUser(user_name, tenant_name);
+            if (user) {
+                user.setEmail(newEmail);
+                //the data broadcast will update the UI
+            }
+        }
+    }
+}

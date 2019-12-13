@@ -1,8 +1,10 @@
-customProperties:"formComponent:false",
+customProperties:"formComponent:false,\
+useCssPosition:true",
 dataSource:"db:/svy_security/tenants",
 extendsID:"EAE3DC77-8EEA-41E2-8564-F52829D98C82",
 items:[
 {
+cssPosition:"95,6,-1,-1,30,30",
 extendsID:"B20C04CC-B11B-43A5-86DD-99754C83F78C",
 showClick:false,
 showFocus:false,
@@ -10,7 +12,26 @@ typeid:7,
 uuid:"05FE5305-D446-40A1-AAB4-3413872EEA09"
 },
 {
-customProperties:"",
+anchors:3,
+cssPosition:"90,407,-1,-1,130,40",
+location:"263,90",
+name:"btnCreateSlave",
+onActionMethodID:"D5A99C94-81ED-4921-8BFD-BE98A30E8D06",
+rolloverCursor:12,
+size:"130,40",
+styleClass:"flat-button transition-medium",
+text:"Create Slave",
+typeid:7,
+uuid:"3A83C210-CA96-4977-BE46-A7AEE4E18B36"
+},
+{
+cssPosition:"160,10,-109,10,780,429",
+customProperties:"methods:{\
+onCellClick:{\
+arguments:null,\
+parameters:null\
+}\
+}",
 extendsID:"904AF726-ED01-443E-A94B-4F28A5F4D28D",
 json:{
 anchors:0,
@@ -29,17 +50,33 @@ svyUUID:"C3C2AF21-2DB7-4224-AB10-845135CAD802"
 dataprovider:"userCount",
 headerText:"Users",
 svyUUID:"AC9902B2-F31D-4FDA-B6D6-87D19AB9612E"
+},
+{
+autoResize:false,
+dataprovider:"master_tenant_name",
+headerText:"Master",
+svyUUID:"319133A1-2190-418E-AF85-F4891434881E"
 }
 ],
+cssPosition:{
+bottom:"-109",
+height:"429",
+left:"10",
+right:"10",
+top:"160",
+width:"780"
+},
 foundset:{
 foundsetSelector:""
-}
+},
+onCellClick:null
 },
 typeid:47,
 uuid:"977AD6AF-8D39-4EE3-B245-ADD77FDBAC3B"
 },
 {
 anchors:3,
+cssPosition:"90,669,-1,-1,130,40",
 location:"1,90",
 name:"btnCreateTenant",
 onActionMethodID:"8A300CEF-68CA-4426-8996-A7207FDDA5F9",
@@ -49,6 +86,19 @@ styleClass:"flat-button transition-medium",
 text:"Create New Tenant",
 typeid:7,
 uuid:"A3003031-9BD0-4F9F-93E6-A8A9117762C6"
+},
+{
+anchors:3,
+cssPosition:"90,538,-1,-1,130,40",
+location:"132,90",
+name:"btnCreateSlavec",
+onActionMethodID:"B329E8C1-AF47-4049-A224-F6AF1A40DA38",
+rolloverCursor:12,
+size:"130,40",
+styleClass:"flat-button transition-medium",
+text:"Clone Tenant",
+typeid:7,
+uuid:"BACB5255-D201-48EB-8DEC-6815AB9AA6D5"
 }
 ],
 name:"tenantList",

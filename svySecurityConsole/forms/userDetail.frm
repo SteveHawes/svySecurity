@@ -4,12 +4,14 @@ onShowMethodID:{\
 arguments:null,\
 parameters:null\
 }\
-}",
+},\
+useCssPosition:true",
 dataSource:"db:/svy_security/users",
 extendsID:"7DD98CFF-0240-42E0-90E8-782BBF800121",
 items:[
 {
 anchors:3,
+cssPosition:"90,437,-1,-1,120,40",
 formIndex:2,
 location:"243,90",
 name:"btnLock",
@@ -24,6 +26,7 @@ uuid:"03CFB5A2-E66D-4657-9113-4BF584CDBBC7"
 },
 {
 anchors:11,
+cssPosition:"90,0,-1,0,800,42",
 formIndex:-5,
 location:"0,90",
 name:"lblToolbar",
@@ -34,6 +37,7 @@ typeid:7,
 uuid:"057F403D-7DF4-47EB-B91F-4CF0A25CF39C"
 },
 {
+cssPosition:"618,-1,-1,654,30,30",
 location:"654,618",
 name:"btnEditDisplayName",
 onActionMethodID:"17DEDFEC-4716-4343-88A9-1D410F729EC5",
@@ -49,6 +53,7 @@ uuid:"16D30F42-8899-481E-8A6D-C07666E7C679"
 },
 {
 anchors:9,
+cssPosition:"179,-1,-1,60,200,120",
 dataProviderID:"m_TotalSessionsCount",
 groupID:"kpi_button",
 location:"60,179",
@@ -65,6 +70,7 @@ uuid:"1B96ECAB-FC56-487F-BE65-9C9255EEEAB5"
 },
 {
 anchors:9,
+cssPosition:"269,-1,-1,300,200,30",
 formIndex:1,
 groupID:"kpi_button1",
 location:"300,269",
@@ -81,6 +87,7 @@ typeid:7,
 uuid:"28895821-5DA3-4A69-BAEB-F27C3F370322"
 },
 {
+cssPosition:"90,-1,-1,472,320,40",
 displaysTags:true,
 horizontalAlignment:4,
 location:"472,90",
@@ -98,6 +105,7 @@ typeid:7,
 uuid:"2C19B69E-D56F-4978-A8FA-4FCCBCA7AF67"
 },
 {
+cssPosition:"670,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,670",
 name:"lblTenantInfo",
@@ -107,6 +115,22 @@ typeid:7,
 uuid:"38BFBAD5-FC52-4811-BA36-B3F9C3195B5B"
 },
 {
+cssPosition:"618,-1,-1,654,30,30",
+location:"654,618",
+name:"btnEditEmail",
+onActionMethodID:"6E5C3C35-1DD1-4D86-A07E-B2F800ADA993",
+rolloverCursor:12,
+showClick:false,
+showFocus:false,
+size:"30,30",
+styleClass:"font-icon large transition-medium",
+text:"<span class=\"fa fa-pencil\"/>",
+transparent:true,
+typeid:7,
+uuid:"54FCE7C5-A93C-49DA-8F98-8581094C25DC"
+},
+{
+cssPosition:"40,-1,-1,60,40,40",
 location:"60,40",
 name:"btnShowTenantUsersList",
 onActionMethodID:"6DFA0254-EAF1-46C8-9FCF-2685FF61176D",
@@ -123,6 +147,7 @@ uuid:"58FA2C61-6CEC-43B5-87EC-EFCB3C0C7F5E"
 },
 {
 anchors:3,
+cssPosition:"90,679,-1,-1,120,40",
 formIndex:4,
 location:"1,90",
 name:"btnViewRoles",
@@ -137,6 +162,7 @@ typeid:7,
 uuid:"644D9A72-4C5B-4043-AF77-D5A071D7998F"
 },
 {
+cssPosition:"40,-1,-1,10,40,40",
 extendsID:"43720CE1-EC09-467D-A9B4-8FA5DE3D7FB0",
 location:"10,40",
 size:"40,40",
@@ -144,6 +170,7 @@ typeid:7,
 uuid:"67105928-9981-485C-8EEE-9509D79EDEB4"
 },
 {
+cssPosition:"702,-1,-1,194,445,26",
 displaysTags:true,
 location:"194,702",
 name:"lblCreationInfo",
@@ -153,6 +180,7 @@ typeid:7,
 uuid:"6FCCF2C3-0397-4F8D-B7F5-DD3BAEF48C02"
 },
 {
+cssPosition:"760,-1,-1,194,445,26",
 dataProviderID:"m_LockReasonText",
 location:"194,760",
 name:"lblLockReason",
@@ -161,6 +189,7 @@ typeid:7,
 uuid:"88F39AD0-96EC-437B-9DE3-33E21ECBDBAC"
 },
 {
+cssPosition:"672,-1,-1,56,133,20",
 labelFor:"",
 location:"56,672",
 name:"lblStatus",
@@ -172,6 +201,7 @@ uuid:"8AE7962F-1C16-4DD3-84B4-8C342E452460"
 },
 {
 anchors:9,
+cssPosition:"269,-1,-1,540,200,30",
 formIndex:1,
 groupID:"kpi_button2",
 location:"540,269",
@@ -188,6 +218,7 @@ typeid:7,
 uuid:"950EC219-2183-4700-9B16-41A990999B7B"
 },
 {
+cssPosition:"587,-1,-1,56,133,20",
 labelFor:"fldName",
 location:"56,587",
 name:"lblName",
@@ -199,7 +230,16 @@ typeid:7,
 uuid:"954E7B94-E67B-4829-A882-63374EAAC345"
 },
 {
+cssPosition:"314,-1,-1,15,770,250",
 json:{
+cssPosition:{
+bottom:"-1",
+height:"250",
+left:"15",
+right:"-1",
+top:"314",
+width:"770"
+},
 location:{
 x:15,
 y:314
@@ -218,12 +258,24 @@ typeid:47,
 uuid:"A9EC490D-8E77-4C57-B03D-016AC6288DC3"
 },
 {
+cssPosition:"623,-1,-1,56,133,20",
+labelFor:"fldDisplayName",
+location:"56,623",
+name:"lblEmail",
+size:"133,20",
+text:"Email",
+transparent:true,
+typeid:7,
+uuid:"AFA6F17A-4ACB-4167-A990-15B04F8282C0"
+},
+{
 extendsID:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733",
-height:800,
+height:827,
 typeid:19,
 uuid:"B1B4A12B-D09D-4229-881D-AA0A78E408DA"
 },
 {
+cssPosition:"582,-1,-1,194,445,30",
 dataProviderID:"user_name",
 editable:false,
 location:"194,582",
@@ -234,6 +286,7 @@ typeid:4,
 uuid:"BC52BEFA-C877-4EAA-B37D-32BAA88A259E"
 },
 {
+cssPosition:"731,-1,-1,194,445,26",
 dataProviderID:"m_LockStausText",
 location:"194,731",
 name:"lblLockInfo",
@@ -243,6 +296,7 @@ uuid:"CA451F1F-8F4E-4750-A62B-B220267044E8"
 },
 {
 anchors:9,
+cssPosition:"269,-1,-1,60,200,30",
 formIndex:1,
 groupID:"kpi_button",
 location:"60,269",
@@ -259,6 +313,7 @@ typeid:7,
 uuid:"D6EB3F2C-EB8E-45ED-BC83-75A7E9C8AD38"
 },
 {
+cssPosition:"623,-1,-1,56,133,20",
 labelFor:"fldDisplayName",
 location:"56,623",
 name:"lblDisplayName",
@@ -269,7 +324,18 @@ typeid:7,
 uuid:"D9D11D5E-199A-45C7-AFC8-C683361E7116"
 },
 {
+cssPosition:"618,-1,-1,194,445,30",
+dataProviderID:"email",
+editable:false,
+location:"194,618",
+name:"fldEmail",
+size:"445,30",
+typeid:4,
+uuid:"E08F6E12-1863-43F1-9080-A66F0F09B475"
+},
+{
 anchors:3,
+cssPosition:"90,558,-1,-1,120,40",
 formIndex:3,
 location:"122,90",
 name:"btnResetPassword",
@@ -283,6 +349,7 @@ typeid:7,
 uuid:"E3EDF865-A77C-48E3-83EE-0BB75E610E88"
 },
 {
+cssPosition:"618,-1,-1,194,445,30",
 dataProviderID:"display_name",
 editable:false,
 location:"194,618",
@@ -293,6 +360,7 @@ uuid:"E4B9DD93-1B08-4A6F-9DCF-EC738DC1549E"
 },
 {
 anchors:9,
+cssPosition:"179,-1,-1,540,200,120",
 dataProviderID:"m_ActiveSessionsCount",
 groupID:"kpi_button2",
 location:"540,179",
@@ -309,6 +377,7 @@ uuid:"E6200FB3-D362-4EB0-83FF-B0F0287BDBA1"
 },
 {
 anchors:3,
+cssPosition:"90,316,-1,-1,120,40",
 formIndex:1,
 location:"364,90",
 name:"btnDelete",
@@ -323,6 +392,7 @@ uuid:"EA06399A-B6E1-42BE-A182-29923BD2591A"
 },
 {
 anchors:9,
+cssPosition:"179,-1,-1,300,200,120",
 dataProviderID:"m_TotalSessionsHours",
 groupID:"kpi_button1",
 location:"300,179",
@@ -340,5 +410,6 @@ uuid:"F762E99C-F210-4BB6-BF61-D9811D760EEA"
 ],
 name:"userDetail",
 onShowMethodID:"3EA203A8-76F5-4EC9-9C04-EE427CB20969",
+size:"800,827",
 typeid:3,
 uuid:"A43F6676-F094-4B15-BAD1-02C3BFC2C506"
