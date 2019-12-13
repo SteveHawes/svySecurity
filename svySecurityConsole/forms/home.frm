@@ -1,9 +1,5 @@
 customProperties:"formComponent:false,\
 methods:{\
-onLoadMethodID:{\
-arguments:null,\
-parameters:null\
-},\
 onShowMethodID:{\
 arguments:null,\
 parameters:null\
@@ -214,20 +210,6 @@ uuid:"BFA53EA1-58A2-47B5-B2F7-4C314444D9AC",
 visible:false
 },
 {
-anchors:3,
-cssPosition:"90,534,-1,-1,130,40",
-formIndex:1,
-location:"136,90",
-name:"btnViewProperties",
-onActionMethodID:"7451540A-5CEC-4CDF-87D5-5E0FD0A514D1",
-rolloverCursor:12,
-size:"130,40",
-styleClass:"flat-button transition-medium",
-text:"View Properties",
-typeid:7,
-uuid:"C6A5FBB5-722A-48BF-82CE-4CACC4461657"
-},
-{
 cssPosition:"91,-1,-1,473,320,40",
 displaysTags:true,
 formIndex:1,
@@ -245,25 +227,9 @@ text:"Information as of  <b>%%m_LastRefreshDate%%<\/b> <span class=\"fa fa-refre
 transparent:true,
 typeid:7,
 uuid:"EF4AFD36-B60B-4610-8BA2-64D6B952CD3B"
-},
-{
-anchors:3,
-cssPosition:"90,401,-1,-1,130,40",
-formIndex:1,
-location:"269,90",
-name:"btnViewNavigation",
-onActionMethodID:"FEF322EE-457B-490B-AC3E-4C82F236A447",
-rolloverCursor:12,
-size:"130,40",
-styleClass:"flat-button transition-medium",
-text:"View Navigation",
-typeid:7,
-uuid:"F09542F1-7191-4B2F-9D60-F7C4BFCC254C",
-visible:false
 }
 ],
 name:"home",
-onLoadMethodID:"0EB8C7BC-92F4-47F3-8475-12EE8D3DA4A3",
 onShowMethodID:"20C5B324-C613-46C3-96F4-5BEF04705FD5",
 typeid:3,
 uuid:"692ED3E1-4AC9-4E7C-A380-00933584B0DA"
