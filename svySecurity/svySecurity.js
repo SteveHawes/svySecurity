@@ -1,15 +1,8 @@
-/** 
- * NOTES FOR SEAN
- * SvySecurity will include svyProperties unless there is any reason why shall i get svySecurity without svyProperties ?
- * SvyProperties can be used as standalone module instead. This means that tenant_name is not a mandatory field in svy_properties
+/* 
+ * SvySecurity includes svyProperties module
+ * SvyProperties can be used as stand-alone module instead. This means that tenant_name is not a mandatory field in svy_properties
  * 
- * Question: do we want to allow Properties without a tenant name !?
- * 
- * TODOs List
- * TODO don't allow null for svy_properties_permissions.tenant_name. Conclusion: we don't need at all tenant_name in svy_properties_permissions as permissions allow access independently from tenant name.
- * TODO rename svy_properties_permissions to properties_permissions !?
- * 
- * */
+ */
 
 /**
  * @private 
@@ -17,7 +10,7 @@
  *
  * @properties={typeid:35,uuid:"7BA2289C-A59D-4F51-9D13-8DE45506D750"}
  */
-var SVY_SECURITY_VERSION = '1.2.0';
+var SVY_SECURITY_VERSION = '1.3.0';
 
 /**
  * @protected
@@ -1132,6 +1125,7 @@ function Tenant(record) {
 }
 
 /**
+ * @protected 
  * Use {@link Tenant#createUser} to create user objects. Creating user objects with the new operator is reserved for internal use only.
  * @classdesc Application user account associated with a {@link Tenant}. Security [Permissions]{@link Permission} are granted to users through their {@link Role} membership.
  * @param {JSRecord<db:/svy_security/users>} record
@@ -2811,6 +2805,7 @@ function afterRecordDelete_roles_permissions(record) {
 }
 
 /**
+ * @protected 
  * Record after-delete trigger.
  * Clears the master_tenant_name from all slaves or replace it with the master of the tenant that is deleted.
  *
