@@ -133,7 +133,7 @@ function onSolutionOpen(arg, queryParams) {
 
 /**
  * @public
- * @param {svychartjs-chart|svychartjs-chart_abs} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  * @properties={typeid:24,uuid:"D54407E3-A7ED-41F2-ACFD-0757B6168520"}
  */
 function createChartTenantsWithMostUsers(chart){
@@ -172,7 +172,7 @@ function createChartTenantsWithMostUsers(chart){
 
 /**
  * @public
- * @param {svychartjs-chart} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  * @properties={typeid:24,uuid:"DC5F022B-5F60-4D99-93C4-3A5345663B18"}
  */
 function createChartTopTenantsUsageOverTimeMonths(chart){
@@ -300,7 +300,7 @@ function createChartTopTenantsUsageOverTimeMonths(chart){
 
 /**
  * @public
- * @param {svychartjs-chart|svychartjs-chart_abs} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  * @properties={typeid:24,uuid:"4E3E4B19-6940-4D84-AC37-0F0BD4C9440F"}
  */
 function createChartTotalUsageOverTimeMonths(chart){
@@ -409,7 +409,7 @@ function createChartTotalUsageOverTimeMonths(chart){
 /**
  * @public
  * @param {String} tenantName
- * @param {svychartjs-chart} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  * @properties={typeid:24,uuid:"FAF8AB2A-F67F-427E-941A-E519963319D0"}
  */
 function createChartTenantTopUsersUsageOverTimeMonths(tenantName, chart){
@@ -540,7 +540,7 @@ function createChartTenantTopUsersUsageOverTimeMonths(tenantName, chart){
 /**
  * @public
  * @param {String} tenantName
- * @param {svychartjs-chart|svychartjs-chart_abs} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  * @properties={typeid:24,uuid:"0392338E-6D9A-437E-94FC-99E648296685"}
  */
 function createChartTotalTenantUsageOverTimeMonths(tenantName, chart){
@@ -652,7 +652,7 @@ function createChartTotalTenantUsageOverTimeMonths(tenantName, chart){
  * @public
  * @param {String} tenantName
  * @param {String} userName
- * @param {svychartjs-chart|svychartjs-chart_abs} chart
+ * @param {RuntimeWebComponent<svychartjs-chart>|RuntimeWebComponent<svychartjs-chart_abs>} chart
  * @properties={typeid:24,uuid:"B4BF6476-C659-421D-991C-9DCD95991C20"}
  */
 function createChartUserUsageOverTimeMonths(tenantName, userName, chart){    
