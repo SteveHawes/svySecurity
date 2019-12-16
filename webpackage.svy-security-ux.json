@@ -1,0 +1,12 @@
+{
+    "name":"svySecurityUX",
+    "displayName":"svySecurityUX",
+    "packageType": "Solution",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/2017-fr.wp-orange-lock.svg/1024px-2017-fr.wp-orange-lock.svg.png",
+    "description": "Security UX module with ready for use templates for security configuration: user's management and access control",
+    "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
+    "sourceUrl" : "https://github.com/Servoy/svySecurity",
+    "releases" : [
+        {"version":"1.3.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b2/svySecurityUX.servoy", "servoy-version":"2019.12", "dependency":"svyNavigation#>=1.0.0,svySecurity#>=1.3.0,bootstrapcomponents#>=1.7.0,servoyextra#>=2.1.0,aggrid#>=2.2.2,fontawesome#>=4.7.0"}
+     ]
+}

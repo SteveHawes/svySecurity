@@ -1,0 +1,12 @@
+{
+    "name":"svyProperties",
+    "displayName":"svyProperties",
+    "packageType": "Solution",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/2017-fr.wp-orange-lock.svg/1024px-2017-fr.wp-orange-lock.svg.png",
+    "description": "Property module to facilitate persistent storage of properties, key-value, with multi-tenant and multi-user support",
+    "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
+    "sourceUrl" : "https://github.com/Servoy/svySecurity",
+    "releases" : [
+        {"version":"1.0.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.3.0/svyProperties.servoy", "servoy-version":"2019.9", "dependency":"svyUtils#>=1.4.0"}
+     ]
+}
