@@ -20,11 +20,11 @@ right:"0",
 top:"10",
 width:"0"
 },
-styleClass:"padding-left-10 border-bottom text-primary border-primary h2",
+styleClass:"padding-left-10  text-primary border-primary h2",
 text:"Permissions"
 },
 name:"labelTitle",
-styleClass:"padding-left-10 border-bottom text-primary border-primary h2",
+styleClass:"padding-left-10  text-primary border-primary h2",
 typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"A8CC239B-C541-4C85-A697-ED28105D4BDC"

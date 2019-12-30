@@ -104,11 +104,11 @@ right:"0",
 top:"10",
 width:"0"
 },
-styleClass:"padding-left-10 border-bottom text-primary border-primary h2",
+styleClass:"padding-left-10  text-primary border-primary h2",
 text:"Users"
 },
 name:"labelTitle",
-styleClass:"padding-left-10 border-bottom text-primary border-primary h2",
+styleClass:"padding-left-10  text-primary border-primary h2",
 typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"8E955C7E-40A2-4D4A-95AB-DB6BA0B2E574"

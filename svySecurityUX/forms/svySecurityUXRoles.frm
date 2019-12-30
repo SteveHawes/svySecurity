@@ -114,11 +114,11 @@ right:"0",
 top:"10",
 width:"0"
 },
-styleClass:"padding-left-10 border-bottom text-primary border-primary h2",
+styleClass:"padding-left-10  text-primary border-primary h2",
 text:"Roles"
 },
 name:"labelTitle",
-styleClass:"padding-left-10 border-bottom text-primary border-primary h2",
+styleClass:"padding-left-10  text-primary border-primary h2",
 typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"1F290062-0A38-4818-9041-93A652AE2F78"
