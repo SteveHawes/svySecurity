@@ -255,7 +255,8 @@ function initProperty() {
  * 
  * @public 
  * 
- * @example <pre>
+ * @example 
+ * <pre>
  * function onSolutionOpen(arg, queryParams) {
  *   // don't set the tenant if the solution doesn't support multi-tenancy
  *   // scopes.svyProperties.setUserName(loggedUserName);
@@ -280,7 +281,8 @@ function setUserName(userName, tenantName) {
  * 
  * @public 
  * 
- * @example<pre>
+ * @example
+ * <pre>
  * function onShow(firstShow, event) {
  * 	var propertyKey = application.getSolutionName() + "-" + controller.getName() + "-" + elements.table.getName();
  *	var columnState = scopes.svyProperties.getUserProperty(propertyKey, 'table-state');
@@ -309,7 +311,8 @@ function getUserProperty(propertyKey, propertyType) {
  * 
  * @public 
  * 
- * @example<pre>
+ * @example
+ * <pre>
  * function onShow(firstShow, event) {
  * 	var propertyKey = application.getSolutionName() + "-" + controller.getName() + "-" + elements.table.getName();
  *	var columnState = scopes.svyProperties.getUserPropertyValue(propertyKey, 'table-state');
@@ -479,7 +482,8 @@ function getProperty(propertyKey, propertyType, tenantName, userName) {
  * 
  * @public 
  * 
- * @example<pre>
+ * @example
+ * <pre>
  * //persist the state of the NG Grid as user property  
  * function onColumnStateChanged(columnState) {
  *	 var propertyNameSpace = application.getSolutionName() + "-" + controller.getName() + "." + elements.table.getName();	
