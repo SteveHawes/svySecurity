@@ -15,6 +15,21 @@ var ROLES_FILE_NAME = 'data_roles.txt';
 var ROLES_PERMISSIONS_FILE_NAME = 'data_roles_permissions.txt';
 
 /**
+ * Callback method for when solution is opened.
+ * When deeplinking into solutions, the argument part of the deeplink url will be passed in as the first argument
+ * All query parameters + the argument of the deeplink url will be passed in as the second argument
+ * For more information on deeplinking, see the chapters on the different Clients in the Deployment Guide.
+ *
+ * @param {String} arg startup argument part of the deeplink url with which the Client was started
+ * @param {Object<Array<String>>} queryParams all query parameters of the deeplink url with which the Client was started
+ *
+ * @properties={typeid:24,uuid:"CF946393-5A9C-471D-AA27-9B3DF6CA7E17"}
+ */
+function onSecurityPostImportHookOpen(arg, queryParams) {
+	syncPermissions();
+}
+
+/**
  * Returns the path to the workspace
  * @private 
  * @properties={typeid:24,uuid:"DABC4088-5986-499E-8B11-3700E4BC5239"}
