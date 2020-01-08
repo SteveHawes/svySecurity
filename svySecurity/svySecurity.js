@@ -2627,9 +2627,24 @@ function createSampleData(){
 		var user = tenant.createUser(DEFAULT_TENANT);
 		user.setPassword(DEFAULT_TENANT);
 		var role = tenant.createRole(DEFAULT_TENANT);
-		user.addRole(role)
+		user.addRole(role);
+		
+		// check if there are permissions
+		var permissions = getPermissions();
+		if (!permissions.length) {
+			logInfo('No permission data found. Permissions will be synced');
+			syncPermissions();
+			permissions = getPermissions();
+		}
+		
+		// assign default permission
 		var permission = getPermissions()[0];
-		role.addPermission(permission);
+		if (permission) {
+			role.addPermission(permission);
+		} else {
+			role.addPermission("Administrators")
+			logInfo('No permission data found. Administrator permission will be assigned as default permission')
+		}
 	}
 }
 
