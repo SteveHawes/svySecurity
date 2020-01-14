@@ -1,4 +1,19 @@
 /**
+ * Callback method for when form is shown.
+ *
+ * @param {Boolean} firstShow form is shown first time after load
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @protected
+ *
+ * @properties={typeid:24,uuid:"5CBEE7CC-44BC-4007-B15D-E3143593CADB"}
+ */
+function onShow(firstShow, event) {
+	elements.table.myFoundset.foundset.loadRecords();
+}
+
+
+/**
  * Called when the mouse is clicked on a row/cell (foundset and column indexes are given).
  * the foundsetindex is always -1 when there are grouped rows
  * the record is not an actual JSRecord but an object having the dataprovider values of the clicked record

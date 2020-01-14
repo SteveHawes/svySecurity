@@ -91,6 +91,7 @@ uuid:"A5452C00-8993-4358-946A-A536C7D9A58A"
 ],
 name:"svySecurityUXUserRoles",
 navigatorID:"-1",
+onShowMethodID:"5CBEE7CC-44BC-4007-B15D-E3143593CADB",
 showInMenu:true,
 size:"200,480",
 typeid:3,
