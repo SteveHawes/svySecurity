@@ -2012,13 +2012,13 @@ function Permission(record) {
      * <br/>
      * If the tenant of this permission is a master tenant, the role will also be added to the same permission for all the slaves of this permission tenant.
      * <br/>
-     * You cannot grant permission to role of a master tenant when logged in as a user.
+     * You cannot grant permission to role of a master tenant when logged in as an user.
      * You cannot grant permission to role of a slave tenant at anytime.
      * 
      * @public
      * @param {Role} role The role object to which the permission should be granted.
      * @return {Permission} This permission for call-chaining support.
-     * @throws {String} Throws an exception when permission cannot be grant.
+     * @throws {String} Throws an exception when permission cannot be granted.
      */
     this.addRole = function(role) {
         if (!role) {
@@ -2101,6 +2101,7 @@ function Permission(record) {
     	var loggedTenant = getTenant();
     	if (loggedTenant && loggedTenant.isMasterTenant()) {
     		throw "Cannot remove permission from role of a master tenant when logged in as a user";
+    		throw "Cannot remove permission from role of a master tenant when logged in as an user";
     	}
         var roleName = role instanceof String ? role : role.getName();
 
@@ -2803,6 +2804,14 @@ function createSampleData(){
  * @properties={typeid:24,uuid:"17106233-8761-463C-ABDB-6F8ED312DFA5"}
  */
 function afterRecordInsert_role(record) {
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are creating a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSlaveTenant()) {
+		logWarning("You are creating a role while you are logged in as an user of a slave tenant");
+	}
+	
 	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
 		//propagate insert to all slaves
 		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
@@ -2840,6 +2849,15 @@ function afterRecordInsert_role(record) {
  * @properties={typeid:24,uuid:"90523996-D26E-4296-B97E-8B911FE4A4C7"}
  */
 function afterRecordUpdate_role(record) {
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are updating a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSlaveTenant()) {
+		logWarning("You are updating a role while you are logged in as an user of a slave tenant");
+	}
+	
+	
 	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
 		//propagate update to all slaves
 		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
@@ -2867,6 +2885,14 @@ function afterRecordUpdate_role(record) {
  * @properties={typeid:24,uuid:"6A602687-ACF0-4F04-B0D6-8D5762FEF65E"}
  */
 function afterRecordInsert_role_permission(record) {
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are granting a permission to a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSlaveTenant()) {
+		logWarning("You are granting a permission to a role while you are logged in as an user of a slave tenant");
+	}
+	
 	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
 		//propagate insert to all slaves
 		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
@@ -2915,6 +2941,14 @@ function afterRecordInsert_role_permission(record) {
  * @properties={typeid:24,uuid:"AC038DA1-1E18-4116-8922-E2B7FD079374"}
  */
 function afterRecordDelete_role(record) {
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are deleting a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSlaveTenant()) {
+		logWarning("You are deleting a role while you are logged in as an user of a slave tenant");
+	}
+	
 	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
 		//propagate delete to all slaves
 		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
@@ -2941,6 +2975,14 @@ function afterRecordDelete_role(record) {
  * @properties={typeid:24,uuid:"094D2472-04CC-4555-8BCD-CE55D18BE397"}
  */
 function afterRecordDelete_roles_permissions(record) {
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are removing permission from role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSlaveTenant()) {
+		logWarning("You are removing permission from role while you are logged in as an user of a slave tenant");
+	}
+	
 	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
 		//propagate delete to all slaves
 		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
@@ -2974,6 +3016,13 @@ function afterRecordDelete_roles_permissions(record) {
  * @properties={typeid:24,uuid:"FA620835-B83C-4F75-B5BC-0A83EBE50D87"}
  */
 function afterRecordDelete_tenant(record) {
+	var loggedTenant = getTenant();
+	if (loggedTenant) {
+		logWarning("You are deleting a tenant while you are logged in as an user.");
+	}
+	
+	// TODO should also check if i can delete any tenant while logged in !?
+	
 	if (utils.hasRecords(record.tenants_to_tenants$slaves)) {
 		//if the tenant to delete itself has a master, set that on all slaves
 		var masterTenantName = null;
