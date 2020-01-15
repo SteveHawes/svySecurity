@@ -243,22 +243,22 @@ function createTenant(name) {
  * When makeSlave is true, the newly created clone will be a slave of the tenant to clone,
  * inheriting all role / permission changes made to the master.
  * <br/>
- * <b>WARNING</b>: Cannot call this function while User is already logged
+ * <b>WARNING</b>: Cannot call this function when logged in as an user.
  * 
- * @throws {String} Throws an exception if this function is called while the User is already logged in.
  * 
  * @public
  * @param {Tenant} tenantToClone The tenant to clone from
  * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
  * @param {Boolean} [makeSlave] When true, the cloned tenant will be a slave of the tenant to clone (defaults to false).
  * @return {Tenant} The cloned tenant that is created.
- *
+ * @throws {String} Throws an exception if this function is called when logged in as an user.
+
  * @properties={typeid:24,uuid:"6C41B9E2-7033-4FD9-84EF-1D91E400DF95"}
  */
 function cloneTenant(tenantToClone, name, makeSlave) {
 	
 	if (getTenant()) {
-		throw "Cannot clone tenant while the User is already logged.";
+		throw "Cannot clone tenant when logged in as an user.";
 	}
 	
 	
@@ -1122,16 +1122,16 @@ function Tenant(record) {
      * Gets all slaves of this tenant
      * When recursive is true, all slaves of this tenant's slaves are included
      * <br/>
-     * <b>WARNING</b>: Cannot call this function while User is already logged
+     * <b>WARNING</b>: Cannot call this function when logged in as an user.
      * 
-     * @throws {String} Throws an exception if this function is called while the User is already logged in.
+     * @throws {String} Throws an exception if this function is called when logged in as an user.
      * 
      * @public 
      * @return {Array<Tenant>} slaves Array of tenants that have this tenant as their master
      */
     this.getSlaves = function(recursive) {
     	if (getTenant()) {
-    		throw "Cannot get tenant slaves while the User is already logged.";
+    		throw "Cannot get tenant slaves when logged in as an user.";
     	} 
     	
     	 var fs = datasources.db.svy_security.tenants.getFoundSet();
@@ -1174,7 +1174,7 @@ function Tenant(record) {
     			return activeTenantIsMaster;
     		}
 
-    		throw "Cannot get tenant master info while the User is already logged.";
+    		throw "Cannot get tenant master info when logged in as an user of another tenant.";
     	} 
     	
     	return utils.hasRecords(record.tenants_to_tenants$slaves);
@@ -1196,18 +1196,18 @@ function Tenant(record) {
      * Modifications to roles and permissions of this tenant will be propagated to all of its slaves.
      * 
      * <br/>
-     * <b>WARNING</b>: Cannot call this function while User is already logged
+     * <b>WARNING</b>: Cannot call this function when logged in as an user.
      * 
      * @public 
      * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
      * 
-     * @throws {String} Throws an exception if this function is called while the User is already logged in.
+     * @throws {String} Throws an exception if this function is called when logged in as an user.
      * 
      * @return {Tenant} slave The slave that has been created
      */
     this.createSlave = function(name) {
     	if (getTenant()) {
-    		throw "Cannot create tenant slave while the User is already logged.";
+    		throw "Cannot create tenant slave when logged in as an user.";
     	}
 		return cloneTenant(this, name, true);
     }
