@@ -853,6 +853,8 @@ function Tenant(record) {
      * Creates a role associated with this tenant using the specified role name.
      * <br/>
      * If this is a Master Tenant the created role will be added to all slaves of this Tenant.
+     * <br/>
+     * Cannot create role for a master tenant when logged in as an user.
      *
      * @public
      * @param {String} name The name of the role to be created. Must be unique to this tenant.
@@ -860,6 +862,11 @@ function Tenant(record) {
      * @throws {String} If the role name is not unique to this tenant.
      */
     this.createRole = function(name) {
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot create role for a master tenant when logged in as an user";
+    	}
+    	
         if (!name) {
             throw new Error('Role name cannot be null or empty');
         }
@@ -928,12 +935,22 @@ function Tenant(record) {
      *
      * <br/>
      * If this is a Master Tenant the deleted role will be deleted also for all slaves of this Tenant.
+     * 
+     * <br/>
+     * Cannot delete role of a master tenant when logged in as an user.
      *
      * @public
      * @param {Role|String} role The role object or name of role to be deleted. The role must be associated with this tenant.
+     * 
+     * @throws {String} throws an exception if the role cannot be deleted.
      * @return {Tenant} This tenant for call-chaining support.
      */
     this.deleteRole = function(role) {
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot delete role of a master tenant when logged in as an user.";
+    	}
+    	
         var roleName = null;
 
         if (role instanceof String) {
@@ -1139,12 +1156,13 @@ function Tenant(record) {
     /**
      * Returns true if this Tenant is a master (template) tenant
      * <br/>
-     * <b>WARNING</b>: Cannot call this function while User is already logged
+     * <b>WARNING</b>: When the user is already logged, can call this function only for the tenant of the logged user; 
+     * cannot call this function for other tenants when logged in as an user.
      * 
      * @public 
      * @return {Boolean} isMasterTenant Whether this tenant is a master to other tenants
      * 
-     * @throws {String} Throws an exception if this function is called while the User is already logged in.
+     * @throws {String} Throws an exception when logged in as an user and called for another tenant than the tenant of the logged user.
      */
     this.isMasterTenant = function() {
     	
@@ -1664,12 +1682,22 @@ function Role(record) {
      * Sets the display name of this role.
      * <br/>
      * If the tenant of this role is a master tenant, the displayName will be set to the same role in all slaves of this role tenant.
+     * <br/>
+     * You cannot set the display name to role of a master tenant when logged in as an user.
+     * You cannot set the display name to role of a slave tenant at anytime.
      * 
      * @public
      * @param {String} displayName The display name to use.
      * @return {Role} This role for call-chaining support.
+     * @throws {String} throws an exception if the displayName cannot be changed
      */
     this.setDisplayName = function(displayName) {
+    	
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot cannot set the display name to role of a master tenant when logged in as an user";
+    	}
+    	
         record.display_name = displayName;
         saveRecord(record);
         return this;
@@ -1802,12 +1830,17 @@ function Role(record) {
 
     /**
      * Grants the specified permission to this role.
-     * Any users that are members of this role will be granted the permission.
+     * Any users that are members of this role will be granted the permission.\
      * <br/>
      * If the tenant of this role is a master tenant, the permission will also be added to the same role in all slaves of this role tenant.
+     * <br/>
+     * You cannot grant permission to role of a master tenant when logged in as an user.
+     * You cannot grant permission to role of a slave tenant at anytime.
      *
      * @public
-     * @param {Permission|String} permission The permission object or name of permission to add.
+     * @param {Permission|String} permission The permission object or name of permission to add.\
+     * 
+     * @throws {String} Throws an exception when permission cannot be grant.
      * @return {Role} This role for call-chaining support.
      */
     this.addPermission = function(permission) {
@@ -1815,6 +1848,10 @@ function Role(record) {
         if (!permission) {
             throw 'Permission cannot be null';
         }
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot grant permission to role of a master tenant when logged in as an user";
+    	}
 
         /**
          * @type {String}
@@ -1880,15 +1917,24 @@ function Role(record) {
      * The permission will no longer be granted to all users that are members of this role.
      * <br/>
      * If the tenant of this role is a master tenant, the permission will also be removed from the same role in all slaves of this role tenant.
-     *
+     * <br/>
+     * You cannot remove permission from role of a master tenant when logged in as an user.
+     * You cannot remove permission from role of a slave tenant at anytime.
+     * 
      * @public
      * @param {Permission|String} permission The permission object or name of permission to remove.
      * @return {Role} This role for call-chaining support.
+     * @throws {String} Throws an exception when permission cannot be removed.
      */
     this.removePermission = function(permission) {
         if (!permission) {
             throw 'Permission cannot be null';
         }
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot remove permission from role of a master tenant when logged in as an user";
+    	}
+        
         var permissionName = permission instanceof String ? permission : permission.getName();
         for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
             if (record.roles_to_roles_permissions.getRecord(i).permission_name == permissionName) {
@@ -1965,17 +2011,25 @@ function Permission(record) {
      * The permission will be granted to all users that are members of the specified role.
      * <br/>
      * If the tenant of this permission is a master tenant, the role will also be added to the same permission for all the slaves of this permission tenant.
-     *
+     * <br/>
+     * You cannot grant permission to role of a master tenant when logged in as a user.
+     * You cannot grant permission to role of a slave tenant at anytime.
+     * 
      * @public
      * @param {Role} role The role object to which the permission should be granted.
      * @return {Permission} This permission for call-chaining support.
+     * @throws {String} Throws an exception when permission cannot be grant.
      */
     this.addRole = function(role) {
         if (!role) {
             throw new Error('Role cannot be null');
         }
+        
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot grant permission to role of a master tenant when logged in as an user";
+    	}
         var roleName = role.getName();
-
         if (!this.hasRole(role)) {
             var rolePermRec = record.permissions_to_roles_permissions.getRecord(record.permissions_to_roles_permissions.newRecord(false, false));
             if (!rolePermRec) {
@@ -2031,15 +2085,23 @@ function Permission(record) {
      * The permission will no longer be granted to all users that are members of the specified role.
      * <br/>
      * If the tenant of this permission is a master tenant, the role will also be removed from the same permission for all the slaves of this permission tenant.
-     *
+     * <br/>
+     * You cannot remove permission from role of a master tenant when logged in as an user.
+     * You cannot remove permission from role of a slave tenant at anytime.
+     * 
      * @public
      * @param {Role|String} role The role object or the name of the role to remove.
      * @return {Permission} This permission for call-chaining support.
+     * @throws {String} Throws an exception when permission cannot be removed.
      */
     this.removeRole = function(role) {
         if (!role) {
             throw 'Role cannot be null';
         }
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot remove permission from role of a master tenant when logged in as a user";
+    	}
         var roleName = role instanceof String ? role : role.getName();
 
         for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
@@ -2797,7 +2859,7 @@ function afterRecordUpdate_role(record) {
 
 /**
  * Record after-insert trigger.
- * Adds this permission to the role on all slaves. 
+ * Adds this permission to the role on all slaves.
  *
  * @param {JSRecord<db:/svy_security/roles_permissions>} record record that is inserted
  * @protected 
