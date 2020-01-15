@@ -160,17 +160,17 @@ typeid:47,
 uuid:"3874D9F8-BDDA-4D99-AD92-A20B23A29845"
 },
 {
-cssPosition:"-1,-1,30,calc(49% - 25px),50,50",
+cssPosition:"-1,-1,30,calc(50% - 25px),50,50",
 json:{
 cssPosition:{
 bottom:"30",
 height:"50",
-left:"calc(49% - 25px)",
+left:"calc(50% - 25px)",
 right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-share-alt fa-3x text-primary",
+faclass:"fa fa-crown fa-3x text-primary",
 onActionMethodID:null,
 size:{
 height:25,
@@ -211,6 +211,32 @@ height:480,
 partType:5,
 typeid:19,
 uuid:"59F26E86-8838-4D9A-BB6B-35AFA86B32EA"
+},
+{
+cssPosition:"-1,calc(50% - 25px),30,-1,50,50",
+json:{
+cssPosition:{
+bottom:"30",
+height:"50",
+left:"-1",
+right:"calc(50% - 25px)",
+top:"-1",
+width:"50"
+},
+faclass:"fa fa-link fa-3x text-primary",
+onActionMethodID:null,
+size:{
+height:25,
+width:25
+},
+visible:false
+},
+name:"faSlave",
+size:"25,25",
+typeName:"servoyextra-fontawesome",
+typeid:47,
+uuid:"5C4A4B3A-B301-4768-AD8D-08192839220B",
+visible:false
 },
 {
 cssPosition:"-1,0,105,0,0,1",
@@ -294,15 +320,15 @@ typeid:47,
 uuid:"9E698A92-1C62-4534-9DAA-2F7F5DD9D454"
 },
 {
-cssPosition:"-1,-1,15,calc(49% - 40px),80,15",
+cssPosition:"-1,-1,15,calc(50% - 60px),120,15",
 json:{
 cssPosition:{
 bottom:"15",
 height:"15",
-left:"calc(49% - 40px)",
+left:"calc(50% - 60px)",
 right:"-1",
 top:"-1",
-width:"80"
+width:"120"
 },
 styleClass:"h5 text-tertiary text-center",
 text:"MASTER",
@@ -329,7 +355,7 @@ width:"0"
 styleClass:"h2 text-primary",
 text:"Tenant"
 },
-name:"labelNamec",
+name:"labelTitle",
 styleClass:"h2 text-primary",
 typeName:"bootstrapcomponents-label",
 typeid:47,

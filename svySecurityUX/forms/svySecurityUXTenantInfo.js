@@ -147,11 +147,31 @@ function updateUI() {
 			elements.labelStatus.addStyleClass('text-success border-success');
 		}
 
-		//	if (tenant.isMasterTenant()) {
-		//		elements.faMaster.enabled = true;
-		//	} else {
-		//		elements.faMaster.enabled = false;
-		//	}
+		if (tenant.isMasterTenant() && tenant.isSlaveTenant()) {
+			elements.faMaster.visible = true;
+			elements.faMaster.cssPosition.l("calc(50% - 50px)");
+			elements.faMaster.cssPosition.r("50%");
+			elements.faSlave.visible = true;
+			elements.faSlave.cssPosition.r("calc(50% - 50px)");
+			elements.faSlave.cssPosition.l("50%");
+			elements.labelMaster.visible = true;
+			elements.labelMaster.text = "MASTER & SLAVE";
+		} else if (tenant.isMasterTenant()) {
+			elements.faMaster.visible = true;
+			elements.faSlave.visible = false;
+			elements.labelMaster.visible = true;
+			elements.labelMaster.text = "MASTER";
+		} else if (tenant.isSlaveTenant()) {
+			elements.faMaster.visible = false;
+			elements.faSlave.visible = true;
+			elements.labelMaster.visible = true;
+			elements.labelMaster.text = "SLAVE";
+		} else {
+			elements.faSlave.visible = false;
+			elements.faMaster.visible = false;
+			elements.labelMaster.visible = false;
+			elements.labelMaster.text = null;
+		}
 
         if (isLocked) {
             var m_LockExp = tenant.getLockExpiration();

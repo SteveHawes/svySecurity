@@ -37,6 +37,14 @@ var activeTenantName = null;
 var activeUserName = null;
 
 /**
+ * @protected
+ * @type {Boolean}
+ * @ignore
+ * @properties={typeid:35,uuid:"76515CA1-B70A-495A-BA2E-948F436379D6",variableType:-4}
+ */
+var activeTenantIsMaster = false;
+
+/**
  * If false then when saving or deleting security-related records
  * if an external DB transaction is detected the operation will fail.
  * If true then when saving or deleting security-related records the
@@ -1139,13 +1147,30 @@ function Tenant(record) {
      * @throws {String} Throws an exception if this function is called while the User is already logged in.
      */
     this.isMasterTenant = function() {
-    	if (getTenant()) {
-    		// TODO may return true/false
+    	
+    	var loggedTenant = getTenant();
+    	if (loggedTenant) {
+    		
+    		// if is the active tenant
+    		if (loggedTenant.getName() === this.getName()) {
+    			return activeTenantIsMaster;
+    		}
+
     		throw "Cannot get tenant master info while the User is already logged.";
-    		//throw "Do not call this function while User is already logged. All master-slave data is already filtered by the logged User Tenant";
     	} 
     	
     	return utils.hasRecords(record.tenants_to_tenants$slaves);
+    }
+    
+    /**
+     * Returns true if this Tenant is a slave tenant
+     * 
+     * @public 
+     * @return {Boolean} isMasterTenant Whether this tenant is a master to other tenants
+     * 
+     */
+    this.isSlaveTenant = function() {
+    	return record.master_tenant_name ? true : false;
     }
     
     /**
@@ -2426,6 +2451,7 @@ function initSession(user) {
 //    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
 
     // store session id
+    activeTenantIsMaster = user.getTenant().isMasterTenant();
     activeUserName = user.getUserName();
     activeTenantName = user.getTenant().getName();
     sessionID = sessionRec.id.toString();
