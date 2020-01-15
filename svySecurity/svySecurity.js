@@ -2100,7 +2100,6 @@ function Permission(record) {
         }
     	var loggedTenant = getTenant();
     	if (loggedTenant && loggedTenant.isMasterTenant()) {
-    		throw "Cannot remove permission from role of a master tenant when logged in as a user";
     		throw "Cannot remove permission from role of a master tenant when logged in as an user";
     	}
         var roleName = role instanceof String ? role : role.getName();
