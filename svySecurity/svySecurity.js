@@ -234,6 +234,10 @@ function createTenant(name) {
  * The cloned tenant has the same roles and role permissions as the original.
  * When makeSlave is true, the newly created clone will be a slave of the tenant to clone,
  * inheriting all role / permission changes made to the master.
+ * <br/>
+ * <b>WARNING</b>: Cannot call this function while User is already logged
+ * 
+ * @throws {String} Throws an exception if this function is called while the User is already logged in.
  * 
  * @public
  * @param {Tenant} tenantToClone The tenant to clone from
@@ -244,6 +248,12 @@ function createTenant(name) {
  * @properties={typeid:24,uuid:"6C41B9E2-7033-4FD9-84EF-1D91E400DF95"}
  */
 function cloneTenant(tenantToClone, name, makeSlave) {
+	
+	if (getTenant()) {
+		throw "Cannot clone tenant while the User is already logged.";
+	}
+	
+	
 	var rec = createTenantRecord(name, makeSlave === true && tenantToClone ? tenantToClone.getName() : null);
 	var tenant = new Tenant(rec);
 	var roles = tenantToClone.getRoles();
@@ -360,6 +370,10 @@ function getTenant(name) {
 /**
  * Immediately and permanently deletes the specified tenant and all records associated with it, including all users and roles.
  * Tenant will not be deleted if it has users with active sessions.
+ * <br/>
+ * If the deleted tenant is a Master tenant and is a slave of another master tenant, this operation will replace the master tenant of it's direct slaves with the master of the tenant that is deleted;
+ * If the delated tenant is a Master tenant and has no Master tenant, this operation will remove the master from all it's direct slaves.
+ * 
  * @note USE WITH CAUTION! There is no undo for this operation.
  *
  * @public
@@ -829,6 +843,8 @@ function Tenant(record) {
 
     /**
      * Creates a role associated with this tenant using the specified role name.
+     * <br/>
+     * If this is a Master Tenant the created role will be added to all slaves of this Tenant.
      *
      * @public
      * @param {String} name The name of the role to be created. Must be unique to this tenant.
@@ -901,6 +917,9 @@ function Tenant(record) {
      * Deletes the specified role from this tenant.
      * All associated permissions and grants to users are removed immediately.
      * Users with active sessions will be affected, but design-time security (CRUD, UI) will not be affected until next log-in.
+     *
+     * <br/>
+     * If this is a Master Tenant the deleted role will be deleted also for all slaves of this Tenant.
      *
      * @public
      * @param {Role|String} role The role object or name of role to be deleted. The role must be associated with this tenant.
@@ -1077,11 +1096,19 @@ function Tenant(record) {
     /**
      * Gets all slaves of this tenant
      * When recursive is true, all slaves of this tenant's slaves are included
+     * <br/>
+     * <b>WARNING</b>: Cannot call this function while User is already logged
+     * 
+     * @throws {String} Throws an exception if this function is called while the User is already logged in.
      * 
      * @public 
      * @return {Array<Tenant>} slaves Array of tenants that have this tenant as their master
      */
     this.getSlaves = function(recursive) {
+    	if (getTenant()) {
+    		throw "Cannot get tenant slaves while the User is already logged.";
+    	} 
+    	
     	 var fs = datasources.db.svy_security.tenants.getFoundSet();
          var qry = datasources.db.svy_security.tenants.createSelect();
          qry.where.add(qry.columns.master_tenant_name.eq(this.getName()));
@@ -1103,11 +1130,21 @@ function Tenant(record) {
     
     /**
      * Returns true if this Tenant is a master (template) tenant
+     * <br/>
+     * <b>WARNING</b>: Cannot call this function while User is already logged
      * 
      * @public 
      * @return {Boolean} isMasterTenant Whether this tenant is a master to other tenants
+     * 
+     * @throws {String} Throws an exception if this function is called while the User is already logged in.
      */
     this.isMasterTenant = function() {
+    	if (getTenant()) {
+    		// TODO may return true/false
+    		throw "Cannot get tenant master info while the User is already logged.";
+    		//throw "Do not call this function while User is already logged. All master-slave data is already filtered by the logged User Tenant";
+    	} 
+    	
     	return utils.hasRecords(record.tenants_to_tenants$slaves);
     }
     
@@ -1115,11 +1152,20 @@ function Tenant(record) {
      * Creates a slave of this tenant with the given name.
      * Modifications to roles and permissions of this tenant will be propagated to all of its slaves.
      * 
+     * <br/>
+     * <b>WARNING</b>: Cannot call this function while User is already logged
+     * 
      * @public 
      * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
+     * 
+     * @throws {String} Throws an exception if this function is called while the User is already logged in.
+     * 
      * @return {Tenant} slave The slave that has been created
      */
     this.createSlave = function(name) {
+    	if (getTenant()) {
+    		throw "Cannot create tenant slave while the User is already logged.";
+    	}
 		return cloneTenant(this, name, true);
     }
 }
@@ -1591,6 +1637,9 @@ function Role(record) {
 
     /**
      * Sets the display name of this role.
+     * <br/>
+     * If the tenant of this role is a master tenant, the displayName will be set to the same role in all slaves of this role tenant.
+     * 
      * @public
      * @param {String} displayName The display name to use.
      * @return {Role} This role for call-chaining support.
@@ -1729,6 +1778,8 @@ function Role(record) {
     /**
      * Grants the specified permission to this role.
      * Any users that are members of this role will be granted the permission.
+     * <br/>
+     * If the tenant of this role is a master tenant, the permission will also be added to the same role in all slaves of this role tenant.
      *
      * @public
      * @param {Permission|String} permission The permission object or name of permission to add.
@@ -1802,6 +1853,8 @@ function Role(record) {
     /**
      * Removes the specified permission from this role.
      * The permission will no longer be granted to all users that are members of this role.
+     * <br/>
+     * If the tenant of this role is a master tenant, the permission will also be removed from the same role in all slaves of this role tenant.
      *
      * @public
      * @param {Permission|String} permission The permission object or name of permission to remove.
@@ -1885,6 +1938,8 @@ function Permission(record) {
     /**
      * Grants this permission to the specified role.
      * The permission will be granted to all users that are members of the specified role.
+     * <br/>
+     * If the tenant of this permission is a master tenant, the role will also be added to the same permission for all the slaves of this permission tenant.
      *
      * @public
      * @param {Role} role The role object to which the permission should be granted.
@@ -1949,6 +2004,8 @@ function Permission(record) {
     /**
      * Removes this permission from the specified role.
      * The permission will no longer be granted to all users that are members of the specified role.
+     * <br/>
+     * If the tenant of this permission is a master tenant, the role will also be removed from the same permission for all the slaves of this permission tenant.
      *
      * @public
      * @param {Role|String} role The role object or the name of the role to remove.
