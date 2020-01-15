@@ -258,17 +258,6 @@ typeid:47,
 uuid:"A9EC490D-8E77-4C57-B03D-016AC6288DC3"
 },
 {
-cssPosition:"623,-1,-1,56,133,20",
-labelFor:"fldDisplayName",
-location:"56,623",
-name:"lblEmail",
-size:"133,20",
-text:"Email",
-transparent:true,
-typeid:7,
-uuid:"AFA6F17A-4ACB-4167-A990-15B04F8282C0"
-},
-{
 extendsID:"B9D9662C-AB8D-47D4-B4DA-EB1BB71A3733",
 height:827,
 typeid:19,
