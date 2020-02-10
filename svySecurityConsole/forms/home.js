@@ -205,3 +205,16 @@ function onClickLeftChart(dataset_index, index, label, value) {
         forms.tenantDetail.show(tenantName);
     }
 }
+/**
+ * Perform the element onclick action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"3998BF48-0846-47B6-BA65-0BF3C4614CFA"}
+ */
+function SyncPermissions(event) {
+	application.output(security.getGroups().getColumnAsArray(2).join(','), LOGGINGLEVEL.WARNING);
+	scopes.svySecurity.syncPermissions()
+}

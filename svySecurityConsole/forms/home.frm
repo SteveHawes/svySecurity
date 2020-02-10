@@ -70,6 +70,20 @@ typeid:7,
 uuid:"433EC10B-C328-4AE7-AE9B-952DB97912D1"
 },
 {
+anchors:3,
+cssPosition:"90,539,-1,-1,130,40",
+formIndex:1,
+location:"1,90",
+name:"btnSyncPermissions",
+onActionMethodID:"3998BF48-0846-47B6-BA65-0BF3C4614CFA",
+rolloverCursor:12,
+size:"130,40",
+styleClass:"flat-button transition-medium",
+text:"Sync Permissions",
+typeid:7,
+uuid:"460C2D92-CB8A-484D-BB88-428A11BABCCB"
+},
+{
 cssPosition:"6,-1,-1,553,240,19",
 location:"553,6",
 name:"lblVersionInfo",
