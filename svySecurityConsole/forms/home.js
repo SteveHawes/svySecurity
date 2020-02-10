@@ -215,6 +215,5 @@ function onClickLeftChart(dataset_index, index, label, value) {
  * @properties={typeid:24,uuid:"3998BF48-0846-47B6-BA65-0BF3C4614CFA"}
  */
 function SyncPermissions(event) {
-	application.output(security.getGroups().getColumnAsArray(2).join(','), LOGGINGLEVEL.WARNING);
 	scopes.svySecurity.syncPermissions()
 }
