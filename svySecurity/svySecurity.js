@@ -125,6 +125,17 @@ var MAX_NAME_LENGTH = 50;
 var DEFAULT_TENANT = 'admin';
 
 /**
+ * @private 
+ * @enum 
+ * 
+ * @properties={typeid:35,uuid:"49CE1F05-E150-4E60-A14A-3D0BD4D747F1",variableType:-4}
+ */
+var USER_PROPERTIES = {
+	/** When set to true permissions will be synced at every login for a deployed solution. Default true  */
+	AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "user.svy.security.auto-sync-permissions-when-deployed"
+}
+
+/**
  * Logs in the specified user and initializes a new {@link Session} for it.
  * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
  * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
@@ -3037,15 +3048,35 @@ function afterRecordDelete_tenant(record) {
 }
 
 /**
+ * @private 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"84E4C3B3-806D-4109-9DBB-37895F94B402"}
+ */
+function getAutoSyncPermissionsEnabled() {
+	var result = application.getUserProperty(USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED);
+	return result != "false" ? true : false;
+}
+
+/**
  * Initializes the module.
  * NOTE: This var must remain at the BOTTOM of the file.
  * @private
  * @SuppressWarnings (unused)
  * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
  */
-var init = function() {
+var init = function() {	
 	if (application.isInDeveloper()) {
 		syncPermissions();
+	} else if (getAutoSyncPermissionsEnabled()) {
+		
+		// auto sync permission
+		syncPermissions();
+
+		var msg = "Security permissions are synchronized at every user login for the deployed solution.\n\
+		Such default behavior is setup to facilitate your testing and your first deployment, however synchronizing permissions at every login can impact the perfomances of your solution.\n\
+		Is recommended to use a postImportHook module running scopes.svySecurity.syncPermissions() to synchronize permissions at every deployement instead and disable auto-sync for every login.\n\
+		Auto-sync can be disabled by setting the user property " + USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED + "=false";
+		logWarning(msg);
 	}
 	createSampleData();
     scopes.svySecurityBatch.startBatch();
