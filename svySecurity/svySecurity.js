@@ -132,7 +132,7 @@ var DEFAULT_TENANT = 'admin';
  */
 var USER_PROPERTIES = {
 	/** When set to true permissions will be synced at every login for a deployed solution. Default true  */
-	AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "user.svy.security.auto-sync-permissions-when-deployed"
+	AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "svy.security.auto-sync-permissions-when-deployed"
 }
 
 /**
