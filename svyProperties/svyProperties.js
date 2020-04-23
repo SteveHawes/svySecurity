@@ -780,7 +780,7 @@ function loadProperties(propertyKey, propertyType, tenantName, userName) {
 		if (!userName) {
 			query.where.add(query.columns.user_name.isNull);
 		} else {
-			query.where.add(query.columns.user_name.eq(tenantName));			
+			query.where.add(query.columns.user_name.eq(userName));			
 		}
 	}
 	

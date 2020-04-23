@@ -137,6 +137,14 @@ function testProperties() {
 	properties = scopes.svyProperties.getPropertiesByType(propertyType);
 	jsunit.assertEquals('There should be 6 properties of that type', 6, properties.length);
 	
+	//get all the properties for tenant
+	properties = scopes.svyProperties.getProperties(propertyKey, propertyType, tenantName);
+	jsunit.assertEquals('There should be 3 properties of that type for that tenant', 3, properties.length);
+	//get all the properties for the user
+	properties = scopes.svyProperties.getProperties(propertyKey, propertyType, tenantName, userName);
+	jsunit.assertEquals('There should be 1 property of that type for that user', 1, properties.length);
+	
+	
 	//getting properties without type or key should not be allowed
 	assertThrows(scopes.svyProperties.getProperties, [null], 'propertyKey required', 'getProperties should throw "propertyKey required"')
 	assertThrows(scopes.svyProperties.getPropertiesByType, [null], 'propertyType required', 'getPropertiesByType should throw "propertyType required"')
