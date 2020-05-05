@@ -139,7 +139,7 @@ function updateOpenClientSessions() {
 		var or = q.or;
 		or.add(q.columns.servoy_server_id.eq(serverID));  // serverID = MY serverID
 		or.add(q.columns.servoy_server_id.isNull);		  // serverID IS NULL
-		or.add(q.and.add(join.columns.last_server_ping.le(lastPingTime)).add(q.columns.servoy_server_id.not.eq(serverID)));  // SERVER.lastPing < serverPingTimeout & serverID != My ServerID
+		or.add(q.and.add(join.columns.last_server_ping.lt(lastPingTime)).add(q.columns.servoy_server_id.not.eq(serverID)));  // SERVER.lastPing < serverPingTimeout & serverID != My ServerID
 		
 		var qsub = datasources.db.svy_security.session_servers.createSelect();
 		qsub.result.addPk();
@@ -155,11 +155,18 @@ function updateOpenClientSessions() {
 	q.where.add(q.columns.session_end.isNull);
 	q.where.add(q.columns.servoy_client_id.not.isin(clientIDs));	
 	
-	// TODO should use dataset instead !?
+	// cache pks in dataset
+	var dataset = databaseManager.getDataSetByQuery(q, -1);
+	if (dataset.getMaxRowIndex() < 1) {
+		return;
+	}
+	var queryPks = datasources.db.svy_security.sessions.createSelect();
+	queryPks.result.addPk();
+	queryPks.where.add(queryPks.columns.id.isin(dataset.getColumnAsArray(1)));
 	
 	// LOAD INTO A FOUNDSET
 	var fs = datasources.db.svy_security.sessions.getFoundSet();
-	fs.loadRecords(q);
+	fs.loadRecords(queryPks);
 	var sessionCount = fs.getSize();
 	if (!sessionCount) {
 		return
@@ -172,11 +179,12 @@ function updateOpenClientSessions() {
 		var session = fs.getRecord(j);
 		session.session_end = now;
 		session.session_duration = Math.min(Math.max(0, now.getTime() - session.session_start.getTime()), 2147483647);
+		session.closed_by = serverID;
 		if (!databaseManager.saveData(session)) {
 			application.output('Failed to update abandoned session: ' + session.servoy_client_id, LOGGINGLEVEL.ERROR);
 			continue;
 		}
-		application.output('Closed abandoned session: ' + session.servoy_client_id + ' by:' + getServerID(), LOGGINGLEVEL.WARNING);
+		application.output('Closed abandoned session: ' + session.servoy_client_id + ' by:' + getServerID(), LOGGINGLEVEL.INFO);
 	}
 }
 
@@ -199,52 +207,55 @@ function scheduleServerSessionManager() {
  */
 function updateOpenServerSessions() {
 
-	// Check settings for how to handle abandoned sessions when running developer
-	var cleanSessionsInDeveloper = application.getUserProperty(FLAG_CLEAN_SESSIONS_IN_DEVELOPER);
-	if (application.isInDeveloper() && cleanSessionsInDeveloper !== "true") {
-		application.output('Abandoned sessions will not be cleaned from Servoy Developer. Change setting {user.cleanSessionsInDeveloper=true} in servoy.properties to have them cleaned', LOGGINGLEVEL.DEBUG);
-		return;
-	}
-		
-	var now = new Date();
-	var serverID = getServerID();
-	
-	// FETCH SERVER SESSION BY SERVER ID
-	var q = datasources.db.svy_security.session_servers.createSelect();
-	q.result.addPk();
-	q.where.add(q.columns.id.eq(serverID));
-
-	// LOAD INTO A FOUNDSET
-	var server;
-	var fs = datasources.db.svy_security.session_servers.getFoundSet();
-	fs.loadRecords(q);
-	var count = fs.getSize();
-	
-	// TODO what if count > 1
-	if (!count) {
-		
-		// REGISTER NEW SERVER SESSION
-		var idx = fs.newRecord();
-		if (idx < 0) {
-			application.output('Failed to register server session: ' + server.id, LOGGINGLEVEL.ERROR);
+	try {
+		// Check settings for how to handle abandoned sessions when running developer
+		var cleanSessionsInDeveloper = application.getUserProperty(FLAG_CLEAN_SESSIONS_IN_DEVELOPER);
+		if (application.isInDeveloper() && cleanSessionsInDeveloper !== "true") {
+			application.output('Abandoned sessions will not be cleaned from Servoy Developer. Change setting {user.cleanSessionsInDeveloper=true} in servoy.properties to have them cleaned', LOGGINGLEVEL.DEBUG);
+			return;
 		}
-		server = fs.getRecord(idx);
-		server.id = serverID;
-		server.server_start = now;
+			
+		var now = new Date();
+		var serverID = getServerID();
 		
-	} else {
-		server = fs.getRecord(1);
+		// FETCH SERVER SESSION BY SERVER ID
+		var q = datasources.db.svy_security.session_servers.createSelect();
+		q.result.addPk();
+		q.where.add(q.columns.id.eq(serverID));
+	
+		// LOAD INTO A FOUNDSET
+		var server;
+		var fs = datasources.db.svy_security.session_servers.getFoundSet();
+		fs.loadRecords(q);
+		var count = fs.getSize();
+		
+		// TODO what if count > 1
+		if (!count) {
+			
+			// REGISTER NEW SERVER SESSION
+			var idx = fs.newRecord();
+			if (idx < 0) {
+				application.output('Failed to register server session: ' + server.id, LOGGINGLEVEL.ERROR);
+			}
+			server = fs.getRecord(idx);
+			server.id = serverID;
+			server.server_start = now;
+			
+		} else {
+			server = fs.getRecord(1);
+		}
+		
+		
+		// UPDATE LAST SERVER PING
+		server.last_server_ping = now;
+		
+		// TODO shall i acquire lock ?
+		if (!databaseManager.saveData(server)) {
+			application.output('Failed to update server timestamp: ' + server.id, LOGGINGLEVEL.ERROR);
+		} 
+	} catch (e) {
+		application.output(e, LOGGINGLEVEL.ERROR);
 	}
-	
-	
-	// UPDATE LAST SERVER PING
-	server.last_server_ping = now;
-	
-	// TODO shall i acquire lock ?
-	if (!databaseManager.saveData(server)) {
-		application.output('Failed to update server timestamp: ' + server.id, LOGGINGLEVEL.ERROR);
-	}
-	
 }
 
 /**
