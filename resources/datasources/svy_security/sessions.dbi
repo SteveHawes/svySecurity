@@ -41,6 +41,14 @@ titleText:"Servoy Client ID"
 },
 {
 allowNull:true,
+creationOrderIndex:11,
+dataType:12,
+length:36,
+name:"servoy_server_id",
+titleText:"Servoy Server ID"
+},
+{
+allowNull:true,
 autoEnterType:3,
 creationOrderIndex:9,
 dataType:4,

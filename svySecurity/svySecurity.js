@@ -10,7 +10,7 @@
  *
  * @properties={typeid:35,uuid:"7BA2289C-A59D-4F51-9D13-8DE45506D750"}
  */
-var SVY_SECURITY_VERSION = '1.4.0';
+var SVY_SECURITY_VERSION = '1.5.0';
 
 /**
  * @protected
@@ -2505,6 +2505,7 @@ function initSession(user) {
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
     sessionRec.solution_name = application.getSolutionName();
+    sessionRec.servoy_server_id = getServerID();
 
     // DEPRECATED 1.2.0
 //    sessionRec.last_client_ping = application.getServerTimeStamp();
@@ -3058,6 +3059,18 @@ function getAutoSyncPermissionsEnabled() {
 }
 
 /**
+ * @return {String}
+ * @since 1.5.0
+ * @private 
+ * @properties={typeid:24,uuid:"EBDF5DE7-4325-4A63-B3C2-4AB12EA2F497"}
+ */
+function getServerID() {
+	// TODO SVY-14929 replace it with application.getServerUUID()
+	var serverId = Packages.java.lang.System.getProperty("svysecurity-serverid");
+	return serverId ? serverId : null;
+}
+
+/**
  * Initializes the module.
  * NOTE: This var must remain at the BOTTOM of the file.
  * @private
@@ -3065,7 +3078,16 @@ function getAutoSyncPermissionsEnabled() {
  * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
  */
 var init = function() {	
+	
+	
+	// TODO SVY-14929 remove system property for server UUID
+	if (!getServerID()) {
+		// Note: this is not thread safe
+		Packages.java.lang.System.setProperty("svysecurity-serverid", application.getUUID().toString());
+	}
+	
 	if (application.isInDeveloper()) {
+		// always sync permissions in developer
 		syncPermissions();
 	} else if (getAutoSyncPermissionsEnabled()) {
 		
