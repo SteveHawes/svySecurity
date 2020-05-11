@@ -296,8 +296,8 @@ function closeServerSessions() {
 		// FETCH SERVER SESSION TO BE CLOSED
 		var q = datasources.db.svy_security.sessions.createSelect();
 		q.result.addPk();
-		q.where.add(q.columns.servoy_client_id.eq(serverID));	// Server ID = My ID
-		q.where.add(q.columns.session_end.not.isNull);			// Session End NOT NULL
+		q.where.add(q.columns.servoy_server_id.eq(serverID));	// Server ID = My ID
+		q.where.add(q.columns.session_end.isNull);				// Session End NULL
 		q.where.add(q.columns.closed_by.not.isNull);			// Session ClosedBy NOT NULL
 	
 		// LOAD INTO A FOUNDSET
