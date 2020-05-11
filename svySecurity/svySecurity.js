@@ -2795,7 +2795,17 @@ function addActiveSessionSearchCriteria(qbSelect) {
 	}
 	
 	// SELECT IN [...CLIENT IDS]
-	qbSelect.where.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs));
+	
+	if (application.getClientProperty("cleanSessionsInCluster") === "true") {
+		// CHECK IF CLIENT ON THIS SERVER IS ACTIVE
+		qbSelect.where.add(qbSelect.or.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs)).add(qbSelect.columns.servoy_server_id.not.eq(getServerID())));
+	} else {
+		// CHECK IF CLIENT IS STILL ACTIVE
+		qbSelect.where.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs));
+	}
+	
+	
+	
     
 //    var expiration = application.getServerTimeStamp();
 //    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 1 min in the past
