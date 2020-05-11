@@ -2796,17 +2796,15 @@ function addActiveSessionSearchCriteria(qbSelect) {
 	
 	// SELECT IN [...CLIENT IDS]
 	
-	if (application.getClientProperty("cleanSessionsInCluster") === "true") {
+	if (application.getUserProperty("cleanSessionsInCluster") === "true") {
 		// CHECK IF CLIENT ON THIS SERVER IS ACTIVE
-		qbSelect.where.add(qbSelect.or.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs)).add(qbSelect.columns.servoy_server_id.not.eq(getServerID())));
+		var otherSessions = qbSelect.and.add(qbSelect.columns.servoy_server_id.not.eq(getServerID())).add(qbSelect.columns.session_end.isNull);
+		qbSelect.where.add(qbSelect.or.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs)).add(otherSessions));
 	} else {
 		// CHECK IF CLIENT IS STILL ACTIVE
 		qbSelect.where.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs));
 	}
-	
-	
-	
-    
+
 //    var expiration = application.getServerTimeStamp();
 //    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 1 min in the past
 //    var andActiveCriteria = qbSelect.and;
