@@ -2349,6 +2349,54 @@ function Session(record) {
     }
     
     /**
+     * Close the session
+     * @public 
+     * @return {Boolean}
+     */
+    this.close = function() {
+  
+    	var servoyClientID = this.getServoyClientID();
+    	var currentSession = getSession();
+    	
+    	if (this.isTerminated()) {
+    		// check if session was already terminated
+            logWarning(utils.stringFormat('Session for client "%1$s" is already terminated.', [servoyClientID]));
+    		return false;
+    	}
+    	
+    	// check if i am trying to close the current session
+    	if (currentSession && servoyClientID === currentSession.getServoyClientID()) {
+            logWarning(utils.stringFormat('Session for client "%1$s" cannot be closed because is your active session.', [servoyClientID]));
+    		return false;
+    	}
+    	
+    	// close session in current node;
+    	var clients = plugins.clientmanager.getConnectedClients();
+    	for (var i in clients){
+    		if (servoyClientID == clients[i].getClientID()) {
+    			plugins.clientmanager.shutDownClient(servoyClientID);
+                logInfo(utils.stringFormat('Request to close session for client "%1$s" succeeded', [servoyClientID]));
+    			return true;
+    		}
+    	}
+    	
+    	// close session if is in other node
+    	var closeSessionsInCluster = application.getUserProperty(scopes.svySecurityBatch["FLAG_CLEAN_SESSION_IN_CLUSTER"]);
+    	if (closeSessionsInCluster === "true") {
+    		// TODO shall i check if session has a related node ?
+    		// request the session to be closed
+    		
+    		record.closed_by = currentSession ? currentSession.getID() : "00000000-0000-0000-0000-000000000000";
+    		saveRecord(record);
+            logInfo(utils.stringFormat('Requested to close session for client "%1$s" by "%2$s"', [servoyClientID, record.closed_by]));
+            return true;
+    	} else {
+            logWarning(utils.stringFormat('Session for client "%1$s" cannot be closed because: Session not found in active server; if you are running multiple server nodes set the user setting cleanSessionsInCluster=true', [servoyClientID]));
+    		return false;
+    	}
+    }
+    
+    /**
      * Records a client ping in the database. Internal-use only.
      *
      * @protected

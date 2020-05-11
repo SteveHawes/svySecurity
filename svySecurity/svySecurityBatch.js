@@ -25,14 +25,24 @@ var FLAG_CLEAN_SESSION_IN_CLUSTER = 'cleanSessionsInCluster';
 var BATCH_INTERVAL = '0 0/1 * * * ?';
 
 /**
- * Job timings: every minute
+ * Job timings: every 2 seconds
  * 
  * @private 
  * @type {String}
  *
- * @properties={typeid:35,uuid:"9719E1A4-72CD-4606-B256-E725A97CB413"}
+ * @properties={typeid:35,uuid:"EA19A635-6B34-476E-B508-01506E156E3B"}
  */
 var SERVER_BATCH_INTERVAL = '0/2 * * * * ?';
+
+/**
+ * Job timings: every 5 seconds
+ * 
+ * @private 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"C7ED9435-E4DE-436A-A562-9F72E7B68752"}
+ */
+var CLOSE_BATCH_INTERVAL = '0/5 * * * * ?';
 
 /**
  * @type {String}
@@ -80,7 +90,6 @@ function startBatch() {
 		plugins.headlessclient.getOrCreateClient(CLUSTER_CLIENT_ID, 'svySecurity', null, null, [CLUSTER_CLIENT_ID]);
 	}
 }
-
 
 /**
  * Schedules the session manager to cleanup abandoned batches
@@ -179,7 +188,7 @@ function updateOpenClientSessions() {
 		var session = fs.getRecord(j);
 		session.session_end = now;
 		session.session_duration = Math.min(Math.max(0, now.getTime() - session.session_start.getTime()), 2147483647);
-		session.closed_by = serverID;
+		session.closed_by_server = serverID;
 		if (!databaseManager.saveData(session)) {
 			application.output('Failed to update abandoned session: ' + session.servoy_client_id, LOGGINGLEVEL.ERROR);
 			continue;
@@ -192,17 +201,28 @@ function updateOpenClientSessions() {
  * Schedules the session manager to cleanup abandoned batches
  * Should be called internally and only on startup 1x
  * @private  
- * @properties={typeid:24,uuid:"BDC6930B-4B85-4DCD-936B-2D1C227B0709"}
+ * @properties={typeid:24,uuid:"BE21BF09-8197-48FA-B3A0-84785B08BCDE"}
  */
 function scheduleServerSessionManager() {
 	plugins.scheduler.addCronJob('updateServerSession', SERVER_BATCH_INTERVAL, updateOpenServerSessions);
 	application.output('Check Server Session job scheduled', LOGGINGLEVEL.INFO);
 }
 
+/**
+ * Schedules the session manager to close sessions on other nodes
+ * Should be called internally and only on startup 1x
+ * @private  
+ * @properties={typeid:24,uuid:"CA251598-BAA3-457E-93D3-3E9C6771769C"}
+ */
+function scheduleServerSessionCloseManager() {
+	plugins.scheduler.addCronJob('closeServerSession', CLOSE_BATCH_INTERVAL, closeServerSessions);
+	application.output('Close Server Session job scheduled', LOGGINGLEVEL.INFO);
+}
+
 
 /**
  * @private 
- * @properties={typeid:24,uuid:"D9AB6362-F8F3-462E-83B7-C32F2CA005EF"}
+ * @properties={typeid:24,uuid:"3866456B-52CA-4415-8854-81A2E09B9964"}
  * @AllowToRunInFind
  */
 function updateOpenServerSessions() {
@@ -259,6 +279,61 @@ function updateOpenServerSessions() {
 }
 
 /**
+ * @private 
+ * @properties={typeid:24,uuid:"474CBB7D-9185-40D8-BDD5-9A0268B9A477"}
+ * @AllowToRunInFind
+ */
+function closeServerSessions() {
+
+	try {
+		// Do nothing in developer
+		if (application.isInDeveloper()) {
+			return;
+		}
+		
+		var serverID = getServerID();
+		
+		// FETCH SERVER SESSION TO BE CLOSED
+		var q = datasources.db.svy_security.sessions.createSelect();
+		q.result.addPk();
+		q.where.add(q.columns.servoy_client_id.eq(serverID));	// Server ID = My ID
+		q.where.add(q.columns.session_end.not.isNull);			// Session End NOT NULL
+		q.where.add(q.columns.closed_by.not.isNull);			// Session ClosedBy NOT NULL
+	
+		// LOAD INTO A FOUNDSET
+		var fs = datasources.db.svy_security.sessions.getFoundSet();
+		fs.loadRecords(q);
+		
+		if (fs.getSize()) {
+	    	// close session in current node;
+	    	var clients = plugins.clientmanager.getConnectedClients();
+	    	var clientIDs = [];
+	    	
+	    	// collect Servoy client IDs
+	    	for (var i in clients) {
+	    		clientIDs.push(clients[i].getClientID());
+	    	}
+	    	
+			// var count = fs.getSize();
+			for (var index = 0; index < fs.getSize(); index++) {
+				var servoyClientID = fs.servoy_client_id
+				
+		    	// close session in current node;
+		    	if (clientIDs.indexOf(servoyClientID) > -1) {
+	    			plugins.clientmanager.shutDownClient(servoyClientID);
+	                application.output(utils.stringFormat('Close session for client "%1$s" succeeded', [servoyClientID]), LOGGINGLEVEL.INFO);
+		    	} else {
+	                application.output(utils.stringFormat('Cannot close session for client "%1$s" on server node "%1$s"', [servoyClientID, serverID]), LOGGINGLEVEL.INFO);
+		    	}	    		
+			}
+		}
+
+	} catch (e) {
+		application.output(e, LOGGINGLEVEL.ERROR);
+	}
+}
+
+/**
  * @return {String}
  * @since 1.5.0
  * @private 
@@ -298,8 +373,11 @@ function onSolutionOpen(arg, queryParams) {
 		// SCHEDULE JOB
 		scheduleSessionManager();
 	} else if (arg == CLUSTER_CLIENT_ID) {
+		// TODO should run on separate scheduler !?
+		
 		// SCHEDULE JOB
 		scheduleServerSessionManager();
+		scheduleServerSessionCloseManager();
 	}
 }
 
