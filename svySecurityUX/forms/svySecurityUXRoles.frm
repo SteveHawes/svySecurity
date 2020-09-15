@@ -15,7 +15,7 @@ right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-shield text-success fa-lg clickable",
+imageStyleClass:"fa fa-user-shield text-success fa-lg clickable",
 onActionMethodID:"313704AB-9377-4BC7-BDE9-DD9A017E29C7",
 size:{
 height:25,
@@ -24,7 +24,7 @@ width:25
 },
 name:"iconNewRole",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"026C8F89-8450-42E6-88C9-A1D877F936E1"
 },
@@ -40,7 +40,7 @@ right:"40",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-check text-success fa-lg clickable",
+imageStyleClass:"fa fa-check text-success fa-lg clickable",
 onActionMethodID:"D6B95B92-351E-4F51-AA89-AB79D6B99754",
 size:{
 height:25,
@@ -50,7 +50,7 @@ visible:false
 },
 name:"iconConfirmNew",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"07D4012E-5271-4F4C-8A82-304B24615DA0",
 visible:false
@@ -88,7 +88,7 @@ right:"15",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-remove text-tertiary fa-lg clickable",
+imageStyleClass:"fa fa-remove text-tertiary fa-lg clickable",
 onActionMethodID:"AE04F250-83D1-49C2-8A3D-B21979AC4AEE",
 size:{
 height:25,
@@ -98,7 +98,7 @@ visible:false
 },
 name:"iconCancelNew",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"156DFEB3-3977-4816-9200-4B49018EE07F",
 visible:false
@@ -135,7 +135,7 @@ right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-shield text-danger fa-lg clickable",
+imageStyleClass:"fa fa-user-shield text-danger fa-lg clickable",
 onActionMethodID:"0818F08B-71A3-40D8-A97C-D4FC572771DD",
 size:{
 height:25,
@@ -144,7 +144,7 @@ width:25
 },
 name:"iconDeleteRole",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"2BCA5B43-AE9C-406C-8FC1-AC182D20759A"
 },

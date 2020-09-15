@@ -36,7 +36,7 @@ right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-minus text-danger fa-lg clickable",
+imageStyleClass:"fa fa-user-minus text-danger fa-lg clickable",
 onActionMethodID:"5671D9E4-2485-4788-AAD6-F5744DC20D11",
 size:{
 height:25,
@@ -45,7 +45,7 @@ width:25
 },
 name:"iconDeleteUser",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"49B8D349-39D8-4E2C-B9A2-E2541CADC1E5"
 },
@@ -208,7 +208,7 @@ right:"40",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-check text-success fa-lg clickable",
+imageStyleClass:"fa fa-check text-success fa-lg clickable",
 onActionMethodID:"3D9471FF-E0AA-488A-982B-03ADF885DF44",
 size:{
 height:25,
@@ -218,7 +218,7 @@ visible:false
 },
 name:"iconConfirmNew",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"B81AB28F-6FED-4DF4-82F0-1F5E5D101755",
 visible:false
@@ -235,7 +235,7 @@ right:"15",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-remove text-tertiary fa-lg clickable",
+imageStyleClass:"fa fa-remove text-tertiary fa-lg clickable",
 onActionMethodID:"9E543316-8C5D-470B-B340-1C748A1B622B",
 size:{
 height:25,
@@ -245,7 +245,7 @@ visible:false
 },
 name:"iconCancelNew",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"CD74EB6B-80D6-465D-A59B-28446A6C7904",
 visible:false
@@ -268,7 +268,7 @@ right:"-1",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-user-plus text-success fa-lg clickable",
+imageStyleClass:"fa fa-user-plus text-success fa-lg clickable",
 onActionMethodID:"6C10F510-A289-4DDA-9D24-4666F08E6F9D",
 size:{
 height:25,
@@ -277,7 +277,7 @@ width:25
 },
 name:"iconNewUser",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"F592145F-C45F-46C6-A362-9151AEA30DBE"
 }

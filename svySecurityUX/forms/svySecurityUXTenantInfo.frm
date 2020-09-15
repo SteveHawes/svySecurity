@@ -150,12 +150,13 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-lock fa-3x text-danger",
+imageStyleClass:"fa fa-lock fa-3x text-danger",
 onActionMethodID:"AB106273-1B8B-4BF5-A343-7E148F1F7A38",
-styleclass:"clickable"
+styleClass:"default-align clickable"
 },
 name:"faLocked",
-typeName:"servoyextra-fontawesome",
+styleClass:"default-align clickable",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"3874D9F8-BDDA-4D99-AD92-A20B23A29845"
 },
@@ -170,7 +171,7 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-crown fa-3x text-primary",
+imageStyleClass:"fa fa-crown fa-3x text-primary",
 onActionMethodID:null,
 size:{
 height:25,
@@ -180,7 +181,7 @@ visible:false
 },
 name:"faMaster",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"44594634-30FD-449A-91C4-C1C72B36E051",
 visible:false
@@ -223,7 +224,7 @@ right:"calc(50% - 25px)",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-link fa-3x text-primary",
+imageStyleClass:"fa fa-link fa-3x text-primary",
 onActionMethodID:null,
 size:{
 height:25,
@@ -233,7 +234,7 @@ visible:false
 },
 name:"faSlave",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"5C4A4B3A-B301-4768-AD8D-08192839220B",
 visible:false
@@ -306,7 +307,7 @@ right:"-1",
 top:"188",
 width:"33"
 },
-faclass:"far fa-calendar-plus",
+imageStyleClass:"far fa-calendar-plus",
 size:{
 height:25,
 width:25
@@ -315,7 +316,7 @@ toolTipText:"Created on"
 },
 name:"iconCreatedOn",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"9E698A92-1C62-4534-9DAA-2F7F5DD9D454"
 },
@@ -394,7 +395,7 @@ right:"-1",
 top:"218",
 width:"33"
 },
-faclass:"fas fa-user-plus",
+imageStyleClass:"fas fa-user-plus",
 size:{
 height:25,
 width:25
@@ -403,7 +404,7 @@ toolTipText:"Created by"
 },
 name:"iconCreatedBy",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"E040DE17-BFEA-462C-AF75-FE3D6A06BA68"
 },
@@ -418,17 +419,17 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-lock-open fa-3x text-success",
 onActionMethodID:"4286147E-324E-48B2-80A9-1F5344A0A1CF",
 size:{
 height:25,
 width:25
 },
-styleclass:"clickable"
+styleClass:"default-align clickable"
 },
 name:"faUnlocked",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+styleClass:"default-align clickable",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"FC1C03E5-8369-49B7-A15F-8CC7683D1690"
 }

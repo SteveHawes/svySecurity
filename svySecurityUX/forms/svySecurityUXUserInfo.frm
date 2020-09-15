@@ -14,7 +14,7 @@ right:"-1",
 top:"247",
 width:"33"
 },
-faclass:"fas fa-user-plus",
+imageStyleClass:"fas fa-user-plus",
 size:{
 height:25,
 width:25
@@ -23,7 +23,7 @@ toolTipText:"Created by"
 },
 name:"iconCreatedBy",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"09FCD366-15B7-49B0-8C56-5D6FD12EEB23"
 },
@@ -39,12 +39,13 @@ right:"54",
 top:"16",
 width:"25"
 },
-faclass:"fas fa-long-arrow-alt-left fa-lg text-tertiary",
+imageStyleClass:"fas fa-long-arrow-alt-left fa-lg text-tertiary",
 onActionMethodID:"698F30F2-20BE-4F68-B338-FFB96507272C",
-styleclass:"clickable"
+styleClass:"default-align clickable"
 },
 name:"fontawesome_1",
-typeName:"servoyextra-fontawesome",
+styleClass:"default-align clickable",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"0E53FB94-0F7E-4CC5-A42F-D3DF73A2313B"
 },
@@ -159,12 +160,13 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-lock fa-3x text-danger",
+imageStyleClass:"fa fa-lock fa-3x text-danger",
 onActionMethodID:"2CA7C321-6568-43D7-BEB0-CBC1673F734C",
-styleclass:"clickable"
+styleClass:"default-align clickable"
 },
 name:"faLocked",
-typeName:"servoyextra-fontawesome",
+styleClass:"default-align clickable",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"50A96C8C-1DFE-4069-9D0B-DC5C58638109"
 },
@@ -217,17 +219,18 @@ right:"-1",
 top:"-1",
 width:"50"
 },
-faclass:"fa fa-lock-open fa-3x text-success",
+imageStyleClass:"fa fa-lock-open fa-3x text-success",
 onActionMethodID:"40FC6744-B335-45E8-AD73-B1CE71752881",
 size:{
 height:25,
 width:25
 },
-styleclass:"clickable"
+styleClass:"default-align clickable"
 },
 name:"faUnlocked",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+styleClass:"default-align clickable",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"763859AA-4CFE-4C7B-A31C-6B991647132C"
 },
@@ -242,7 +245,7 @@ right:"-1",
 top:"217",
 width:"33"
 },
-faclass:"far fa-calendar-plus",
+imageStyleClass:"far fa-calendar-plus",
 size:{
 height:25,
 width:25
@@ -251,7 +254,7 @@ toolTipText:"Created on"
 },
 name:"iconCreatedOn",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"7EA82CAB-6295-4DCD-967A-EC684F5534F7"
 },

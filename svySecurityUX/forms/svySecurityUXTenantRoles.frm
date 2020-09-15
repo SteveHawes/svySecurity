@@ -36,7 +36,7 @@ right:"30",
 top:"-1",
 width:"25"
 },
-faclass:"fa fa-long-arrow-right text-tertiary fa-lg clickable",
+imageStyleClass:"fa fa-long-arrow-right text-tertiary fa-lg clickable",
 onActionMethodID:"2728289F-AA07-4D48-93D1-29BF6F1943C5",
 size:{
 height:25,
@@ -45,7 +45,7 @@ width:25
 },
 name:"iconNewRole",
 size:"25,25",
-typeName:"servoyextra-fontawesome",
+typeName:"bootstrapcomponents-label",
 typeid:47,
 uuid:"6D4881F9-1FBE-4EBD-BBFA-55196A21DD34"
 },
