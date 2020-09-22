@@ -1,12 +1,4 @@
 /**
- * @private 
- * @type {String}
- *
- * @properties={typeid:35,uuid:"C58A8189-3755-4D5C-B0B6-7543797507E4"}
- */
-var SVY_SECURITY_UX_VERSION = '1.3.1';
-
-/**
  * @protected 
  * @type {String}
  *
@@ -126,5 +118,5 @@ function triggerAfterUserCreate(userName, tenantName) {
  * @properties={typeid:24,uuid:"6770927E-4C75-416D-B83E-1399931F78A6"}
  */
 function getVersion() {
-    return SVY_SECURITY_UX_VERSION;
+    return application.getVersionInfo()['svySecurityUX'];
 }
