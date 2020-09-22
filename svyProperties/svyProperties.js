@@ -1,12 +1,4 @@
 /**
- * @private 
- * @type {String}
- *
- * @properties={typeid:35,uuid:"D159D5CE-6748-4DBC-AC25-523B8475FBCD"}
- */
-var SVY_PROPERTIES_VERSION = '1.0.1';
-
-/**
  * @private
  * @type {Number}
  *
@@ -865,7 +857,7 @@ function textLengthIsValid(text, maxLength) {
  * @properties={typeid:24,uuid:"DC6A8292-F403-4E21-870D-C58F29517C7D"}
  */
 function getVersion() {
-    return SVY_PROPERTIES_VERSION;
+    return application.getVersionInfo()['svyProperties'];
 }
 
 /**
