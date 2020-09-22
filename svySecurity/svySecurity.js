@@ -5,14 +5,6 @@
  */
 
 /**
- * @private 
- * @type {String}
- *
- * @properties={typeid:35,uuid:"7BA2289C-A59D-4F51-9D13-8DE45506D750"}
- */
-var SVY_SECURITY_VERSION = '1.4.0';
-
-/**
  * @protected
  * @type {String}
  * @ignore
@@ -2762,7 +2754,7 @@ function addActiveSessionSearchCriteria(qbSelect) {
  * @properties={typeid:24,uuid:"D9AFB31E-2B51-43A7-98AC-29F3D12BB22E"}
  */
 function getVersion() {
-    return SVY_SECURITY_VERSION;
+    return application.getVersionInfo()['svySecurity'];
 }
 
 /**
