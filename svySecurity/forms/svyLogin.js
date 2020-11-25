@@ -9,6 +9,16 @@
 var LOGIN_COOKIE = 'com.servoy.extensions.security.login';
 
 /**
+ * Solution specific login cookie name
+ * 
+ * @private
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"B1AB6AA3-255E-4570-861C-C8C4F4116224"}
+ */
+var UNIQUE_LOGIN_COOKIE = 'com.servoy.extensions.security.login.' + application.getSolutionName() + '.' + application.getServerUUID();
+
+/**
  * Error codes returned in onLoginError 
  * 
  * @protected 
@@ -17,15 +27,15 @@ var LOGIN_COOKIE = 'com.servoy.extensions.security.login';
  * @properties={typeid:35,uuid:"E67B9796-263B-4E7A-A9B8-BFCCA9348DF7",variableType:-4}
  */
 var ERROR_CODES = {
-	TENANT_NOT_SPECIFIED : 'tenant-not-specified',
-	USER_NOT_SPECIFIED : 'user-not-specified',
-	PASSWORD_NOT_SPECIFIED : 'password-not-specified',
-	TENANT_NOT_FOUND : 'tenant-not-found',
-	USER_NOT_FOUND : 'user-ot-found',
-	PASSWORD_MISMATCH : 'password-mismatch',
-	INSUFFICIENT_PERMISSIONS : 'insufficient-permissions',
-	LOCKED_USER : 'locked-user',
-	LOCKED_TENANT : 'locked-tenant'
+  TENANT_NOT_SPECIFIED: 'tenant-not-specified',
+  USER_NOT_SPECIFIED: 'user-not-specified',
+  PASSWORD_NOT_SPECIFIED: 'password-not-specified',
+  TENANT_NOT_FOUND: 'tenant-not-found',
+  USER_NOT_FOUND: 'user-ot-found',
+  PASSWORD_MISMATCH: 'password-mismatch',
+  INSUFFICIENT_PERMISSIONS: 'insufficient-permissions',
+  LOCKED_USER: 'locked-user',
+  LOCKED_TENANT: 'locked-tenant'
 };
 
 /**
@@ -83,58 +93,58 @@ var tenantName = '';
  * @properties={typeid:24,uuid:"2F8D781B-F5CB-46E4-9D07-984A8E42B71B"}
  */
 function login() {
-	
-	if(!tenantName){
-		onLoginError(ERROR_CODES.TENANT_NOT_SPECIFIED);
-		return false;
-	}
-	if(!userName){
-		onLoginError(ERROR_CODES.USER_NOT_SPECIFIED);
-		return false;
-	}
-	if(!password){
-		onLoginError(ERROR_CODES.PASSWORD_NOT_SPECIFIED);
-		return false;
-	}
-	
-	var tenant = scopes.svySecurity.getTenant(tenantName);
-	if(!tenant){
-		onLoginError(ERROR_CODES.TENANT_NOT_FOUND);
-		return false;
-	}
-	var user = tenant.getUser(userName);
-	if(!user){
-		onLoginError(ERROR_CODES.USER_NOT_FOUND);
-		return false;
-	}
-	if(!user.checkPassword(password)){
-		onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
-		return false;
-	}
-	if(user.isLocked()){
-		onLoginError(ERROR_CODES.LOCKED_USER);
-		return false;
-	}
-	if(tenant.isLocked()){
-		onLoginError(ERROR_CODES.LOCKED_TENANT);
-		return false;
-	}
-	if(!scopes.svySecurity.login(user)){
-		onLoginError(ERROR_CODES.INSUFFICIENT_PERMISSIONS);
-		return false;
-	}
-	
-	// reset cookie if applicable
-	if(flagSaveUser){
-		setCookie();
-	} else {
-		clearCookie();
-	}
-	
-	// notify success
-	onLoginSuccess();
-	
-	return true;
+
+  if (!tenantName) {
+    onLoginError(ERROR_CODES.TENANT_NOT_SPECIFIED);
+    return false;
+  }
+  if (!userName) {
+    onLoginError(ERROR_CODES.USER_NOT_SPECIFIED);
+    return false;
+  }
+  if (!password) {
+    onLoginError(ERROR_CODES.PASSWORD_NOT_SPECIFIED);
+    return false;
+  }
+
+  var tenant = scopes.svySecurity.getTenant(tenantName);
+  if (!tenant) {
+    onLoginError(ERROR_CODES.TENANT_NOT_FOUND);
+    return false;
+  }
+  var user = tenant.getUser(userName);
+  if (!user) {
+    onLoginError(ERROR_CODES.USER_NOT_FOUND);
+    return false;
+  }
+  if (!user.checkPassword(password)) {
+    onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
+    return false;
+  }
+  if (user.isLocked()) {
+    onLoginError(ERROR_CODES.LOCKED_USER);
+    return false;
+  }
+  if (tenant.isLocked()) {
+    onLoginError(ERROR_CODES.LOCKED_TENANT);
+    return false;
+  }
+  if (!scopes.svySecurity.login(user)) {
+    onLoginError(ERROR_CODES.INSUFFICIENT_PERMISSIONS);
+    return false;
+  }
+
+  // reset cookie if applicable
+  if (flagSaveUser) {
+    setCookie();
+  } else {
+    clearCookie();
+  }
+
+  // notify success
+  onLoginSuccess();
+
+  return true;
 }
 
 /**
@@ -144,8 +154,8 @@ function login() {
  * @protected 
  * @properties={typeid:24,uuid:"BCB050CC-2B33-4959-A63C-7463484FB3F1"}
  */
-function onLoginSuccess(){
-	// for child form implementation
+function onLoginSuccess() {
+  // for child form implementation
 }
 
 /**
@@ -157,9 +167,9 @@ function onLoginSuccess(){
  * @see ERROR_CODES
  * @properties={typeid:24,uuid:"E27794C5-C3A3-4C09-827F-A9A1EB1658C0"}
  */
-function onLoginError(error){
-	// for child form implementation
-	application.output(error)
+function onLoginError(error) {
+  // for child form implementation
+  application.output(error)
 }
 
 /**
@@ -167,8 +177,9 @@ function onLoginError(error){
  * @private 
  * @properties={typeid:24,uuid:"11E848CB-A546-44E9-8EA2-4C7041D88FFF"}
  */
-function setCookie(){
-	application.setUserProperty(LOGIN_COOKIE,JSON.stringify({userName:userName,tenantName:tenantName}));
+function setCookie() {
+  application.setUserProperty(UNIQUE_LOGIN_COOKIE, JSON.stringify({ userName: userName, tenantName: tenantName }));
+  application.setUserProperty(LOGIN_COOKIE, null);
 }
 
 /**
@@ -176,8 +187,9 @@ function setCookie(){
  * @private 
  * @properties={typeid:24,uuid:"EA96B97D-F503-4EFC-9158-4DEE3E5DC296"}
  */
-function clearCookie(){
-	application.setUserProperty(LOGIN_COOKIE, null);
+function clearCookie() {
+  application.setUserProperty(UNIQUE_LOGIN_COOKIE, null);
+  application.setUserProperty(LOGIN_COOKIE, null);
 }
 
 /**
@@ -185,15 +197,16 @@ function clearCookie(){
  * @private 
  * @properties={typeid:24,uuid:"401168F2-B966-4842-A056-1BE64FE1EF43"}
  */
-function readCookie(){
-	var str = application.getUserProperty(LOGIN_COOKIE);
-	flagSaveUser = str ? 1 : 0;
-	if(str){
-		/** @type {{userName:String,tenantName}} */
-		var value = JSON.parse(str);
-		userName = value.userName;
-		tenantName = value.tenantName;
-	}
+function readCookie() {
+  var str = application.getUserProperty(UNIQUE_LOGIN_COOKIE);
+  if (!str) str = application.getUserProperty(LOGIN_COOKIE);
+  flagSaveUser = str ? 1 : 0;
+  if (str) {
+    /** @type {{userName:String,tenantName}} */
+    var value = JSON.parse(str);
+    userName = value.userName;
+    tenantName = value.tenantName;
+  }
 }
 /**
  * Callback method for when form is shown.
@@ -208,7 +221,7 @@ function readCookie(){
  * @properties={typeid:24,uuid:"185B8002-4048-4F2A-89F7-355F3B627D4A"}
  */
 function onShow(firstShow, event) {
-	if(firstShow){
-		readCookie();
-	}
+  if (firstShow) {
+    readCookie();
+  }
 }
