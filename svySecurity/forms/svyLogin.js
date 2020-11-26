@@ -16,7 +16,7 @@ var LOGIN_COOKIE = 'com.servoy.extensions.security.login';
  *
  * @properties={typeid:35,uuid:"B1AB6AA3-255E-4570-861C-C8C4F4116224"}
  */
-var UNIQUE_LOGIN_COOKIE = 'com.servoy.extensions.security.login.' + application.getSolutionName() + '.' + application.getServerUUID();
+var UNIQUE_LOGIN_COOKIE = 'com.servoy.extensions.security.login.' + application.getSolutionName() + '.' + application.getHostName();
 
 /**
  * Error codes returned in onLoginError 
