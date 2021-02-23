@@ -337,7 +337,7 @@ function getTenants() {
  * If tenant name is not specified and no user is currently logged in then will return null.
  *
  * @public
- * @param {String} [name] The name of the tenant to get. Or null to get the current tenant.
+ * @param {String|UUID} [nameOrUUID] The name or the UUID of the tenant to get. Or null to get the current tenant.
  * @return {Tenant} The tenant or null if not found / no user is logged in.
  *
  * @example
@@ -349,10 +349,10 @@ function getTenants() {
  * @properties={typeid:24,uuid:"35A8C27C-1B0E-478F-95E2-B068FBF57BB4"}
  * @AllowToRunInFind
  */
-function getTenant(name) {
+function getTenant(nameOrUUID) {
 
     // no name, look for current user's tenant
-    if (!name) {
+    if (!nameOrUUID) {
 
         // No logged-in user/tenant
         if (!utils.hasRecords(active_tenant)) {
@@ -366,7 +366,11 @@ function getTenant(name) {
     // lookup tenant by name
     var fs = datasources.db.svy_security.tenants.getFoundSet();
     var qry = datasources.db.svy_security.tenants.createSelect();
-    qry.where.add(qry.columns.tenant_name.eq(name));
+    if(nameOrUUID instanceof UUID) {
+    	qry.where.add(qry.columns.tenant_uuid.eq(nameOrUUID));
+    } else {
+    	qry.where.add(qry.columns.tenant_name.eq(nameOrUUID));
+    }
     fs.loadRecords(qry);
 
     // no match
@@ -487,16 +491,16 @@ function getRole(roleName, tenantName) {
  * @note Will fail if tenant is not specified and user is not logged in and multiple users are found with the specified username but associated with different tenants.
  *
  * @public
- * @param {String} [userName] The username of the user to return. Can be null to get the current user.
- * @param {String} [tenantName] The name of the tenant associated with the user. Can be null if username is also null when getting the current user.
+ * @param {String|UUID} [userNameOrUUID] The (username or UUID) of the user to return. Can be null to get the current user.
+ * @param {String|UUID} [tenantNameOrUUID] The (name or UUID) of the tenant associated with the user. Can be null if username is also null when getting the current user.
  * @return {User} The specified user (or current user if parameters are not specified) or null if the specified user does not exist (or if parameters are not specified and a user is not logged in currently).
  * @properties={typeid:24,uuid:"FCF267E6-1580-402E-8252-ED18964474DA"}
  * @AllowToRunInFind
  */
-function getUser(userName, tenantName) {
+function getUser(userNameOrUUID, tenantNameOrUUID) {
 
     // Looking for logged-in user
-    if (!userName) {
+    if (!userNameOrUUID) {
 
         // no logged-in user
         if (!utils.hasRecords(active_user)) {
@@ -508,9 +512,9 @@ function getUser(userName, tenantName) {
     }
 
     // tenant not specified, use active tenant
-    if (!tenantName) {
+    if (!tenantNameOrUUID) {
         if (utils.hasRecords(active_tenant)) {
-            tenantName = active_tenant.tenant_name;
+        	tenantNameOrUUID = active_tenant.tenant_name;
         } else {
 
         }
@@ -519,9 +523,19 @@ function getUser(userName, tenantName) {
     // get matching user
     var fs = datasources.db.svy_security.users.getFoundSet();
     var qry = datasources.db.svy_security.users.createSelect();
-    qry.where.add(qry.columns.user_name.eq(userName));
-    if (tenantName) {
-        qry.where.add(qry.columns.tenant_name.eq(tenantName));
+    if(userNameOrUUID instanceof UUID) {
+    	qry.where.add(qry.columns.user_uuid.eq(userNameOrUUID));
+    } else {
+    	qry.where.add(qry.columns.user_name.eq(userNameOrUUID));
+    }
+    
+    if (tenantNameOrUUID) {
+    	if(tenantNameOrUUID instanceof UUID) {
+    		qry.where.add(qry.joins.users_to_tenants.columns.tenant_uuid.eq(tenantNameOrUUID));
+    	} else {
+    		qry.where.add(qry.columns.tenant_name.eq(tenantNameOrUUID));
+    	}
+    	
     }
     fs.loadRecords(qry);
 
@@ -1214,6 +1228,16 @@ function Tenant(record) {
     	}
 		return cloneTenant(this, name, true);
     }
+    
+    /**
+     * Gets the tenant unique UUID, what can be used to store in tables
+     *
+     * @public
+     * @return {UUID} Tenant UUID.
+     */
+    this.getTenantUUID = function() {
+    	return record.tenant_uuid
+    }
 }
 
 /**
@@ -1642,6 +1666,16 @@ function User(record) {
         record.access_token_expiration = expiration;
         saveRecord(record);
         return record.access_token;
+    }
+    
+    /**
+     * Gets the user unique UUID, what can be used to store as creator/modifier in tables
+     *
+     * @public
+     * @return {UUID} User UUID.
+     */
+    this.getUserUUID = function() {
+    	return record.user_uuid;
     }
 }
 

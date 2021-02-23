@@ -26,12 +26,49 @@ var ROLES_PERMISSIONS_FILE_NAME = 'data_roles_permissions.txt';
  * @properties={typeid:24,uuid:"CF946393-5A9C-471D-AA27-9B3DF6CA7E17"}
  */
 function onSecurityPostImportHookOpen(arg, queryParams) {
+	updateEmptyUserTenantUUID();
 	syncPermissions();
 }
 
 /**
+ * @properties={typeid:24,uuid:"4459EE6E-13F4-4BC3-87BC-8C131D2F10F4"}
+ */
+function updateEmptyUserTenantUUID() {
+    var fsUser = datasources.db.svy_security.users.getFoundSet();
+    var qryUser = datasources.db.svy_security.users.createSelect();
+    qryUser.where.add(qryUser.columns.user_uuid.isNull);
+    fsUser.loadRecords(qryUser);
+    
+    if(fsUser.getSize() > 0) {
+    	fsUser.forEach(/** @param {JSRecord<db:/svy_security/users>} record */function(record) {
+    		if(!record.user_uuid) {
+    			record.user_uuid = application.getUUID();
+    		}
+    	})
+		databaseManager.saveData(fsUser);
+    }
+
+    var fsTenant = datasources.db.svy_security.tenants.getFoundSet();
+    var qryTenant = datasources.db.svy_security.tenants.createSelect();
+    qryTenant.where.add(qryTenant.columns.tenant_uuid.isNull);
+    fsTenant.loadRecords(qryTenant);
+    
+    if(fsTenant.getSize() > 0) {
+    	fsTenant.forEach(/** @param {JSRecord<db:/svy_security/tenants>} record */function(record) {
+    		if(!record.tenant_uuid) {
+    			record.tenant_uuid = application.getUUID();
+    		}
+    	})
+		databaseManager.saveData(fsTenant);
+    }
+}
+
+/**
  * Returns the path to the workspace
- * @private 
+ * @private
+ * 
+ * @return {String}
+ * 
  * @properties={typeid:24,uuid:"DABC4088-5986-499E-8B11-3700E4BC5239"}
  */
 function getWorkspacePath() {
