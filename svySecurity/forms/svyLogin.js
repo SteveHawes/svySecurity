@@ -131,6 +131,9 @@ function login() {
 		clearCookie();
 	}
 	
+	// token-based auth
+	issueToken(user);
+	
 	// notify success
 	onLoginSuccess();
 	
@@ -209,6 +212,77 @@ function readCookie(){
  */
 function onShow(firstShow, event) {
 	if(firstShow){
+		if(checkToken()){
+			onLoginSuccess();
+			return;
+		}
 		readCookie();
 	}
+}
+
+/**
+ * @private 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"51AFF232-03DD-4EFE-9510-BF6436A9BD9E"}
+ */
+function checkToken(){
+	var tokenBasedAuth = scopes.svySecurity.getTokenBasedAuth();
+	if(!tokenBasedAuth){
+		return false;
+	}
+	var token = application.getUserProperty(tokenBasedAuth.namespace);
+	if(!token){
+		return false;
+	}
+	var payload = plugins.jwt.verify(token);
+	if(!payload){
+		return false;
+	}
+//	var userID = application.getUUID(payload.userUUID);
+//	var user = scopes.svySecurity.getUser(userID);
+	var user = scopes.svySecurity.getUser(payload.tenant,payload.user);
+	if(!user){
+		return false;
+	}
+	var grants = payload.grants;
+	if(grants){
+		if(grants.indexOf(application.getSolutionName()) == -1){
+			return false;
+		}
+	}
+	return scopes.svySecurity.login(user);
+}
+
+/**
+ * @private 
+ * @param {scopes.svySecurity.User} user
+ * @properties={typeid:24,uuid:"40DFC938-4D8F-41A9-B065-8DCFA4430ED3"}
+ */
+function issueToken(user){
+	var tokenBasedAuth = scopes.svySecurity.getTokenBasedAuth();
+	if(!tokenBasedAuth){
+		return;
+	}
+	
+	var expiration = null;
+	if(tokenBasedAuth.expiresIn){
+		expiration = new Date();
+		scopes.svyDateUtils.addHours(expiration,tokenBasedAuth.expiresIn);
+	}
+
+	var payload = {
+		namespace : tokenBasedAuth.namespace,
+		user : user.getUserName(),
+		tenant : user.getTenant().getName(),
+		grants : tokenBasedAuth.grants
+	}
+//	var oldToken = application.getUserProperty(tokenBasedAuth.namespace);
+//	if(oldToken){
+//		
+//	}
+	var token = plugins.jwt.create(payload,expiration);
+	if(!token){
+		return;
+	}
+	application.setUserProperty(tokenBasedAuth.namespace,token);
 }

@@ -128,6 +128,13 @@ var USER_PROPERTIES = {
 }
 
 /**
+ * @private 
+ * @type {{namespace:String, expiresIn:Number, grants:Array<String>}}
+ * @properties={typeid:35,uuid:"D7431777-4DDE-43DC-B9E1-EA8E84213D92",variableType:-4}
+ */
+var tokenBasedAuth = null;
+
+/**
  * Logs in the specified user and initializes a new {@link Session} for it.
  * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
  * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
@@ -3082,6 +3089,43 @@ function getAutoSyncPermissionsEnabled() {
 	var result = application.getUserProperty(USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED);
 	return result != "false" ? true : false;
 }
+
+/**
+ * @public 
+ * @param {String} namespace
+ * @param {Number} [expiresIn]
+ * @param {Array<String>} [grants]
+ *
+ * @properties={typeid:24,uuid:"78FDBC6C-9E49-4A6F-B9EE-57326E2F273E"}
+ */
+function setTokenBasedAuth(namespace, expiresIn, grants){
+	
+	// clears token based auth
+	tokenBasedAuth = null;
+	if(!namespace){
+		return;
+	}
+	
+	if(!expiresIn || expiresIn < 0){
+		expiresIn = 0;
+	}
+	tokenBasedAuth = {
+		namespace : namespace,
+		expiresIn : expiresIn,
+		grants : grants
+	};
+}
+
+/**
+ * @public 
+ * @return {{namespace:String, expiresIn:Number, grants:Array<String>}}
+ * @properties={typeid:24,uuid:"57585F90-AE5E-458E-A5C3-AA85F9C66997"}
+ */
+function getTokenBasedAuth(){
+	return tokenBasedAuth;
+}
+
+
 
 /**
  * Initializes the module.
