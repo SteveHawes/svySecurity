@@ -207,7 +207,10 @@ function login(user, userUid, permissionsToApply) {
         logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
         return false;
     }
-
+    
+    // set token
+    setToken(user);
+    
     // create session
     initSession(user);
 
@@ -226,6 +229,7 @@ function login(user, userUid, permissionsToApply) {
  * @properties={typeid:24,uuid:"341F328D-C8A6-4568-BF0C-F807A19B8977"}
  */
 function logout() {
+	clearToken();
     closeSession();
     removeSecurityTablesFilter();
     security.logout();
@@ -3091,14 +3095,15 @@ function getAutoSyncPermissionsEnabled() {
 }
 
 /**
+ * TODO Consider using options object after namespace
  * @public 
  * @param {String} namespace
  * @param {Number} [expiresIn]
- * @param {Array<String>} [grants]
+ * @param {Array<String>} [resources]
  *
  * @properties={typeid:24,uuid:"78FDBC6C-9E49-4A6F-B9EE-57326E2F273E"}
  */
-function setTokenBasedAuth(namespace, expiresIn, grants){
+function setTokenBasedAuth(namespace, expiresIn, resources){
 	
 	// clears token based auth
 	tokenBasedAuth = null;
@@ -3112,12 +3117,13 @@ function setTokenBasedAuth(namespace, expiresIn, grants){
 	tokenBasedAuth = {
 		namespace : namespace,
 		expiresIn : expiresIn,
-		grants : grants
+		resources : resources
 	};
 }
 
 /**
- * @public 
+ * TODO Do we really need this. leave private until decided
+ * @private  
  * @return {{namespace:String, expiresIn:Number, grants:Array<String>}}
  * @properties={typeid:24,uuid:"57585F90-AE5E-458E-A5C3-AA85F9C66997"}
  */
@@ -3125,7 +3131,88 @@ function getTokenBasedAuth(){
 	return tokenBasedAuth;
 }
 
+/**
+ * Called after login
+ * @private   
+ * @param {scopes.svySecurity.User} user
+ * 
+ * @properties={typeid:24,uuid:"E2D3BD33-9A85-4407-8B0E-008F1B71F1CE"}
+ */
+function setToken(user){
+	if(!tokenBasedAuth){
+		return;
+	}
+	var expiration = null;
+	if(tokenBasedAuth.expiresIn){
+		expiration = new Date();
+		scopes.svyDateUtils.addHours(expiration,tokenBasedAuth.expiresIn);
+	}
 
+	var payload = {
+		namespace : tokenBasedAuth.namespace,
+		user : user.getUserName(),
+		tenant : user.getTenant().getName(),
+		resources : tokenBasedAuth.resources
+	}
+//	// Check token, add resources ?
+//	var oldToken = application.getUserProperty(tokenBasedAuth.namespace);
+//	if(oldToken){
+//		
+//	}
+	var token = plugins.jwt.create(payload,expiration);
+	if(!token){
+		return;
+	}
+	application.setUserProperty(tokenBasedAuth.namespace,token);
+}
+
+/**
+ * Call to bypass login with stored token
+ * 
+ * @public 
+ * @return {Boolean} True if stored token was found and user could be logged-in
+ * @properties={typeid:24,uuid:"566D772A-3F0C-44F3-84E9-8E4FB3801B8D"}
+ */
+function checkToken(){
+	if(!tokenBasedAuth){
+		return false;
+	}
+	var token = application.getUserProperty(tokenBasedAuth.namespace);
+	if(!token){
+		return false;
+	}
+	var payload = plugins.jwt.verify(token);
+	if(!payload){
+		return false;
+	}
+
+//	TODO encode user uuid instead of tenant name + user name	
+//	var userID = application.getUUID(payload.userUUID);
+//	var user = scopes.svySecurity.getUser(userID);
+
+	var user = scopes.svySecurity.getUser(payload.tenant,payload.user);
+	if(!user){
+		return false;
+	}
+	var resources = payload.resources;
+	if(resources){
+		if(resources.indexOf(application.getSolutionName()) == -1){
+			return false;
+		}
+	}
+	return login(user);
+}
+
+/**
+ * Called during logout
+ * @private  
+ * @properties={typeid:24,uuid:"B9A6555D-6AAA-48F2-87E6-804988D69649"}
+ */
+function clearToken(){
+	if(tokenBasedAuth){
+		application.setUserProperty(tokenBasedAuth.namespace,null);
+	}
+}
 
 /**
  * Initializes the module.
