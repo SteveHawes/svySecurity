@@ -232,7 +232,7 @@ width:25
 },
 visible:false
 },
-name:"faSlave",
+name:"faSubtenant",
 size:"25,25",
 typeName:"bootstrapcomponents-label",
 typeid:47,

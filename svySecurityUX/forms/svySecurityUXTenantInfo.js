@@ -151,23 +151,23 @@ function updateUI() {
 			elements.faMaster.visible = true;
 			elements.faMaster.cssPosition.l("calc(50% - 50px)");
 			elements.faMaster.cssPosition.r("50%");
-			elements.faSlave.visible = true;
-			elements.faSlave.cssPosition.r("calc(50% - 50px)");
-			elements.faSlave.cssPosition.l("50%");
+			elements.faSubtenant.visible = true;
+			elements.faSubtenant.cssPosition.r("calc(50% - 50px)");
+			elements.faSubtenant.cssPosition.l("50%");
 			elements.labelMaster.visible = true;
-			elements.labelMaster.text = "MASTER & SLAVE";
+			elements.labelMaster.text = "MASTER & SUBTENANT";
 		} else if (tenant.isMasterTenant()) {
 			elements.faMaster.visible = true;
-			elements.faSlave.visible = false;
+			elements.faSubtenant.visible = false;
 			elements.labelMaster.visible = true;
 			elements.labelMaster.text = "MASTER";
 		} else if (tenant.isSubTenant()) {
 			elements.faMaster.visible = false;
-			elements.faSlave.visible = true;
+			elements.faSubtenant.visible = true;
 			elements.labelMaster.visible = true;
-			elements.labelMaster.text = "SLAVE";
+			elements.labelMaster.text = "SUBTENANT";
 		} else {
-			elements.faSlave.visible = false;
+			elements.faSubtenant.visible = false;
 			elements.faMaster.visible = false;
 			elements.labelMaster.visible = false;
 			elements.labelMaster.text = null;
