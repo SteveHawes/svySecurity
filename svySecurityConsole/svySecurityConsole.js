@@ -54,11 +54,11 @@ function onError(ex) {
 
 /**
  * @param {JSRecord<db:/svy_security/tenants>} [recordMaster]
- * @param {Boolean} [makeSlave]
+ * @param {Boolean} [makeSubTenant]
  * @public 
  * @properties={typeid:24,uuid:"04B144AE-7E6B-4932-BB7B-8BA1A76C11DB"}
  */
-function addNewTenant(recordMaster, makeSlave) {
+function addNewTenant(recordMaster, makeSubTenant) {
     var name = plugins.dialogs.showInputDialog('Add New Tenant', 'Enter a name for the new tenant:');
     if(!name){
         return;
@@ -70,7 +70,7 @@ function addNewTenant(recordMaster, makeSlave) {
     var tenant;
     if (recordMaster) {
     	var masterTenant = scopes.svySecurity.getTenant(recordMaster.tenant_name);
-    	tenant = scopes.svySecurity.cloneTenant(masterTenant, name, makeSlave ? true : false);
+    	tenant = scopes.svySecurity.cloneTenant(masterTenant, name, makeSubTenant ? true : false);
     } else {    	
 	    tenant = scopes.svySecurity.createTenant(name);
     }

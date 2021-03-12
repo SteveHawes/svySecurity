@@ -147,7 +147,7 @@ function updateUI() {
 			elements.labelStatus.addStyleClass('text-success border-success');
 		}
 
-		if (tenant.isMasterTenant() && tenant.isSlaveTenant()) {
+		if (tenant.isMasterTenant() && tenant.isSubTenant()) {
 			elements.faMaster.visible = true;
 			elements.faMaster.cssPosition.l("calc(50% - 50px)");
 			elements.faMaster.cssPosition.r("50%");
@@ -161,7 +161,7 @@ function updateUI() {
 			elements.faSlave.visible = false;
 			elements.labelMaster.visible = true;
 			elements.labelMaster.text = "MASTER";
-		} else if (tenant.isSlaveTenant()) {
+		} else if (tenant.isSubTenant()) {
 			elements.faMaster.visible = false;
 			elements.faSlave.visible = true;
 			elements.labelMaster.visible = true;

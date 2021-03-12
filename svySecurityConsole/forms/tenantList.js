@@ -60,7 +60,7 @@ function onActionCreateTenant(event) {
  *
  * @properties={typeid:24,uuid:"D5A99C94-81ED-4921-8BFD-BE98A30E8D06"}
  */
-function onActionCreateSlave(event) {
+function onActionCreateSubTenant(event) {
 	if (utils.hasRecords(foundset)) {
 		scopes.svySecurityConsole.addNewTenant(foundset.getSelectedRecord(), true);
 	}

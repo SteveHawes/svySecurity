@@ -22,7 +22,7 @@ location:"56,679",
 name:"lblMasterTenantName",
 size:"133,20",
 styleClass:"large",
-text:"Slave of Tenant",
+text:"Sub-tenant of",
 transparent:true,
 typeid:7,
 uuid:"066ECE98-7C17-4CB1-94EC-19DF0CF1B92F"
