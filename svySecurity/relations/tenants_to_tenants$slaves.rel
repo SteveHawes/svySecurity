@@ -1,4 +1,5 @@
 allowCreationRelatedRecords:true,
+deprecated:"use tenants_to_tenants$subtenants instead",
 foreignDataSource:"db:/svy_security/tenants",
 items:[
 {foreignColumnName:"master_tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"5684BC1D-4878-4081-B5BB-9AB114E1794C"}

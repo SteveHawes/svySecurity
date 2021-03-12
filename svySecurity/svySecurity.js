@@ -243,7 +243,7 @@ function createTenant(name) {
  * Creates and returns a new tenant with the specified name as a clone of the given tenant.
  * The names of tenants must be unique in the system.
  * The cloned tenant has the same roles and role permissions as the original.
- * When makeSlave is true, the newly created clone will be a slave of the tenant to clone,
+ * When makeSubTenant is true, the newly created clone will be a sub-tenant of the tenant to clone,
  * inheriting all role / permission changes made to the master.
  * <br/>
  * <b>WARNING</b>: Cannot call this function when logged in as an user.
@@ -252,20 +252,20 @@ function createTenant(name) {
  * @public
  * @param {Tenant} tenantToClone The tenant to clone from
  * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
- * @param {Boolean} [makeSlave] When true, the cloned tenant will be a slave of the tenant to clone (defaults to false).
+ * @param {Boolean} [makeSubTenant] When true, the cloned tenant will be a sub-tenant of the tenant to clone (defaults to false).
  * @return {Tenant} The cloned tenant that is created.
  * @throws {String} Throws an exception if this function is called when logged in as an user.
 
  * @properties={typeid:24,uuid:"6C41B9E2-7033-4FD9-84EF-1D91E400DF95"}
  */
-function cloneTenant(tenantToClone, name, makeSlave) {
+function cloneTenant(tenantToClone, name, makeSubTenant) {
 	
 	if (getTenant()) {
 		throw "Cannot clone tenant when logged in as an user.";
 	}
 	
 	
-	var rec = createTenantRecord(name, makeSlave === true && tenantToClone ? tenantToClone.getName() : null);
+	var rec = createTenantRecord(name, makeSubTenant === true && tenantToClone ? tenantToClone.getName() : null);
 	var tenant = new Tenant(rec);
 	var roles = tenantToClone.getRoles();
 	for (var r = 0; r < roles.length; r++) {
@@ -382,8 +382,8 @@ function getTenant(name) {
  * Immediately and permanently deletes the specified tenant and all records associated with it, including all users and roles.
  * Tenant will not be deleted if it has users with active sessions.
  * <br/>
- * If the deleted tenant is a Master tenant and is a slave of another master tenant, this operation will replace the master tenant of it's direct slaves with the master of the tenant that is deleted;
- * If the delated tenant is a Master tenant and has no Master tenant, this operation will remove the master from all it's direct slaves.
+ * If the deleted tenant is a Master tenant and is a sub-tenant of another master tenant, this operation will replace the master tenant of it's direct sub-tenant with the master of the tenant that is deleted;
+ * If the delated tenant is a Master tenant and has no Master tenant, this operation will remove the master from all it's direct sub-tenants.
  * 
  * @note USE WITH CAUTION! There is no undo for this operation.
  *
@@ -855,7 +855,7 @@ function Tenant(record) {
     /**
      * Creates a role associated with this tenant using the specified role name.
      * <br/>
-     * If this is a Master Tenant the created role will be added to all slaves of this Tenant.
+     * If this is a Master Tenant the created role will be added to all sub-tenants of this Tenant.
      * <br/>
      * Cannot create role for a master tenant when logged in as an user.
      *
@@ -937,7 +937,7 @@ function Tenant(record) {
      * Users with active sessions will be affected, but design-time security (CRUD, UI) will not be affected until next log-in.
      *
      * <br/>
-     * If this is a Master Tenant the deleted role will be deleted also for all slaves of this Tenant.
+     * If this is a Master Tenant the deleted role will be deleted also for all sub-tenants of this Tenant.
      * 
      * <br/>
      * Cannot delete role of a master tenant when logged in as an user.
@@ -1122,19 +1122,19 @@ function Tenant(record) {
     }
     
     /**
-     * Gets all slaves of this tenant
-     * When recursive is true, all slaves of this tenant's slaves are included
+     * Gets all sub-tenants of this tenant
+     * When recursive is true, all sub-tenants of this tenant's sub-tenants are included
      * <br/>
      * <b>WARNING</b>: Cannot call this function when logged in as an user.
      * 
      * @throws {String} Throws an exception if this function is called when logged in as an user.
      * 
      * @public 
-     * @return {Array<Tenant>} slaves Array of tenants that have this tenant as their master
+     * @return {Array<Tenant>} subTenants Array of tenants that have this tenant as their master
      */
-    this.getSlaves = function(recursive) {
+    this.getSubTenants = function(recursive) {
     	if (getTenant()) {
-    		throw "Cannot get tenant slaves when logged in as an user.";
+    		throw "Cannot get tenant sub-tenants when logged in as an user.";
     	} 
     	
     	 var fs = datasources.db.svy_security.tenants.getFoundSet();
@@ -1142,18 +1142,35 @@ function Tenant(record) {
          qry.where.add(qry.columns.master_tenant_name.eq(this.getName()));
          fs.loadRecords(qry);
          
-         var slaves = [];
+         var subTenants = [];
          if (utils.hasRecords(fs)) {
         	 for (var s = 1; s <= fs.getSize(); s++) {
-        	 	var recordSlave = fs.getRecord(s);
-        	 	var slave = new Tenant(recordSlave);
-        	 	slaves.push(slave);
-        	 	if (recursive === true && utils.hasRecords(recordSlave.tenants_to_tenants$slaves)) {
-        	 		slaves = slaves.concat(slave.getSlaves(recursive));
+        	 	var recordSubTenant = fs.getRecord(s);
+        	 	var subTenant = new Tenant(recordSubTenant);
+        	 	subTenants.push(subTenant);
+        	 	if (recursive === true && utils.hasRecords(recordSubTenant.tenants_to_tenants$subtenants)) {
+        	 		subTenants = subTenants.concat(subTenant.getSubTenants(recursive));
         	 	}
         	 }
          }
-         return slaves;
+         return subTenants;
+    }    
+    
+    /**
+     * Gets all slaves of this tenant
+     * When recursive is true, all slaves of this tenant's slaves are included
+     * <br/>
+     * <b>WARNING</b>: Cannot call this function when logged in as an user.
+     * 
+     * @throws {String} Throws an exception if this function is called when logged in as an user.
+     * 
+     * @deprecated use <code>getSubTenants(recursive)</code> instead
+     * 
+     * @public 
+     * @return {Array<Tenant>} slaves Array of tenants that have this tenant as their master
+     */
+    this.getSlaves = function(recursive) {
+    	return this.getSubTenants(recursive);
     }
     
     /**
@@ -1180,23 +1197,36 @@ function Tenant(record) {
     		throw "Cannot get tenant master info when logged in as an user of another tenant.";
     	} 
     	
-    	return utils.hasRecords(record.tenants_to_tenants$slaves);
+    	return utils.hasRecords(record.tenants_to_tenants$subtenants);
     }
     
     /**
+     * Returns true if this Tenant is a sub-tenant
+     * 
+     * @public 
+     * @return {Boolean} isSubTenant Whether this tenant is a sub-tenant of other tenants
+     * 
+     */
+    this.isSubTenant = function() {
+    	return record.master_tenant_name ? true : false;
+    }    
+    
+    /**
      * Returns true if this Tenant is a slave tenant
+     * 
+     * @deprecated use <code>isSubTenant()</code> instead
      * 
      * @public 
      * @return {Boolean} isMasterTenant Whether this tenant is a master to other tenants
      * 
      */
     this.isSlaveTenant = function() {
-    	return record.master_tenant_name ? true : false;
+    	return this.isSubTenant();
     }
     
     /**
-     * Creates a slave of this tenant with the given name.
-     * Modifications to roles and permissions of this tenant will be propagated to all of its slaves.
+     * Creates a sub-tenant of this tenant with the given name.
+     * Modifications to roles and permissions of this tenant will be propagated to all of its sub-tenants.
      * 
      * <br/>
      * <b>WARNING</b>: Cannot call this function when logged in as an user.
@@ -1206,13 +1236,33 @@ function Tenant(record) {
      * 
      * @throws {String} Throws an exception if this function is called when logged in as an user.
      * 
+     * @return {Tenant} subTenant The sub-tenant that has been created
+     */
+    this.createSubTenant = function(name) {
+    	if (getTenant()) {
+    		throw "Cannot create tenant sub-tenant when logged in as an user.";
+    	}
+		return cloneTenant(this, name, true);
+    }    
+    
+    /**
+     * Creates a slave of this tenant with the given name.
+     * Modifications to roles and permissions of this tenant will be propagated to all of its slaves.
+     * 
+     * <br/>
+     * <b>WARNING</b>: Cannot call this function when logged in as an user.
+     * 
+     * @deprecated use <code>createSubTenant</code> instead
+     * 
+     * @public 
+     * @param {String} name The name of the tenant. Must be unique and no longer than 50 characters.
+     * 
+     * @throws {String} Throws an exception if this function is called when logged in as an user.
+     * 
      * @return {Tenant} slave The slave that has been created
      */
     this.createSlave = function(name) {
-    	if (getTenant()) {
-    		throw "Cannot create tenant slave when logged in as an user.";
-    	}
-		return cloneTenant(this, name, true);
+    	return this.createSubTenant(name);
     }
 }
 
@@ -1684,10 +1734,10 @@ function Role(record) {
     /**
      * Sets the display name of this role.
      * <br/>
-     * If the tenant of this role is a master tenant, the displayName will be set to the same role in all slaves of this role tenant.
+     * If the tenant of this role is a master tenant, the displayName will be set to the same role in all sub-tenants of this role tenant.
      * <br/>
      * You cannot set the display name to role of a master tenant when logged in as an user.
-     * You cannot set the display name to role of a slave tenant at anytime.
+     * You cannot set the display name to role of a sub-tenant at anytime.
      * 
      * @public
      * @param {String} displayName The display name to use.
@@ -1695,7 +1745,6 @@ function Role(record) {
      * @throws {String} throws an exception if the displayName cannot be changed
      */
     this.setDisplayName = function(displayName) {
-    	
     	var loggedTenant = getTenant();
     	if (loggedTenant && loggedTenant.isMasterTenant()) {
     		throw "Cannot cannot set the display name to role of a master tenant when logged in as an user";
@@ -1835,10 +1884,10 @@ function Role(record) {
      * Grants the specified permission to this role.
      * Any users that are members of this role will be granted the permission.\
      * <br/>
-     * If the tenant of this role is a master tenant, the permission will also be added to the same role in all slaves of this role tenant.
+     * If the tenant of this role is a master tenant, the permission will also be added to the same role in all sub-tenants of this role tenant.
      * <br/>
-     * You cannot grant permission to role of a master tenant when logged in as an user.
-     * You cannot grant permission to role of a slave tenant at anytime.
+     * You cannot grant permission to a role of a master tenant when logged in as an user.
+     * You cannot grant permission to a role of a sub-tenant at anytime.
      *
      * @public
      * @param {Permission|String} permission The permission object or name of permission to add.\
@@ -1919,10 +1968,10 @@ function Role(record) {
      * Removes the specified permission from this role.
      * The permission will no longer be granted to all users that are members of this role.
      * <br/>
-     * If the tenant of this role is a master tenant, the permission will also be removed from the same role in all slaves of this role tenant.
+     * If the tenant of this role is a master tenant, the permission will also be removed from the same role in all sub-tenants of this role tenant.
      * <br/>
-     * You cannot remove permission from role of a master tenant when logged in as an user.
-     * You cannot remove permission from role of a slave tenant at anytime.
+     * You cannot remove permission from a role of a master tenant when logged in as an user.
+     * You cannot remove permission from a role of a sub-tenant at anytime.
      * 
      * @public
      * @param {Permission|String} permission The permission object or name of permission to remove.
@@ -2013,10 +2062,10 @@ function Permission(record) {
      * Grants this permission to the specified role.
      * The permission will be granted to all users that are members of the specified role.
      * <br/>
-     * If the tenant of this permission is a master tenant, the role will also be added to the same permission for all the slaves of this permission tenant.
+     * If the tenant of this permission is a master tenant, the role will also be added to the same permission for all the sub-tenants of this permission tenant.
      * <br/>
-     * You cannot grant permission to role of a master tenant when logged in as an user.
-     * You cannot grant permission to role of a slave tenant at anytime.
+     * You cannot grant permission to a role of a master tenant when logged in as an user.
+     * You cannot grant permission to a role of a sub-tenant at anytime.
      * 
      * @public
      * @param {Role} role The role object to which the permission should be granted.
@@ -2087,10 +2136,10 @@ function Permission(record) {
      * Removes this permission from the specified role.
      * The permission will no longer be granted to all users that are members of the specified role.
      * <br/>
-     * If the tenant of this permission is a master tenant, the role will also be removed from the same permission for all the slaves of this permission tenant.
+     * If the tenant of this permission is a master tenant, the role will also be removed from the same permission for all the sub-tenants of this permission tenant.
      * <br/>
-     * You cannot remove permission from role of a master tenant when logged in as an user.
-     * You cannot remove permission from role of a slave tenant at anytime.
+     * You cannot remove permissions from a role of a master tenant when logged in as an user.
+     * You cannot remove permissions from a role of a sub-tenant at anytime.
      * 
      * @public
      * @param {Role|String} role The role object or the name of the role to remove.
@@ -2798,7 +2847,7 @@ function createSampleData(){
 
 /**
  * Record after-insert trigger.
- * Adds this role to all slaves
+ * Adds this role to all sub-tenants
  *
  * @param {JSRecord<db:/svy_security/roles>} record record that is inserted
  * @protected 
@@ -2810,20 +2859,20 @@ function afterRecordInsert_role(record) {
 	if (loggedTenant && loggedTenant.isMasterTenant()) {
 		logWarning("You are creating a role while you are logged in as an user of a master tenant");
 	}
-	if (loggedTenant && loggedTenant.isSlaveTenant()) {
-		logWarning("You are creating a role while you are logged in as an user of a slave tenant");
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are creating a role while you are logged in as an user of a sub-tenant");
 	}
 	
-	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
-		//propagate insert to all slaves
-		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
-			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate insert to all sub-tenants
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
 			
-			var recordRoleSlave;
+			var recordRoleSubTenant;
 			var roleFound = false;
-			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
-				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
-				if (recordRoleSlave.role_name === record.role_name) {
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
 					roleFound = true;
 					break;
 				}
@@ -2833,17 +2882,17 @@ function afterRecordInsert_role(record) {
 				continue;
 			}
 			
-			recordRoleSlave = recordSlave.tenants_to_roles.getRecord(recordSlave.tenants_to_roles.newRecord());
+			recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(recordSubTenant.tenants_to_roles.newRecord());
 			//copy fields to not miss values in case columns are added in the future
-			databaseManager.copyMatchingFields(record, recordRoleSlave, ['tenant_name']);
-			databaseManager.saveData(recordRoleSlave);
+			databaseManager.copyMatchingFields(record, recordRoleSubTenant, ['tenant_name']);
+			databaseManager.saveData(recordRoleSubTenant);
 		}
 	}
 }
 
 /**
  * Record after-update trigger.
- * Removes this role from all slaves.
+ * Removes this role from all sub-tenants.
  *
  * @param {JSRecord<db:/svy_security/roles>} record record that is updated
  * @protected 
@@ -2855,21 +2904,21 @@ function afterRecordUpdate_role(record) {
 	if (loggedTenant && loggedTenant.isMasterTenant()) {
 		logWarning("You are updating a role while you are logged in as an user of a master tenant");
 	}
-	if (loggedTenant && loggedTenant.isSlaveTenant()) {
-		logWarning("You are updating a role while you are logged in as an user of a slave tenant");
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are updating a role while you are logged in as an user of a sub-tenant");
 	}
 	
 	
-	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
-		//propagate update to all slaves
-		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
-			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate update to all sub-tenants
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
 			
-			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
-				var recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
-				if (recordRoleSlave.role_name === record.role_name) {
-					databaseManager.copyMatchingFields(record, recordRoleSlave, ['tenant_name']);					
-					databaseManager.saveData(recordRoleSlave);
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				var recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					databaseManager.copyMatchingFields(record, recordRoleSubTenant, ['tenant_name']);					
+					databaseManager.saveData(recordRoleSubTenant);
 					break;
 				}
 			}
@@ -2879,7 +2928,7 @@ function afterRecordUpdate_role(record) {
 
 /**
  * Record after-insert trigger.
- * Adds this permission to the role on all slaves.
+ * Adds this permission to the role on all sub-tenants.
  *
  * @param {JSRecord<db:/svy_security/roles_permissions>} record record that is inserted
  * @protected 
@@ -2891,28 +2940,28 @@ function afterRecordInsert_role_permission(record) {
 	if (loggedTenant && loggedTenant.isMasterTenant()) {
 		logWarning("You are granting a permission to a role while you are logged in as an user of a master tenant");
 	}
-	if (loggedTenant && loggedTenant.isSlaveTenant()) {
-		logWarning("You are granting a permission to a role while you are logged in as an user of a slave tenant");
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are granting a permission to a role while you are logged in as an user of a sub-tenant");
 	}
 	
-	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
-		//propagate insert to all slaves
-		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
-			var recordSlave = record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate insert to all sub-tenants
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
 			
-			var recordRolePermissionSlave,
-				recordRoleSlave,
+			var recordRolePermissionSubTenant,
+				recordRoleSubTenant,
 				roleFound = false,
 				permissionFound;
-			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
-				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
-				if (recordRoleSlave.role_name === record.role_name) {
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
 					roleFound = true;
 					permissionFound = false;
-					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
-						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
-						if (recordRolePermissionSlave.permission_name === record.permission_name) {
-							logDebug('Slave ' + recordSlave.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
+					for (var p = 1; p <= recordRoleSubTenant.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSubTenant.permission_name === record.permission_name) {
+							logDebug('Sub-tenant ' + recordSubTenant.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
 							permissionFound = true;
 							break;
 						}
@@ -2922,12 +2971,12 @@ function afterRecordInsert_role_permission(record) {
 			}
 			
 			if (roleFound && !permissionFound) {
-				recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(recordRoleSlave.roles_to_roles_permissions.newRecord());
+				recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(recordRoleSubTenant.roles_to_roles_permissions.newRecord());
 				//copy fields to not miss values in case columns are added in the future
-				databaseManager.copyMatchingFields(record, recordRolePermissionSlave, ['tenant_name']);
-				databaseManager.saveData(recordRolePermissionSlave);
+				databaseManager.copyMatchingFields(record, recordRolePermissionSubTenant, ['tenant_name']);
+				databaseManager.saveData(recordRolePermissionSubTenant);
 			} else if (!roleFound) {
-				logDebug('Slave ' + recordSlave.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
+				logDebug('Sub-tenant ' + recordSubTenant.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
 			}
 		}
 	}
@@ -2935,7 +2984,7 @@ function afterRecordInsert_role_permission(record) {
 
 /**
  * Record after-delete trigger.
- * Removes this role from all slaves
+ * Removes this role from all sub-tenants
  *
  * @param {JSRecord<db:/svy_security/roles>} record record that is deleted
  * @protected 
@@ -2947,19 +2996,19 @@ function afterRecordDelete_role(record) {
 	if (loggedTenant && loggedTenant.isMasterTenant()) {
 		logWarning("You are deleting a role while you are logged in as an user of a master tenant");
 	}
-	if (loggedTenant && loggedTenant.isSlaveTenant()) {
-		logWarning("You are deleting a role while you are logged in as an user of a slave tenant");
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are deleting a role while you are logged in as an user of a sub-tenant");
 	}
 	
-	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$slaves)) {
-		//propagate delete to all slaves
-		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
-			var recordSlave = record.roles_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate delete to all sub-tenants
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
 			
-			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
-				var recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
-				if (recordRoleSlave.role_name === record.role_name) {
-					recordSlave.tenants_to_roles.deleteRecord(r)
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				var recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					recordSubTenant.tenants_to_roles.deleteRecord(r)
 					break;
 				}
 			}
@@ -2969,7 +3018,7 @@ function afterRecordDelete_role(record) {
 
 /**
  * Record after-delete trigger.
- * Removes this permission from all slaves
+ * Removes this permission from all sub-tenants
  *
  * @param {JSRecord<db:/svy_security/roles_permissions>} record record that is deleted
  * @protected 
@@ -2981,24 +3030,24 @@ function afterRecordDelete_roles_permissions(record) {
 	if (loggedTenant && loggedTenant.isMasterTenant()) {
 		logWarning("You are removing permission from role while you are logged in as an user of a master tenant");
 	}
-	if (loggedTenant && loggedTenant.isSlaveTenant()) {
-		logWarning("You are removing permission from role while you are logged in as an user of a slave tenant");
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are removing permission from role while you are logged in as an user of a sub-tenant");
 	}
 	
-	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$slaves)) {
-		//propagate delete to all slaves
-		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getSize(); i++) {
-			var recordSlave = record.roles_permissions_to_tenants.tenants_to_tenants$slaves.getRecord(i);
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate delete to all sub-tenants
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
 			
-			var recordRolePermissionSlave,
-				recordRoleSlave;
-			for (var r = 1; r <= recordSlave.tenants_to_roles.getSize(); r++) {
-				recordRoleSlave = recordSlave.tenants_to_roles.getRecord(r);
-				if (recordRoleSlave.role_name === record.role_name) {
-					for (var p = 1; p <= recordRoleSlave.roles_to_roles_permissions.getSize(); p++) {
-						recordRolePermissionSlave = recordRoleSlave.roles_to_roles_permissions.getRecord(p);
-						if (recordRolePermissionSlave.permission_name === record.permission_name) {
-							recordRoleSlave.roles_to_roles_permissions.deleteRecord(p)
+			var recordRolePermissionSubTenant,
+				recordRoleSubTenant;
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					for (var p = 1; p <= recordRoleSubTenant.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSubTenant.permission_name === record.permission_name) {
+							recordRoleSubTenant.roles_to_roles_permissions.deleteRecord(p)
 							break;
 						}
 					}
@@ -3011,7 +3060,7 @@ function afterRecordDelete_roles_permissions(record) {
 /**
  * @protected 
  * Record after-delete trigger.
- * Clears the master_tenant_name from all slaves or replace it with the master of the tenant that is deleted.
+ * Clears the master_tenant_name from all sub-tenants or replace it with the master of the tenant that is deleted.
  *
  * @param {JSRecord<db:/svy_security/tenants>} record record that is deleted
  *
@@ -3025,17 +3074,17 @@ function afterRecordDelete_tenant(record) {
 	
 	// TODO should also check if i can delete any tenant while logged in !?
 	
-	if (utils.hasRecords(record.tenants_to_tenants$slaves)) {
-		//if the tenant to delete itself has a master, set that on all slaves
+	if (utils.hasRecords(record.tenants_to_tenants$subtenants)) {
+		//if the tenant to delete itself has a master, set that on all sub-tenants
 		var masterTenantName = null;
 		if (utils.hasRecords(record.tenants_to_tenants$master)) {
 			masterTenantName = record.tenants_to_tenants$master.tenant_name;
 		}
-		for (var s = 1; s <= record.tenants_to_tenants$slaves.getSize(); s++) {
-			var recordSlave = record.tenants_to_tenants$slaves.getRecord(s);
-			recordSlave.master_tenant_name = masterTenantName;
+		for (var s = 1; s <= record.tenants_to_tenants$subtenants.getSize(); s++) {
+			var recordSubTenant = record.tenants_to_tenants$subtenants.getRecord(s);
+			recordSubTenant.master_tenant_name = masterTenantName;
 		}
-		databaseManager.saveData(record.tenants_to_tenants$slaves);
+		databaseManager.saveData(record.tenants_to_tenants$subtenants);
 	}
 }
 
