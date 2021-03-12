@@ -348,7 +348,7 @@ function getTenants() {
  * If tenant name is not specified and no user is currently logged in then will return null.
  *
  * @public
- * @param {String|UUID} [nameOrUUID] The name or the UUID of the tenant to get. Or null to get the current tenant.
+ * @param {String|UUID} [nameOrId] The name or the UUID of the tenant to get. Or null to get the current tenant.
  * @return {Tenant} The tenant or null if not found / no user is logged in.
  *
  * @example
@@ -360,37 +360,39 @@ function getTenants() {
  * @properties={typeid:24,uuid:"35A8C27C-1B0E-478F-95E2-B068FBF57BB4"}
  * @AllowToRunInFind
  */
-function getTenant(nameOrUUID) {
+function getTenant(nameOrId) {
 
-    // no name, look for current user's tenant
-    if (!nameOrUUID) {
+	// no name, look for current user's tenant
+	if (!nameOrId) {
 
-        // No logged-in user/tenant
-        if (!utils.hasRecords(active_tenant)) {
-            return null;
-        }
+		// No logged-in user/tenant
+		if (!utils.hasRecords(active_tenant)) {
+			return null;
+		}
 
-        // get user's tenant
-        return new Tenant(active_tenant.getRecord(1));
-    }
+		// get user's tenant
+		return new Tenant(active_tenant.getRecord(1));
+	}
 
-    // lookup tenant by name
-    var fs = datasources.db.svy_security.tenants.getFoundSet();
-    var qry = datasources.db.svy_security.tenants.createSelect();
-    if(nameOrUUID instanceof UUID) {
-    	qry.where.add(qry.columns.tenant_uuid.eq(nameOrUUID));
-    } else {
-    	qry.where.add(qry.columns.tenant_name.eq(nameOrUUID));
-    }
-    fs.loadRecords(qry);
+	// lookup tenant by name
+	var fs = datasources.db.svy_security.tenants.getFoundSet();
+	var qry = datasources.db.svy_security.tenants.createSelect();
+	/** @type {String} */
+	var uuidString = nameOrId;
+	if (nameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
+		qry.where.add(qry.columns.tenant_uuid.eq(nameOrId));
+	} else {
+		qry.where.add(qry.columns.tenant_name.eq(nameOrId));
+	}
+	fs.loadRecords(qry);
 
-    // no match
-    if (fs.getSize() == 0) {
-        return null;
-    }
+	// no match
+	if (fs.getSize() == 0) {
+		return null;
+	}
 
-    // get matching tenant
-    return new Tenant(fs.getRecord(1));
+	// get matching tenant
+	return new Tenant(fs.getRecord(1));
 }
 
 /**
@@ -502,66 +504,68 @@ function getRole(roleName, tenantName) {
  * @note Will fail if tenant is not specified and user is not logged in and multiple users are found with the specified username but associated with different tenants.
  *
  * @public
- * @param {String|UUID} [userNameOrUUID] The (username or UUID) of the user to return. Can be null to get the current user.
- * @param {String|UUID} [tenantNameOrUUID] The (name or UUID) of the tenant associated with the user. Can be null if username is also null when getting the current user.
+ * @param {String|UUID} [userNameOrId] The (username or UUID) of the user to return. Can be null to get the current user.
+ * @param {String|UUID} [tenantNameOrId] The (name or UUID) of the tenant associated with the user. Can be null if username is also null when getting the current user.
  * @return {User} The specified user (or current user if parameters are not specified) or null if the specified user does not exist (or if parameters are not specified and a user is not logged in currently).
  * @properties={typeid:24,uuid:"FCF267E6-1580-402E-8252-ED18964474DA"}
  * @AllowToRunInFind
  */
-function getUser(userNameOrUUID, tenantNameOrUUID) {
+function getUser(userNameOrId, tenantNameOrId) {
+	// Looking for logged-in user
+	if (!userNameOrId) {
 
-    // Looking for logged-in user
-    if (!userNameOrUUID) {
+		// no logged-in user
+		if (!utils.hasRecords(active_user)) {
+			return null;
+		}
 
-        // no logged-in user
-        if (!utils.hasRecords(active_user)) {
-            return null;
-        }
+		// get logged-in user
+		return new User(active_user.getSelectedRecord());
+	}
 
-        // get logged-in user
-        return new User(active_user.getSelectedRecord());
-    }
+	// tenant not specified, use active tenant
+	if (!tenantNameOrId) {
+		if (utils.hasRecords(active_tenant)) {
+			tenantNameOrId = active_tenant.tenant_name;
+		} else {
 
-    // tenant not specified, use active tenant
-    if (!tenantNameOrUUID) {
-        if (utils.hasRecords(active_tenant)) {
-        	tenantNameOrUUID = active_tenant.tenant_name;
-        } else {
+		}
+	}
 
-        }
-    }
+	// get matching user
+	var fs = datasources.db.svy_security.users.getFoundSet();
+	var qry = datasources.db.svy_security.users.createSelect();
 
-    // get matching user
-    var fs = datasources.db.svy_security.users.getFoundSet();
-    var qry = datasources.db.svy_security.users.createSelect();
-    if(userNameOrUUID instanceof UUID) {
-    	qry.where.add(qry.columns.user_uuid.eq(userNameOrUUID));
-    } else {
-    	qry.where.add(qry.columns.user_name.eq(userNameOrUUID));
-    }
-    
-    if (tenantNameOrUUID) {
-    	if(tenantNameOrUUID instanceof UUID) {
-    		qry.where.add(qry.joins.users_to_tenants.columns.tenant_uuid.eq(tenantNameOrUUID));
-    	} else {
-    		qry.where.add(qry.columns.tenant_name.eq(tenantNameOrUUID));
-    	}
-    	
-    }
-    fs.loadRecords(qry);
+	/** @type {String} */
+	var uuidString = userNameOrId;
+	if (userNameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
+		qry.where.add(qry.columns.user_uuid.eq(userNameOrId));
+	} else {
+		qry.where.add(qry.columns.user_name.eq(userNameOrId));
+	}
 
-    // no tenant and non-unique results
-    if (fs.getSize() > 1) {
-        throw 'Calling getUser w/ no tenant supplied and no active tenant. Results are not unique.';
-    }
+	uuidString = tenantNameOrId;
+	if (tenantNameOrId) {
+		if (tenantNameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
+			qry.where.add(qry.joins.users_to_tenants.columns.tenant_uuid.eq(tenantNameOrId));
+		} else {
+			qry.where.add(qry.columns.tenant_name.eq(tenantNameOrId));
+		}
+	}
+	fs.loadRecords(qry);
 
-    // No Match
-    if (fs.getSize() == 0) {
-        return null;
-    }
+	// no tenant and non-unique results
+	if (fs.getSize() > 1) {
+		throw 'Calling getUser w/ no tenant supplied and no active tenant. Results are not unique.';
+	}
 
-    // cerate user object
-    return new User(fs.getRecord(1));
+	// No Match
+	if (fs.getSize() == 0) {
+		return null;
+	}
+
+	// cerate user object
+	return new User(fs.getRecord(1));
 }
 
 /**
@@ -1296,7 +1300,7 @@ function Tenant(record) {
      * @public
      * @return {UUID} Tenant UUID.
      */
-    this.getTenantUUID = function() {
+    this.getTenantId = function() {
     	return record.tenant_uuid
     }
 }
@@ -1735,7 +1739,7 @@ function User(record) {
      * @public
      * @return {UUID} User UUID.
      */
-    this.getUserUUID = function() {
+    this.getUserId = function() {
     	return record.user_uuid;
     }
 }
