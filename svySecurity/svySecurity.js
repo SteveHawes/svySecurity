@@ -1295,12 +1295,12 @@ function Tenant(record) {
     }
     
     /**
-     * Gets the tenant unique UUID, what can be used to store in tables
+     * Returns the ID of this tenant that can used to reference this tenant
      *
      * @public
      * @return {UUID} Tenant UUID.
      */
-    this.getTenantId = function() {
+    this.getId = function() {
     	return record.tenant_uuid
     }
 }
@@ -1734,12 +1734,12 @@ function User(record) {
     }
     
     /**
-     * Gets the user unique UUID, what can be used to store as creator/modifier in tables
+     * Gets the ID of this user which can be used to store references to this user for example as creator/modifier in tables
      *
      * @public
      * @return {UUID} User UUID.
      */
-    this.getUserId = function() {
+    this.getId = function() {
     	return record.user_uuid;
     }
 }
