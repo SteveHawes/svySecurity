@@ -128,6 +128,13 @@ var USER_PROPERTIES = {
 }
 
 /**
+ * @private 
+ * @type {{namespace:String, expiresIn:Number, grants:Array<String>}}
+ * @properties={typeid:35,uuid:"D7431777-4DDE-43DC-B9E1-EA8E84213D92",variableType:-4}
+ */
+var tokenBasedAuth = null;
+
+/**
  * Logs in the specified user and initializes a new {@link Session} for it.
  * The login request will not be successful if the user account or the parent [tenant]{@link User#getTenant} account [is locked]{@link User#isLocked} and the lock has not [expired]{@link User#getLockExpiration} yet.
  * The login request will not be successful also if no [permissions]{@link User#getPermissions} have been granted to the specified user.
@@ -200,7 +207,10 @@ function login(user, userUid, permissionsToApply) {
         logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
         return false;
     }
-
+    
+    // set token
+    setToken(user);
+    
     // create session
     initSession(user);
 
@@ -219,6 +229,7 @@ function login(user, userUid, permissionsToApply) {
  * @properties={typeid:24,uuid:"341F328D-C8A6-4568-BF0C-F807A19B8977"}
  */
 function logout() {
+	clearToken();
     closeSession();
     removeSecurityTablesFilter();
     security.logout();
@@ -337,7 +348,7 @@ function getTenants() {
  * If tenant name is not specified and no user is currently logged in then will return null.
  *
  * @public
- * @param {String} [name] The name of the tenant to get. Or null to get the current tenant.
+ * @param {String|UUID} [nameOrUUID] The name or the UUID of the tenant to get. Or null to get the current tenant.
  * @return {Tenant} The tenant or null if not found / no user is logged in.
  *
  * @example
@@ -349,10 +360,10 @@ function getTenants() {
  * @properties={typeid:24,uuid:"35A8C27C-1B0E-478F-95E2-B068FBF57BB4"}
  * @AllowToRunInFind
  */
-function getTenant(name) {
+function getTenant(nameOrUUID) {
 
     // no name, look for current user's tenant
-    if (!name) {
+    if (!nameOrUUID) {
 
         // No logged-in user/tenant
         if (!utils.hasRecords(active_tenant)) {
@@ -366,7 +377,11 @@ function getTenant(name) {
     // lookup tenant by name
     var fs = datasources.db.svy_security.tenants.getFoundSet();
     var qry = datasources.db.svy_security.tenants.createSelect();
-    qry.where.add(qry.columns.tenant_name.eq(name));
+    if(nameOrUUID instanceof UUID) {
+    	qry.where.add(qry.columns.tenant_uuid.eq(nameOrUUID));
+    } else {
+    	qry.where.add(qry.columns.tenant_name.eq(nameOrUUID));
+    }
     fs.loadRecords(qry);
 
     // no match
@@ -487,16 +502,16 @@ function getRole(roleName, tenantName) {
  * @note Will fail if tenant is not specified and user is not logged in and multiple users are found with the specified username but associated with different tenants.
  *
  * @public
- * @param {String} [userName] The username of the user to return. Can be null to get the current user.
- * @param {String} [tenantName] The name of the tenant associated with the user. Can be null if username is also null when getting the current user.
+ * @param {String|UUID} [userNameOrUUID] The (username or UUID) of the user to return. Can be null to get the current user.
+ * @param {String|UUID} [tenantNameOrUUID] The (name or UUID) of the tenant associated with the user. Can be null if username is also null when getting the current user.
  * @return {User} The specified user (or current user if parameters are not specified) or null if the specified user does not exist (or if parameters are not specified and a user is not logged in currently).
  * @properties={typeid:24,uuid:"FCF267E6-1580-402E-8252-ED18964474DA"}
  * @AllowToRunInFind
  */
-function getUser(userName, tenantName) {
+function getUser(userNameOrUUID, tenantNameOrUUID) {
 
     // Looking for logged-in user
-    if (!userName) {
+    if (!userNameOrUUID) {
 
         // no logged-in user
         if (!utils.hasRecords(active_user)) {
@@ -508,9 +523,9 @@ function getUser(userName, tenantName) {
     }
 
     // tenant not specified, use active tenant
-    if (!tenantName) {
+    if (!tenantNameOrUUID) {
         if (utils.hasRecords(active_tenant)) {
-            tenantName = active_tenant.tenant_name;
+        	tenantNameOrUUID = active_tenant.tenant_name;
         } else {
 
         }
@@ -519,9 +534,19 @@ function getUser(userName, tenantName) {
     // get matching user
     var fs = datasources.db.svy_security.users.getFoundSet();
     var qry = datasources.db.svy_security.users.createSelect();
-    qry.where.add(qry.columns.user_name.eq(userName));
-    if (tenantName) {
-        qry.where.add(qry.columns.tenant_name.eq(tenantName));
+    if(userNameOrUUID instanceof UUID) {
+    	qry.where.add(qry.columns.user_uuid.eq(userNameOrUUID));
+    } else {
+    	qry.where.add(qry.columns.user_name.eq(userNameOrUUID));
+    }
+    
+    if (tenantNameOrUUID) {
+    	if(tenantNameOrUUID instanceof UUID) {
+    		qry.where.add(qry.joins.users_to_tenants.columns.tenant_uuid.eq(tenantNameOrUUID));
+    	} else {
+    		qry.where.add(qry.columns.tenant_name.eq(tenantNameOrUUID));
+    	}
+    	
     }
     fs.loadRecords(qry);
 
@@ -1264,6 +1289,16 @@ function Tenant(record) {
     this.createSlave = function(name) {
     	return this.createSubTenant(name);
     }
+    
+    /**
+     * Gets the tenant unique UUID, what can be used to store in tables
+     *
+     * @public
+     * @return {UUID} Tenant UUID.
+     */
+    this.getTenantUUID = function() {
+    	return record.tenant_uuid
+    }
 }
 
 /**
@@ -1692,6 +1727,16 @@ function User(record) {
         record.access_token_expiration = expiration;
         saveRecord(record);
         return record.access_token;
+    }
+    
+    /**
+     * Gets the user unique UUID, what can be used to store as creator/modifier in tables
+     *
+     * @public
+     * @return {UUID} User UUID.
+     */
+    this.getUserUUID = function() {
+    	return record.user_uuid;
     }
 }
 
@@ -3096,6 +3141,126 @@ function afterRecordDelete_tenant(record) {
 function getAutoSyncPermissionsEnabled() {
 	var result = application.getUserProperty(USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED);
 	return result != "false" ? true : false;
+}
+
+/**
+ * TODO Consider using options object after namespace
+ * @public 
+ * @param {String} namespace
+ * @param {Number} [expiresIn]
+ * @param {Array<String>} [resources]
+ *
+ * @properties={typeid:24,uuid:"78FDBC6C-9E49-4A6F-B9EE-57326E2F273E"}
+ */
+function setTokenBasedAuth(namespace, expiresIn, resources){
+	
+	// clears token based auth
+	tokenBasedAuth = null;
+	if(!namespace){
+		return;
+	}
+	
+	if(!expiresIn || expiresIn < 0){
+		expiresIn = 0;
+	}
+	tokenBasedAuth = {
+		namespace : namespace,
+		expiresIn : expiresIn,
+		resources : resources
+	};
+}
+
+/**
+ * TODO Do we really need this. leave private until decided
+ * @private  
+ * @return {{namespace:String, expiresIn:Number, grants:Array<String>}}
+ * @properties={typeid:24,uuid:"57585F90-AE5E-458E-A5C3-AA85F9C66997"}
+ */
+function getTokenBasedAuth(){
+	return tokenBasedAuth;
+}
+
+/**
+ * Called after login
+ * @private   
+ * @param {scopes.svySecurity.User} user
+ * 
+ * @properties={typeid:24,uuid:"E2D3BD33-9A85-4407-8B0E-008F1B71F1CE"}
+ */
+function setToken(user){
+	if(!tokenBasedAuth){
+		return;
+	}
+	var expiration = null;
+	if(tokenBasedAuth.expiresIn){
+		expiration = new Date();
+		scopes.svyDateUtils.addHours(expiration,tokenBasedAuth.expiresIn);
+	}
+
+	var payload = {
+		namespace : tokenBasedAuth.namespace,
+		user : user.getUserName(),
+		tenant : user.getTenant().getName(),
+		resources : tokenBasedAuth.resources
+	}
+//	// Check token, add resources ?
+//	var oldToken = application.getUserProperty(tokenBasedAuth.namespace);
+//	if(oldToken){
+//		
+//	}
+	var token = plugins.jwt.create(payload,expiration);
+	if(!token){
+		return;
+	}
+	application.setUserProperty(tokenBasedAuth.namespace,token);
+}
+
+/**
+ * Call to bypass login with stored token
+ * 
+ * @public 
+ * @return {Boolean} True if stored token was found and user could be logged-in
+ * @properties={typeid:24,uuid:"566D772A-3F0C-44F3-84E9-8E4FB3801B8D"}
+ */
+function checkToken(){
+	if(!tokenBasedAuth){
+		return false;
+	}
+	var token = application.getUserProperty(tokenBasedAuth.namespace);
+	if(!token){
+		return false;
+	}
+	var payload = plugins.jwt.verify(token);
+	if(!payload){
+		return false;
+	}
+
+//	TODO encode user uuid instead of tenant name + user name	
+//	var userID = application.getUUID(payload.userUUID);
+//	var user = scopes.svySecurity.getUser(userID);
+
+	var user = scopes.svySecurity.getUser(payload.tenant,payload.user);
+	if(!user){
+		return false;
+	}
+	var resources = payload.resources;
+	if(resources){
+		if(resources.indexOf(application.getSolutionName()) == -1){
+			return false;
+		}
+	}
+	return login(user);
+}
+
+/**
+ * Called during logout
+ * @private  
+ * @properties={typeid:24,uuid:"B9A6555D-6AAA-48F2-87E6-804988D69649"}
+ */
+function clearToken(){
+	if(tokenBasedAuth){
+		application.setUserProperty(tokenBasedAuth.namespace,null);
+	}
 }
 
 /**
