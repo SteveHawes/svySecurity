@@ -3148,11 +3148,14 @@ function getAutoSyncPermissionsEnabled() {
 }
 
 /**
- * TODO Consider using options object after namespace
+ * Initializes token-based authentication mode for a given namespace. 
+ * Call this method once on startup in the login-solution or on-load or first-show of the login-form to enable this mode. 
+ * Once initialized, a token will be automatically issued and stored after successful user logins. Use options for expiration and protected resources
+ * 
  * @public 
- * @param {String} namespace
- * @param {Number} [expiresIn]
- * @param {Array<String>} [resources]
+ * @param {String} namespace The namespace for which to issue tokens. A single namespace is required and can be used to issue tokens for a suite of applications.
+ * @param {Number} [expiresIn] The number of HOURS for which the token is valid once it has been issued. Optional. Default is no expiration.
+ * @param {Array<String>} [resources] A list of solution names to which a generated token will grant access. Optional. Default is unrestricted / any solution.
  *
  * @properties={typeid:24,uuid:"78FDBC6C-9E49-4A6F-B9EE-57326E2F273E"}
  */
@@ -3172,16 +3175,6 @@ function setTokenBasedAuth(namespace, expiresIn, resources){
 		expiresIn : expiresIn,
 		resources : resources
 	};
-}
-
-/**
- * TODO Do we really need this. leave private until decided
- * @private  
- * @return {{namespace:String, expiresIn:Number, grants:Array<String>}}
- * @properties={typeid:24,uuid:"57585F90-AE5E-458E-A5C3-AA85F9C66997"}
- */
-function getTokenBasedAuth(){
-	return tokenBasedAuth;
 }
 
 /**
@@ -3220,17 +3213,18 @@ function setToken(user){
 }
 
 /**
- * Call to bypass login with stored token
+ * Call to bypass traditional login using a stored token.
+ * This method will check the client for a secure login token stored under the specified namespace.
+ * If a valid token is found, then it will attempt to login the encoded user.
+ * This method can be called immediately from the login solution or form.
  * 
  * @public 
+ * @param {String} namespace The namespace under which to search for a login token
  * @return {Boolean} True if stored token was found and user could be logged-in
  * @properties={typeid:24,uuid:"566D772A-3F0C-44F3-84E9-8E4FB3801B8D"}
  */
-function checkToken(){
-	if(!tokenBasedAuth){
-		return false;
-	}
-	var token = application.getUserProperty(tokenBasedAuth.namespace);
+function loginWithToken(namespace){
+	var token = application.getUserProperty(namespace);
 	if(!token){
 		return false;
 	}
@@ -3253,7 +3247,11 @@ function checkToken(){
 			return false;
 		}
 	}
-	return login(user);
+	if(!login(user)){
+		return false;
+	}
+	setTokenBasedAuth(namespace);
+	return true;
 }
 
 /**
