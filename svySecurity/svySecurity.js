@@ -3164,6 +3164,7 @@ function setTokenBasedAuth(namespace, expiresIn, resources){
 	// clears token based auth
 	tokenBasedAuth = null;
 	if(!namespace){
+		logDebug('Token-based auth mode disabled');
 		return;
 	}
 	
@@ -3175,6 +3176,7 @@ function setTokenBasedAuth(namespace, expiresIn, resources){
 		expiresIn : expiresIn,
 		resources : resources
 	};
+	logDebug('Token-based auth mode enabled: ' + JSON.stringify(tokenBasedAuth));
 }
 
 /**
@@ -3207,8 +3209,10 @@ function setToken(user){
 //	}
 	var token = plugins.jwt.create(payload,expiration);
 	if(!token){
+		logWarning('A token could not be generated. Check JWT plugin configuration / server secret.');
 		return;
 	}
+	logDebug('A secure login token was issued ' + JSON.stringify(payload));
 	application.setUserProperty(tokenBasedAuth.namespace,token);
 }
 
@@ -3224,12 +3228,17 @@ function setToken(user){
  * @properties={typeid:24,uuid:"566D772A-3F0C-44F3-84E9-8E4FB3801B8D"}
  */
 function loginWithToken(namespace){
+	if(!namespace){
+		throw 'namespace is required';
+	}
 	var token = application.getUserProperty(namespace);
 	if(!token){
+		logDebug('No token found for namespace="'+namespace+'"');
 		return false;
 	}
 	var payload = plugins.jwt.verify(token);
 	if(!payload){
+		logDebug('Invalid token found for namespace="'+namespace+'". Token is expired or server secret has changed.');
 		return false;
 	}
 
@@ -3239,18 +3248,23 @@ function loginWithToken(namespace){
 
 	var user = scopes.svySecurity.getUser(payload.tenant,payload.user);
 	if(!user){
+		logDebug('A valid token was found, but could not find user for login token. Tenant="'+payload.tenant+'", user="'+payload.user+'"');
 		return false;
 	}
 	var resources = payload.resources;
-	if(resources){
-		if(resources.indexOf(application.getSolutionName()) == -1){
+	if(resources && resources.length){
+		var solutionName = application.getSolutionName();
+		if(resources.indexOf(solutionName) == -1){
+			logDebug('The current solution "'+solutionName+'" is not in the token\'s list of protected resources ['+payload.resources.join(',')+']');
 			return false;
 		}
 	}
 	if(!login(user)){
+		logDebug('A valid token was found for the user, but The user could not be logged in. Tenant="'+payload.tenant+'", user="'+payload.user+'"');
 		return false;
 	}
 	setTokenBasedAuth(namespace);
+	logDebug('Successful token-based login for Tenant="'+payload.tenant+'", user="'+payload.user+'"');
 	return true;
 }
 
@@ -3262,6 +3276,7 @@ function loginWithToken(namespace){
 function clearToken(){
 	if(tokenBasedAuth){
 		application.setUserProperty(tokenBasedAuth.namespace,null);
+		logDebug('Login token cleared for namespace=' + tokenBasedAuth.namespace);
 	}
 }
 
