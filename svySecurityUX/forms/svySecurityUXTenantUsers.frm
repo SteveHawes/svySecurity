@@ -103,7 +103,7 @@ right:"30",
 top:"-1",
 width:"25"
 },
-imageStyleClass:"fa fa-long-arrow-right text-tertiary fa-lg clickable",
+imageStyleClass:"fas fa-long-arrow-alt-right text-tertiary fa-lg clickable",
 onActionMethodID:"741696D2-C10F-43F0-AF6E-ABB9C89AD253",
 size:{
 height:25,
