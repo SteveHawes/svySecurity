@@ -3171,6 +3171,9 @@ function setTokenBasedAuth(namespace, expiresIn, resources){
 	if(!expiresIn || expiresIn < 0){
 		expiresIn = 0;
 	}
+	if(resources && resources.length){
+		resources = resources.join(',');
+	}
 	tokenBasedAuth = {
 		namespace : namespace,
 		expiresIn : expiresIn,
@@ -3193,20 +3196,16 @@ function setToken(user){
 	var expiration = null;
 	if(tokenBasedAuth.expiresIn){
 		expiration = new Date();
-		scopes.svyDateUtils.addHours(expiration,tokenBasedAuth.expiresIn);
+		expiration = scopes.svyDateUtils.addMilliseconds(expiration,tokenBasedAuth.expiresIn * 3.6e+6);
 	}
 
 	var payload = {
 		namespace : tokenBasedAuth.namespace,
 		user : user.getUserName(),
 		tenant : user.getTenant().getName(),
-		resources : tokenBasedAuth.resources
+		resources : tokenBasedAuth.resources,
+		expiration : expiration
 	}
-//	// Check token, add resources ?
-//	var oldToken = application.getUserProperty(tokenBasedAuth.namespace);
-//	if(oldToken){
-//		
-//	}
 	var token = plugins.jwt.create(payload,expiration);
 	if(!token){
 		logWarning('A token could not be generated. Check JWT plugin configuration / server secret.');
@@ -3238,33 +3237,30 @@ function loginWithToken(namespace){
 	}
 	var payload = plugins.jwt.verify(token);
 	if(!payload){
-		logDebug('Invalid token found for namespace="'+namespace+'". Token is expired or server secret has changed.');
+		logDebug('Invalid token found for namespace="'+namespace+'". Token is expired or server secret has changed.' + JSON.stringify(payload));
 		return false;
 	}
 
-//	TODO encode user uuid instead of tenant name + user name	
-//	var userID = application.getUUID(payload.userUUID);
-//	var user = scopes.svySecurity.getUser(userID);
-
 	var user = scopes.svySecurity.getUser(payload.tenant,payload.user);
 	if(!user){
-		logDebug('A valid token was found, but could not find user for login token. Tenant="'+payload.tenant+'", user="'+payload.user+'"');
+		logDebug('A valid token was found, but could not find user for login token.' + JSON.stringify(payload));
 		return false;
 	}
 	var resources = payload.resources;
 	if(resources && resources.length){
+		resources = resources.split(',');
 		var solutionName = application.getSolutionName();
 		if(resources.indexOf(solutionName) == -1){
-			logDebug('The current solution "'+solutionName+'" is not in the token\'s list of protected resources ['+payload.resources.join(',')+']');
+			logDebug('The current solution "'+solutionName+'" is not in the token\'s list of protected resources' + JSON.stringify(payload));
 			return false;
 		}
 	}
 	if(!login(user)){
-		logDebug('A valid token was found for the user, but The user could not be logged in. Tenant="'+payload.tenant+'", user="'+payload.user+'"');
+		logDebug('A valid token was found for the user, but The user could not be logged in.' + JSON.stringify(payload));
 		return false;
 	}
 	setTokenBasedAuth(namespace);
-	logDebug('Successful token-based login for Tenant="'+payload.tenant+'", user="'+payload.user+'"');
+	logDebug('Successful token-based login: ' + JSON.stringify(payload));
 	return true;
 }
 
