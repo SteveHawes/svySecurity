@@ -255,7 +255,7 @@ showClick:false,
 showFocus:false,
 size:"30,30",
 styleClass:"font-icon large transition-medium",
-text:"<span class=\"fa fa-pencil\"/>",
+text:"<span class=\"fas fa-pencil-alt\"/>",
 transparent:true,
 typeid:7,
 uuid:"C6719CCD-128E-4A81-B41E-586D0E553508"

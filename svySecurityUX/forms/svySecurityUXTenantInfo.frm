@@ -375,7 +375,7 @@ width:"0"
 },
 onActionMethodID:"C5E5D835-BB76-4DB3-8175-36CF2472012E",
 styleClass:"h4 text-tertiary clickable",
-text:"%%display_name%% <i class=\"padding-left-10 fa fa-pencil fa-sm\"><\/i>",
+text:"%%display_name%% <i class=\"padding-left-10 fas fa-pencil-alt fa-sm\"><\/i>",
 toolTipText:"Display Name"
 },
 name:"labelDisplayName",

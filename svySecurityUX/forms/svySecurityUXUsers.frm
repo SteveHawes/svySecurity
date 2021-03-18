@@ -159,7 +159,7 @@ enableToolPanel:false,
 id:"edit",
 maxWidth:50,
 minWidth:50,
-styleClass:"fa fa-pencil clickable",
+styleClass:"fas fa-pencil-alt clickable",
 svyUUID:"0A08D564-E8A0-41C7-81C5-1AB7953B67F7",
 width:50
 }

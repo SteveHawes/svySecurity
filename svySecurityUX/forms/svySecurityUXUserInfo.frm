@@ -271,7 +271,7 @@ width:"0"
 },
 onActionMethodID:"6CA95A26-489A-4BBF-934B-F22865E0E37C",
 styleClass:"h4 text-tertiary clickable",
-text:"%%display_name%% <i class=\"padding-left-10 fa fa-pencil fa-sm\"><\/i>",
+text:"%%display_name%% <i class=\"padding-left-10 fas fa-pencil-alt fa-sm\"><\/i>",
 toolTipText:"Display Name"
 },
 name:"labelDisplayName",
@@ -437,7 +437,7 @@ width:"0"
 },
 onActionMethodID:"8D2D634B-CDEF-4A77-8EBE-B614DF9ECF61",
 styleClass:"h4 text-tertiary clickable",
-text:"%%email%% <i class=\"padding-left-10 fa fa-pencil fa-sm\"><\/i>",
+text:"%%email%% <i class=\"padding-left-10 fas fa-pencil-alt fa-sm\"><\/i>",
 toolTipText:"Email"
 },
 name:"labelEmail",
