@@ -159,7 +159,7 @@ showClick:false,
 showFocus:false,
 size:"40,40",
 styleClass:"font-icon large transition-medium",
-text:"<span class=\"fa fa-shield\"/>",
+text:"<span class=\"fas fa-shield-alt\"/>",
 transparent:true,
 typeid:7,
 uuid:"B27BFBAB-AC9D-45DE-A917-FE8A6A35DCB7"

@@ -80,7 +80,7 @@ function show(tenantName) {
  */
 function onShow(firstShow, event) {
     if (tenant_name) {
-        setHeaderText(utils.stringFormat('<span class="fa fa-shield"></span> Tenant [%1$s]', [tenant_name]));
+        setHeaderText(utils.stringFormat('<span class="fas fa-shield-alt"></span> Tenant [%1$s]', [tenant_name]));
     } else {
         setHeaderText('No Tenant To Display');
     }

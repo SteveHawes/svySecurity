@@ -235,7 +235,7 @@ right:"15",
 top:"-1",
 width:"25"
 },
-imageStyleClass:"fa fa-remove text-tertiary fa-lg clickable",
+imageStyleClass:"fas fa-times text-tertiary fa-lg clickable",
 onActionMethodID:"9E543316-8C5D-470B-B340-1C748A1B622B",
 size:{
 height:25,

@@ -88,7 +88,7 @@ right:"15",
 top:"-1",
 width:"25"
 },
-imageStyleClass:"fa fa-remove text-tertiary fa-lg clickable",
+imageStyleClass:"fas fa-times text-tertiary fa-lg clickable",
 onActionMethodID:"AE04F250-83D1-49C2-8A3D-B21979AC4AEE",
 size:{
 height:25,

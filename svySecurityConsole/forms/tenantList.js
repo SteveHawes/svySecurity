@@ -36,7 +36,7 @@ function showDetail(){
  */
 function onShow(firstShow, event) {
     _super.onShow(firstShow,event);
-    setHeaderText('<span class="fa fa-shield"></span> Tenants');
+    setHeaderText('<span class="fas fa-shield-alt"></span> Tenants');
 }
 /**
  * Perform the element default action.
