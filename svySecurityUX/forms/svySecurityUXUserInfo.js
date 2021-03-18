@@ -146,6 +146,14 @@ function updateUI() {
 			elements.labelStatus.removeStyleClass('border-warning');
 			elements.labelStatus.addStyleClass('text-success border-success');
 		}
+		
+        // cannot lock the logged user
+		var loggedUser = scopes.svySecurity.getUser();
+        if (loggedUser && loggedUser.getUserName() == foundset.user_name && loggedUser.getTenant().getName() == foundset.tenant_name) {
+        	elements.faUnlocked.enabled = false;
+        } else {
+        	elements.faUnlocked.enabled = true;
+        }
 
 	    if (user) {
 	        m_TotalSessionsCount = user.getSessionCount();

@@ -1084,8 +1084,14 @@ function Tenant(record) {
      * @param {String} [reason] The reason for the lock.
      * @param {Number} [duration] The duration of the lock (in milliseconds). If no duration specified, the lock will remain until {Tenant#unlock} is called.
      * @return {Tenant} This tenant for call-chaining support.
+     * 
+     * @throws {String} Throws an exception if lock is called for the logged Tenant
      */
     this.lock = function(reason, duration) {
+    	if (getTenant() && this.getName() === getTenant().getName()) {
+    		throw "Cannot lock the logged Tenant";
+    	}
+    	
         record.lock_flag = 1;
         record.lock_reason = reason;
         if (duration) {
@@ -1645,8 +1651,16 @@ function User(record) {
      * @param {String} [reason] The reason for the lock.
      * @param {Number} [duration] The duration of the lock (in milliseconds). If no duration specified, the lock will remain until {User#unlock} is called.
      * @return {User} This user for call-chaining support.
+     * 
+     * @throws {String} Throws an exception if lock is called for the logged User
+     * 
      */
     this.lock = function(reason, duration) {
+    	var loggedUser = getUser()
+    	if (loggedUser && this.getUserName() === loggedUser.getUserName() && this.getTenant().getName() === loggedUser.getTenant().getName()) {
+    		throw "Cannot lock the logged User";
+    	}
+    	
         record.lock_flag = 1;
         record.lock_reason = reason;
         if (duration) {

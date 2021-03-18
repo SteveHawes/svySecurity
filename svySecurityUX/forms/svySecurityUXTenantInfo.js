@@ -187,6 +187,14 @@ function updateUI() {
             m_LockReasonText = null;
         }
 
+        // cannot lock the logged tenant
+        var loggedTenant = scopes.svySecurity.getTenant();
+        if (loggedTenant && loggedTenant.getName() == foundset.tenant_name) {
+        	elements.faUnlocked.enabled = false;
+        } else {
+        	elements.faUnlocked.enabled = true;
+        }
+        
 		scopes.svySecurityUXCharts.createChartTotalTenantUsageOverTimeMonths(foundset.tenant_name, elements.chart);
 	} else {
 		m_TenantUserCount = 0;
