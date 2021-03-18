@@ -419,6 +419,7 @@ right:"-1",
 top:"-1",
 width:"50"
 },
+imageStyleClass:"fa fa-lock-open fa-3x text-success",
 onActionMethodID:"4286147E-324E-48B2-80A9-1F5344A0A1CF",
 size:{
 height:25,
