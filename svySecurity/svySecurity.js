@@ -223,16 +223,23 @@ function login(user, userUid, permissionsToApply) {
 /**
  * Logs the current user out of the application and closes the associated {@link Session}.
  * This method internally calls security.logout() to end the Servoy client session.
- *
+ * @param {String} [solutionToLoad] the solution to load after logout
+ * @param {String} [method] the method to run in the solution to load
+ * @param {Object} [argument] the argument to pass to the method to run
  * @public
  *
  * @properties={typeid:24,uuid:"341F328D-C8A6-4568-BF0C-F807A19B8977"}
  */
-function logout() {
+function logout(solutionToLoad, method, argument) {
 	clearToken();
     closeSession();
     removeSecurityTablesFilter();
-    security.logout();
+    if (arguments.length) {
+        security.logout(solutionToLoad, method, argument);
+    } else {
+    	security.logout();
+    }
+ 
 }
 
 /**
