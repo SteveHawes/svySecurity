@@ -223,16 +223,23 @@ function login(user, userUid, permissionsToApply) {
 /**
  * Logs the current user out of the application and closes the associated {@link Session}.
  * This method internally calls security.logout() to end the Servoy client session.
- *
+ * @param {String} [solutionToLoad] the solution to load after logout
+ * @param {String} [method] the method to run in the solution to load
+ * @param {Object} [argument] the argument to pass to the method to run
  * @public
  *
  * @properties={typeid:24,uuid:"341F328D-C8A6-4568-BF0C-F807A19B8977"}
  */
-function logout() {
+function logout(solutionToLoad, method, argument) {
 	clearToken();
     closeSession();
     removeSecurityTablesFilter();
-    security.logout();
+    if (arguments.length) {
+        security.logout(solutionToLoad, method, argument);
+    } else {
+    	security.logout();
+    }
+ 
 }
 
 /**
@@ -3167,10 +3174,14 @@ function getAutoSyncPermissionsEnabled() {
  * Once initialized, a token will be automatically issued and stored after successful user logins. Use options for expiration and protected resources
  * 
  * @public 
+ * @since v1.5.0
  * @param {String} namespace The namespace for which to issue tokens. A single namespace is required and can be used to issue tokens for a suite of applications.
  * @param {Number} [expiresIn] The number of HOURS for which the token is valid once it has been issued. Optional. Default is no expiration.
  * @param {Array<String>} [resources] A list of solution names to which a generated token will grant access. Optional. Default is unrestricted / any solution.
- *
+ * @example 
+ * // enable token-based auth on load of login form for 24 hours, sso for three solutions
+ * scopes.svySecurity.setTokenBasedAuth('com.my-company.auth', 24, ['crm','timsheet','portal']
+ * 
  * @properties={typeid:24,uuid:"78FDBC6C-9E49-4A6F-B9EE-57326E2F273E"}
  */
 function setTokenBasedAuth(namespace, expiresIn, resources){
@@ -3236,8 +3247,15 @@ function setToken(user){
  * This method can be called immediately from the login solution or form.
  * 
  * @public 
+ * @since v1.5.0
+ * @see setTokenBasedAuth
  * @param {String} namespace The namespace under which to search for a login token
  * @return {Boolean} True if stored token was found and user could be logged-in
+ * 
+ * @example 
+ * // Called on login solution start up
+ * var autoLoggedIn = scopes.svySecurity.loginWithToken('com.my-company.auth');
+ *  
  * @properties={typeid:24,uuid:"566D772A-3F0C-44F3-84E9-8E4FB3801B8D"}
  */
 function loginWithToken(namespace){
