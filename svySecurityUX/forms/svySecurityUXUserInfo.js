@@ -174,7 +174,6 @@ function updateUI() {
 	            m_LockReasonText = null;
 	        }
 	        
-	        scopes.svySecurityUXCharts.createChartUserUsageOverTimeMonths(tenant_name,user_name,elements.chart);
 	    } else {
 	        m_TotalSessionsCount = 0;
 	        m_TotalSessionsHours = 0;

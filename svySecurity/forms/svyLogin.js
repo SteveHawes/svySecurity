@@ -159,6 +159,7 @@ function onLoginSuccess(){
  */
 function onLoginError(error){
 	// for child form implementation
+	scopes.svySecurity.logFailedLogin(userName, tenantName, error);
 	application.output(error)
 }
 

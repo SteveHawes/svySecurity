@@ -1,0 +1,12 @@
+allowCreationRelatedRecords:true,
+foreignDataSource:"db:/svy_security/login_failures",
+initialSort:"failure_date desc",
+items:[
+{foreignColumnName:"tenant_name",primaryDataProviderID:"tenant_name",typeid:23,uuid:"B762EA8D-2BF8-4C72-87E3-5555B8121FE0"},
+{foreignColumnName:"user_name",primaryDataProviderID:"user_name",typeid:23,uuid:"BC79FC42-14E1-4F26-BC14-6FA6F60FCD87"}
+],
+joinType:1,
+name:"users_to_login_failures",
+primaryDataSource:"db:/svy_security/users",
+typeid:22,
+uuid:"15BECFFD-B0A6-4B78-888C-73E0455D573F"
