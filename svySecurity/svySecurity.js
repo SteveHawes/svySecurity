@@ -203,8 +203,25 @@ function login(user, userUid, permissionsToApply) {
     }
 
     // login
+	var tenants = [];
+	if (user.hasPermission('DEVELOPER')) {
+		var query = datasources.db.svy_security.users.createSelect();
+
+		query.result.add(query.columns.tenant_name);
+		query.sort.add(query.columns.tenant_name);
+		query.where.add(query.columns.user_name.eq(user.getUserName()));
+		tenants = databaseManager.getDataSetByQuery(query, false, -1).getColumnAsArray(1);
+		tenants.splice(tenants.indexOf(user.getTenant().getName()), 1);
+		tenants.unshift(user.getTenant().getName());
+		tenants.push(null);
+		security.setTenantValue(tenants);
+	} else {
+		tenants.push(user.getTenant().getName())
+		tenants.push(null);
+		security.setTenantValue(tenants);
+	}
     if (!security.login(user.getUserName(), userUid ? userUid : user.getUserName(), groups)) {
-        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
+        logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups.join()]));
         return false;
     }
     
@@ -1763,6 +1780,24 @@ function User(record) {
     this.getId = function() {
     	return record.user_uuid;
     }
+    
+    /**
+     * Get an array of tenant names that this user has access to
+     * 
+     * @public 
+     * 
+     * @return {Array<String>}
+     */
+    this.getAccessibleTenants = function() {
+		var query = datasources.db.svy_security.users.createSelect();
+
+		query.result.add(query.columns.tenant_name);
+		query.sort.add(query.columns.tenant_name);
+		query.where.add(query.columns.user_name.eq(this.getUserName()));
+
+		return databaseManager.getDataSetByQuery(query, false, -1).getColumnAsArray(1);
+
+    }
 }
 
 /**
@@ -3210,7 +3245,7 @@ function setTokenBasedAuth(namespace, expiresIn, resources){
 /**
  * Called after login
  * @private   
- * @param {scopes.svySecurity.User} user
+ * @param {User} user
  * 
  * @properties={typeid:24,uuid:"E2D3BD33-9A85-4407-8B0E-008F1B71F1CE"}
  */
@@ -3305,6 +3340,54 @@ function clearToken(){
 	if(tokenBasedAuth){
 		application.setUserProperty(tokenBasedAuth.namespace,null);
 		logDebug('Login token cleared for namespace=' + tokenBasedAuth.namespace);
+	}
+}
+
+/**
+ * Switch from the current tenant to the new tenant if the current user has access
+ * 
+ * @param {String|UUID} newTenant
+ * @param {Boolean} [saveOutstandingEdits]	-	flag to indicate if outstanding edits should be saved before switching tenant - default: TRUE
+ * 
+ * @throws {String} Throws an exception if the specified tenant is not valid for the current user or does not exist
+ * 
+ * @public
+ *
+ * @properties={typeid:24,uuid:"C03E6E6C-1737-4DC1-AB52-26A6E9B9E959"}
+ */
+function switchTenant(newTenant, saveOutstandingEdits) {
+	/** @type {Tenant} */
+	var tenant = getTenant(newTenant);
+	
+	if(!tenant)
+		throw 'Tenant not found or not valid for this user';
+	
+	if(saveOutstandingEdits === undefined || saveOutstandingEdits === null) 
+		saveOutstandingEdits = true;
+	
+	if(saveOutstandingEdits)
+		databaseManager.saveData();
+	
+	var newTenantName = tenant.getName()
+	if(newTenantName != activeTenantName) {
+		var tenants = getUser().getAccessibleTenants();
+		if (getUser().hasPermission('DEVELOPER')) {
+			tenants.splice(tenants.indexOf(newTenantName), 1)
+			tenants.unshift(newTenantName);
+		} else { 
+			if(tenants.indexOf(newTenantName) != -1) {
+			tenants = [newTenantName];
+			}
+		}
+		if(tenants.length > 0) {
+			tenants.push(null);
+			security.setTenantValue(tenants);
+		    activeTenantIsMaster = tenant.isMasterTenant();
+		    activeTenantName = tenant.getName();
+		    
+		    //update user and tenant name in svyProperties
+		    scopes.svyProperties.setUserName(activeUserName, activeTenantName);
+		}	
 	}
 }
 
