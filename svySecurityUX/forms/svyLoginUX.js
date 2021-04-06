@@ -17,6 +17,7 @@ function onLoginSuccess() {
 function onLoginError(error) {
 	elements.errorMsg.text = error;
 	elements.errorMsg.visible = true;
+	_super.onLoginError(error);
 }
 /**
  * Callback method when form is (re)loaded.
