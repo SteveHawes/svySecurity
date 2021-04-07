@@ -109,7 +109,7 @@ top:"10",
 width:"190"
 },
 dataProviderID:"searchText",
-faclass:"fa-search",
+faclass:"fas fa-search",
 onActionMethodID:"CA15730D-0028-4017-8113-89DC617822A1",
 placeholderText:"Search text"
 },

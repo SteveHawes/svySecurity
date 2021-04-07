@@ -1,8 +1,18 @@
+var roleRec = record.tenants_to_roles.getRecord(record.tenants_to_roles.newRecord(false, false));
+if (!roleRec) {
+  throw new Error('Could not create role record');
+}
+roleRec.role_name = name;
+roleRec.display_name = name;
+if (!roleRec.creation_user_name) {
+  logWarning('Creating security record without current user context');
+  roleRec.creation_user_name = SYSTEM_USER;
+}
 /*
- * SvySecurity includes svyProperties module
- * SvyProperties can be used as stand-alone module instead. This means that tenant_name is not a mandatory field in svy_properties
- *
- */
+* SvySecurity includes svyProperties module
+* SvyProperties can be used as stand-alone module instead. This means that tenant_name is not a mandatory field in svy_properties
+*
+*/
 
 /**
  * @protected
@@ -247,7 +257,7 @@ function login(user, userUid, permissionsToApply) {
     tenants.push(null);
     security.setTenantValue(tenants);
   }
-  if (!security.login(user.getUserName(), userUid ? userUid : user.getId(), groups)) {
+  if (!security.login(user.getUserName(), userUid ? userUid : (user.getId() ? user.getId() : user.getUserName()), groups)) {
     logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups.join()]));
     return false;
   }
@@ -2685,6 +2695,8 @@ function initSession(user) {
     sessionRec.user_agent_string = plugins.ngclientutils.getUserAgent();
   }
 
+
+
   saveRecord(sessionRec);
 
   // create ping job
@@ -3414,50 +3426,60 @@ function logFailedLogin(userName, tenantName, error) {
 
 /**
  * Switch from the current tenant to the new tenant if the current user has access
- * 
+ *
  * @param {String|UUID} newTenant
  * @param {Boolean} [saveOutstandingEdits]	-	flag to indicate if outstanding edits should be saved before switching tenant - default: TRUE
  * 
- * @throws {String} Throws an exception if the specified tenant is not valid for the current user or does not exist
+ * @return {Array<String>} Array of tenants for security filter
  * 
+ * @throws {String} Throws an exception if the specified tenant is not valid for the current user or does not exist
+ *
  * @public
  *
  * @properties={typeid:24,uuid:"C03E6E6C-1737-4DC1-AB52-26A6E9B9E959"}
  */
 function switchTenant(newTenant, saveOutstandingEdits) {
-  /** @type {Tenant} */
-  var tenant = getTenant(newTenant);
+  var tenants = [];
+  try {
+    removeSecurityTablesFilter();
+    /** @type {Tenant} */
+    var tenant = getTenant(newTenant);
 
-  if (!tenant)
-    throw 'Tenant not found or not valid for this user';
+    if (!tenant)
+      throw 'Tenant not found or not valid for this user';
 
-  if (saveOutstandingEdits === undefined || saveOutstandingEdits === null)
-    saveOutstandingEdits = true;
+    if (saveOutstandingEdits === undefined || saveOutstandingEdits === null)
+      saveOutstandingEdits = true;
 
-  if (saveOutstandingEdits)
-    databaseManager.saveData();
+    if (saveOutstandingEdits)
+      databaseManager.saveData();
 
-  var newTenantName = tenant.getName()
-  if (newTenantName != activeTenantName) {
-    var tenants = getUser().getAccessibleTenants();
-    if (getUser().hasPermission('DEVELOPER')) {
-      tenants.splice(tenants.indexOf(newTenantName), 1)
-      tenants.unshift(newTenantName);
-    } else {
-      if (tenants.indexOf(newTenantName) != -1) {
-        tenants = [newTenantName];
+    var newTenantName = tenant.getName()
+    if (newTenantName != activeTenantName) {
+      tenants = getUser().getAccessibleTenants();
+      if (getUser().hasPermission('DEVELOPER')) {
+        tenants.splice(tenants.indexOf(newTenantName), 1)
+        tenants.unshift(newTenantName);
+      } else {
+        if (tenants.indexOf(newTenantName) != -1) {
+          tenants.push(newTenantName);
+        }
+      }
+      if (tenants.length > 0) {
+        tenants.push(null);
+        security.setTenantValue(tenants);
+        activeTenantName = tenant.getName();
+        activeTenantIsMaster = tenant.isMasterTenant();
+
+        //update user and tenant name in svyProperties
+        scopes.svyProperties.setUserName(activeUserName, activeTenantName);
       }
     }
-    if (tenants.length > 0) {
-      tenants.push(null);
-      security.setTenantValue(tenants);
-      activeTenantIsMaster = tenant.isMasterTenant();
-      activeTenantName = tenant.getName();
-
-      //update user and tenant name in svyProperties
-      scopes.svyProperties.setUserName(activeUserName, activeTenantName);
-    }
+  } finally {
+    filterSecurityTables();
   }
+
+  return tenants
 }
 
 /**
