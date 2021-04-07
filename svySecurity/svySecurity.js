@@ -1,13 +1,3 @@
-var roleRec = record.tenants_to_roles.getRecord(record.tenants_to_roles.newRecord(false, false));
-if (!roleRec) {
-  throw new Error('Could not create role record');
-}
-roleRec.role_name = name;
-roleRec.display_name = name;
-if (!roleRec.creation_user_name) {
-  logWarning('Creating security record without current user context');
-  roleRec.creation_user_name = SYSTEM_USER;
-}
 /*
 * SvySecurity includes svyProperties module
 * SvyProperties can be used as stand-alone module instead. This means that tenant_name is not a mandatory field in svy_properties
