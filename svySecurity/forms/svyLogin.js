@@ -107,16 +107,16 @@ function login() {
 		onLoginError(ERROR_CODES.USER_NOT_FOUND);
 		return false;
 	}
-	if(!user.checkPassword(password)){
-		onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
-		return false;
-	}
 	if(user.isLocked()){
 		onLoginError(ERROR_CODES.LOCKED_USER);
 		return false;
 	}
 	if(tenant.isLocked()){
 		onLoginError(ERROR_CODES.LOCKED_TENANT);
+		return false;
+	}
+	if(!user.checkPassword(password)){
+		onLoginError(ERROR_CODES.PASSWORD_MISMATCH);
 		return false;
 	}
 	if(!scopes.svySecurity.login(user)){
