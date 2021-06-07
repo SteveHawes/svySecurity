@@ -2632,6 +2632,7 @@ function initSession(user) {
     sessionRec.tenant_name = user.getTenant().getName();
     sessionRec.ip_address = application.getIPAddress();
     sessionRec.solution_name = application.getSolutionName();
+    if (!sessionRec.session_start) sessionRec.session_start = new Date();
 
     // DEPRECATED 1.2.0
 //    sessionRec.last_client_ping = application.getServerTimeStamp();
