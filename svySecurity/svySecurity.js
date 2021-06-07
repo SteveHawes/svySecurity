@@ -2687,7 +2687,10 @@ function closeSession() {
     // SET END TIME AND DURATION
     var now = application.getServerTimeStamp();
     sessionRec.session_end = now;
-    sessionRec.session_duration = Math.max(0,now.getTime() - sessionRec.session_start.getTime());
+    
+    // Safety check, in case session start is null (SVYX-242).
+	var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
+    sessionRec.session_duration = Math.max(0,now.getTime() - sessionStart.getTime());
     
     //	DEPRECATED 1.2.0
 //    setSessionLastPingAndDuration(sessionRec, true);
@@ -2711,7 +2714,9 @@ function setSessionLastPingAndDuration(sessionRec, setEndDate) {
     }
     var now = application.getServerTimeStamp();
     sessionRec.last_client_ping = now;
-    var duration = now.getTime() - sessionRec.session_start.getTime();
+ // Safety check, in case session start is null (SVYX-242).
+	var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
+    var duration = now.getTime() - sessionStart.getTime();
     if (duration < 0) {
         duration = 0;
     }

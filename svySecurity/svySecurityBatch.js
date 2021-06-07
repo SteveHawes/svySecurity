@@ -90,7 +90,9 @@ function updateOpenClientSessions() {
 	for (var j = 1; j <= fs.getSize(); j++) {
 		var session = fs.getRecord(j);
 		session.session_end = now;
-		session.session_duration = Math.min(Math.max(0, now.getTime() - session.session_start.getTime()), 2147483647);
+		// Safety check, in case session start is null (SVYX-242).
+		var sessionStart = session.session_start ? session.session_start : now;
+		session.session_duration = Math.min(Math.max(0, now.getTime() - sessionStart.getTime()), 2147483647);
 		if (!databaseManager.saveData(session)) {
 			application.output('Failed to update abandoned session: ' + session.servoy_client_id, LOGGINGLEVEL.ERROR);
 			continue;
