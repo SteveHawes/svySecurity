@@ -7,12 +7,12 @@
     "wikiUrl": "https://github.com/Servoy/svySecurity/wiki/Security-Management-Console",
     "sourceUrl" : "https://github.com/Servoy/svySecurity",
     "releases" : [
-        {"version":"1.0.0-b1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b1/svySecurityConsole_82x.servoy", "servoy-version":"8.2.0"},
-        {"version":"1.0.0-b2","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b2/svySecurityConsole_82x.servoy", "servoy-version":"8.2.0"},
+        {"version":"1.5.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.5.0/svySecurityConsole.servoy", "servoy-version":"2020.12", "dependency":"svySecurity#>=1.5.0,svySearch#>=1.2.3,svychartjs#>=1.0.5,servoyextra#>=3.0.0,googlemaps#>=2.2.0,fontawesome#>=4.7.0"},
+        {"version":"1.4.2","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.2/svySecurityConsole.servoy", "servoy-version":"2020.9", "dependency":"svySecurity#>=1.4.2,svySearch#>=1.2.3,svychartjs#>=1.0.5,servoyextra#>=3.0.0,googlemaps#>=2.2.0,fontawesome#>=4.7.0"},
+        {"version":"1.4.1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.1/svySecurityConsole.servoy", "servoy-version":"2020.9", "dependency":"svySecurity#>=1.4.1,svySearch#>=1.2.3,svychartjs#>=1.0.5,servoyextra#>=3.0.0,googlemaps#>=2.2.0,fontawesome#>=4.7.0"},
+        {"version":"1.4.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.0/svySecurityConsole.servoy", "servoy-version":"2019.12.1", "dependency":"svySecurity#>=1.0.0,svySearch#>=1.0.0,svychartjs#>=1.0.1,servoyextra#>=2.1.0,googlemaps#>=1.0.1,fontawesome#>=4.7.0"},
 				{"version":"1.3.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.3.0/svySecurityConsole.servoy", "servoy-version":"2019.12", "dependency":"svySecurity#>=1.0.0,svySearch#>=1.0.0,svychartjs#>=1.0.1,servoyextra#>=2.1.0,googlemaps#>=1.0.1,fontawesome#>=4.7.0"},
-        {"version":"1.4.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.0/svySecurityConsole.servoy", "servoy-version":"2019.12.1", "dependency":"svySecurity#>=1.0.0,svySearch#>=1.0.0,svychartjs#>=1.0.1,servoyextra#>=2.1.0,googlemaps#>=1.0.1,fontawesome#>=4.7.0"} ,
-        {"version":"1.4.1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.1/svySecurityConsole.servoy", "servoy-version":"2020.9", "dependency":"svySecurity#>=1.4.1,svySearch#>=1.2.3,svychartjs#>=1.0.5,servoyextra#>=3.0.0,googlemaps#>=2.2.0,fontawesome#>=4.7.0"}, 
-        {"version":"1.4.2","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.2/svySecurityConsole.servoy", "servoy-version":"2020.9", "dependency":"svySecurity#>=1.4.2,svySearch#>=1.2.3,svychartjs#>=1.0.5,servoyextra#>=3.0.0,googlemaps#>=2.2.0,fontawesome#>=4.7.0"}, 
-        {"version":"1.5.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.5.0/svySecurityConsole.servoy", "servoy-version":"2020.12", "dependency":"svySecurity#>=1.5.0,svySearch#>=1.2.3,svychartjs#>=1.0.5,servoyextra#>=3.0.0,googlemaps#>=2.2.0,fontawesome#>=4.7.0"} 
+        {"version":"1.0.0-b2","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b2/svySecurityConsole_82x.servoy", "servoy-version":"8.2.0"},
+        {"version":"1.0.0-b1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.0.0-b1/svySecurityConsole_82x.servoy", "servoy-version":"8.2.0"}
       ]
 }
