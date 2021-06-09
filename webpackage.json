@@ -7,6 +7,7 @@
     "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
     "sourceUrl" : "https://github.com/Servoy/svySecurity",
     "releases" : [
+        {"version":"1.6.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.6.0/svySecurity.servoy", "servoy-version":"2021.6", "dependency":"svyProperties#>=1.0.1"},
         {"version":"1.5.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.5.0/svySecurity.servoy", "servoy-version":"2020.12", "dependency":"svyProperties#>=1.0.1"},
         {"version":"1.4.2","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.2/svySecurity.servoy", "servoy-version":"2020.9", "dependency":"svyProperties#>=1.0.1"},
         {"version":"1.4.1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.1/svySecurity.servoy", "servoy-version":"2020.9", "dependency":"svyProperties#>=1.0.1"},

@@ -7,6 +7,7 @@
     "wikiUrl": "https://github.com/Servoy/svySecurity/wiki",
     "sourceUrl" : "https://github.com/Servoy/svySecurity",
     "releases" : [
+        {"version":"1.6.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.6.0/svySecurityUX.servoy", "servoy-version":"2021.6", "dependency":"svyNavigation#>=1.1.0,svySecurity#>=1.6.0,bootstrapcomponents#>=3.2.0,servoyextra#>=4.1.0,aggrid#>=2.7.0,fontawesome#>=5.7.2,svychartjs#>=1.0.7"},
         {"version":"1.5.0","url":"https://github.com/Servoy/svySecurity/releases/download/v1.5.0/svySecurityUX.servoy", "servoy-version":"2020.12", "dependency":"svyNavigation#>=1.0.1,svySecurity#>=1.5.0,bootstrapcomponents#>=3.1.1,servoyextra#>=3.0.0,aggrid#>=2.6.0,fontawesome#>=4.7.0,svychartjs#>=1.0.5"},
         {"version":"1.4.2","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.2/svySecurityUX.servoy", "servoy-version":"2020.9", "dependency":"svyNavigation#>=1.0.1,svySecurity#>=1.4.2,bootstrapcomponents#>=3.1.1,servoyextra#>=3.0.0,aggrid#>=2.6.0,fontawesome#>=4.7.0,svychartjs#>=1.0.5"},
         {"version":"1.4.1","url":"https://github.com/Servoy/svySecurity/releases/download/v1.4.1/svySecurityUX.servoy", "servoy-version":"2020.9", "dependency":"svyNavigation#>=1.0.1,svySecurity#>=1.4.1,bootstrapcomponents#>=3.1.1,servoyextra#>=3.0.0,aggrid#>=2.6.0,fontawesome#>=4.7.0,svychartjs#>=1.0.5"},
