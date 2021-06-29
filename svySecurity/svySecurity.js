@@ -886,16 +886,17 @@ function Tenant(record) {
    *
    * @public
    * @param {String} userName The username of the user.
+   * @param {Boolean} [checkAdditionalEmail] Flag to indicate if the additional e-mail should be considered a match 
    * @return {User} The matching user or null if a user with the specified username and associated with this tenant is not found.
    */
-  this.getUser = function (userName) {
+  this.getUser = function (userName, checkAdditionalEmail) {
     if (!userName) {
       throw 'User name cannot be null or empty';
     }
     var users = this.getUsers();
     for (var i in users) {
       var user = users[i];
-      if (user.getUserName() == userName) {
+      if (user.getUserName() == userName || (checkAdditionalEmail && user.getAdditionalEmail() == userName)) {
         return user;
       }
     }
@@ -1433,6 +1434,16 @@ function User(record) {
   }
 
   /**
+   * Gets the additional e-mail of this user if one exists
+    *
+   * @public
+   * @return {String} The additional e-mail of this user.
+   */
+  this.getAdditionalEmail = function () {
+    return record.additional_email;
+  }
+
+  /**
    * @public
    * @param {String} email
    * @return {User} This user for call-chaining support.
@@ -1443,6 +1454,21 @@ function User(record) {
       return this;
     }
     record.email = email;
+    saveRecord(record);
+    return this;
+  }
+
+  /**
+   * @public
+   * @param {String} email
+   * @return {User} This user for call-chaining support.
+   */
+  this.setAdditionalEmail = function (email) {
+    // no change
+    if (email == record.additional_email) {
+      return this;
+    }
+    record.additional_email = email;
     saveRecord(record);
     return this;
   }
