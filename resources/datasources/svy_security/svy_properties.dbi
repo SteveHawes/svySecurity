@@ -15,7 +15,7 @@ allowNull:true,
 compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:1,
 dataType:12,
-length:50,
+length:500,
 name:"property_type"
 },
 {
