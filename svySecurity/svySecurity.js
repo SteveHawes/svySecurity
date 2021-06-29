@@ -124,7 +124,10 @@ var DEFAULT_TENANT = 'admin';
  */
 var USER_PROPERTIES = {
   /** When set to true permissions will be synced at every login for a deployed solution. Default true  */
-  AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "svy.security.auto-sync-permissions-when-deployed"
+  AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "svy.security.auto-sync-permissions-when-deployed",
+
+  /** When set to true the user will be logged in using the user id as user uid. Default false */
+  LOGIN_WITH_USER_ID_AS_USER_UID: "svy.security.login-with-user-id-as-user-uid"
 }
 
 /**
@@ -169,7 +172,7 @@ var tokenBasedAuth = null;
  * @note This method does not perform any password checks - for validation of user passwords use [User.checkPassword]{@link User#checkPassword}.
  * @public
  * @param {User} user The user to log in.
- * @param {String|UUID} [userUid] The uid to log the user in with (defaults to userName)
+ * @param {String|UUID} [userUid] The uid to log the user in with (defaults to userName or to userID if user property svy.security.login-with-user-id-as-user-uid is set)
  * @param {Array<String|Permission>} [permissionsToApply] Optional permissions to assign to the user. Note that these permissions cannot be asked for using User.getPermissions() or User.hasPermission().
  * @return {Boolean} Returns true if the login was successful and a user {@link Session} was created, otherwise false.
  * @properties={typeid:24,uuid:"83266E3D-BB41-416F-988C-964593F1F33C"}
@@ -247,8 +250,23 @@ function login(user, userUid, permissionsToApply) {
     tenants.push(null);
     security.setTenantValue(tenants);
   }
-  if (!security.login(user.getUserName(), userUid ? userUid : (user.getId() ? user.getId() : user.getUserName()), groups)) {
-    logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups.join()]));
+
+  // determine userUID to be used for the logged user
+  var loginUserUid;
+  if (userUid) {
+    // 1. login with the given userUid param if any.
+    loginUserUid = userUid;
+  } else if (!userUid && getLoginWithUserIdAsUserUIDEnabled()) {
+    // 2. if LOGIN_WITH_USER_ID_AS_USER_UID is set to true, login with the user's ID if user has ID.
+    loginUserUid = user.getId() ? user.getId() : user.getUserName();
+  } else {
+    // 3. Default: the user's username as UserID
+    loginUserUid = user.getUserName();
+  }
+
+  // login
+  if (!security.login(user.getUserName(), loginUserUid, groups)) {
+    logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
     return false;
   }
 
@@ -2677,6 +2695,7 @@ function initSession(user) {
   sessionRec.tenant_name = user.getTenant().getName();
   sessionRec.ip_address = application.getIPAddress();
   sessionRec.solution_name = application.getSolutionName();
+  if (!sessionRec.session_start) sessionRec.session_start = new Date();
 
   // DEPRECATED 1.2.0
   //    sessionRec.last_client_ping = application.getServerTimeStamp();
@@ -2732,7 +2751,10 @@ function closeSession() {
   // SET END TIME AND DURATION
   var now = application.getServerTimeStamp();
   sessionRec.session_end = now;
-  sessionRec.session_duration = Math.max(0, now.getTime() - sessionRec.session_start.getTime());
+
+  // Safety check, in case session start is null (SVYX-242).
+  var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
+  sessionRec.session_duration = Math.max(0, now.getTime() - sessionStart.getTime());
 
   //	DEPRECATED 1.2.0
   //    setSessionLastPingAndDuration(sessionRec, true);
@@ -2756,7 +2778,9 @@ function setSessionLastPingAndDuration(sessionRec, setEndDate) {
   }
   var now = application.getServerTimeStamp();
   sessionRec.last_client_ping = now;
-  var duration = now.getTime() - sessionRec.session_start.getTime();
+  // Safety check, in case session start is null (SVYX-242).
+  var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
+  var duration = now.getTime() - sessionStart.getTime();
   if (duration < 0) {
     duration = 0;
   }
@@ -3229,8 +3253,18 @@ function getAutoSyncPermissionsEnabled() {
 }
 
 /**
- * Initializes token-based authentication mode for a given namespace.
- * Call this method once on startup in the login-solution or on-load or first-show of the login-form to enable this mode.
+ * @private 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"15191E19-7A16-489B-B595-DCED6AE9632E"}
+ */
+function getLoginWithUserIdAsUserUIDEnabled() {
+  var result = application.getUserProperty(USER_PROPERTIES.LOGIN_WITH_USER_ID_AS_USER_UID);
+  return result == "true" ? true : false;
+}
+
+/**
+ * Initializes token-based authentication mode for a given namespace. 
+ * Call this method once on startup in the login-solution or on-load or first-show of the login-form to enable this mode. 
  * Once initialized, a token will be automatically issued and stored after successful user logins. Use options for expiration and protected resources
  *
  * @public

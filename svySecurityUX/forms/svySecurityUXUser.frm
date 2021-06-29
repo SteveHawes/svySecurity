@@ -19,7 +19,7 @@ styleClass:"box"
 },
 name:"tabPermissions",
 styleClass:"box",
-typeName:"bootstrapcomponents-tablesspanel",
+typeName:"servoycore-formcontainer",
 typeid:47,
 uuid:"42AE9D78-036A-4E2C-9B60-440AAA537F1D"
 },
@@ -39,7 +39,7 @@ styleClass:"box"
 },
 name:"tabRoles",
 styleClass:"box",
-typeName:"bootstrapcomponents-tablesspanel",
+typeName:"servoycore-formcontainer",
 typeid:47,
 uuid:"7CF18021-6ADF-4DB9-9E26-3961D0D0A56A"
 },

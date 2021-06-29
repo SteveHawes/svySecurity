@@ -20,7 +20,7 @@ styleClass:"box"
 },
 name:"tabPermissionsc",
 styleClass:"box",
-typeName:"bootstrapcomponents-tablesspanel",
+typeName:"servoycore-formcontainer",
 typeid:47,
 uuid:"68B5DC9C-0EBC-4F1A-863B-F49124E88EF5"
 },
@@ -41,7 +41,7 @@ styleClass:"box"
 },
 name:"tabPermissions",
 styleClass:"box",
-typeName:"bootstrapcomponents-tablesspanel",
+typeName:"servoycore-formcontainer",
 typeid:47,
 uuid:"93C40FCA-FF57-45DC-A5EF-796FB88F8F78"
 },
@@ -67,7 +67,7 @@ styleClass:"box"
 },
 name:"tabRoles",
 styleClass:"box",
-typeName:"bootstrapcomponents-tablesspanel",
+typeName:"servoycore-formcontainer",
 typeid:47,
 uuid:"CD7B52B0-38D9-4B1D-98A5-47FC47C1D1BF"
 }
