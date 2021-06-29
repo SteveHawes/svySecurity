@@ -160,7 +160,7 @@ function testProperties() {
 	assertThrows(scopes.svyProperties.setUserProperty, [propKeyLong.join(''), propertyType]);
 	
 	propKeyLong = [];
-	for (i = 1; i <= scopes.svyProperties.MAX_TEXT_LENGTH + 1; i++) {
+	for (i = 1; i <= scopes.svyProperties.MAX_TYPE_LENGTH + 1; i++) {
 		propKeyLong.push('x');
 	}
 	assertThrows(scopes.svyProperties.setUserProperty, [propertyKey, propKeyLong.join('')]);
