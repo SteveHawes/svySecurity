@@ -3305,7 +3305,7 @@ function loginWithToken(namespace){
 		return false;
 	}
 
-	var user = scopes.svySecurity.getUser(payload.tenant,payload.user);
+	var user = getUser(payload.user,payload.tenant);
 	if(!user){
 		logDebug('A valid token was found, but could not find user for login token.' + JSON.stringify(payload));
 		return false;
