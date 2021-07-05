@@ -109,7 +109,15 @@ var SECURITY_TABLES_FILTER_NAME = 'com.servoy.extensions.security.data-filter';
 var MAX_NAME_LENGTH = 50;
 
 /**
- * @private
+ * @private 
+ * @type {Number}
+ *
+ * @properties={typeid:35,uuid:"D86B8593-9194-45E2-B990-22AE4CD4020E",variableType:4}
+ */
+var MAX_USERNAME_LENGTH = 254;
+
+/**
+ * @private 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"AB71B8B7-60C9-4BAD-B6E5-785CE10C9C06"}
@@ -837,8 +845,8 @@ function Tenant(record) {
       throw new Error('User name cannot be null or empty');
     }
 
-    if (!nameLengthIsValid(userName, MAX_NAME_LENGTH)) {
-      throw new Error(utils.stringFormat('Username must be between 1 and %1$s characters long.', [MAX_NAME_LENGTH]));
+    if (!nameLengthIsValid(userName, MAX_USERNAME_LENGTH)) {
+      throw new Error(utils.stringFormat('Username must be between 1 and %1$s characters long.', [MAX_USERNAME_LENGTH]));
     }
 
     if (userNameExists(userName, this.getName())) {
@@ -3540,6 +3548,11 @@ function switchTenant(newTenant, saveOutstandingEdits) {
  * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
  */
 var init = function () {
+
+  // set MAX values based on column length
+  var propertiesTable = datasources.db.svy_security.users.getTable();
+  MAX_USERNAME_LENGTH = propertiesTable.getColumn('user_name').getLength();
+
   if (application.isInDeveloper()) {
     syncPermissions();
   } else if (getAutoSyncPermissionsEnabled()) {
