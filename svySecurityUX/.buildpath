@@ -4,5 +4,4 @@
 	<buildpathentry exported="true" kind="prj" path="/svyNavigation"/>
 	<buildpathentry exported="true" kind="prj" path="/svyPopupFilter"/>
 	<buildpathentry exported="true" kind="prj" path="/svySecurity"/>
-	<buildpathentry exported="true" kind="prj" path="/svySecurity$postImport"/>
 </buildpath>
