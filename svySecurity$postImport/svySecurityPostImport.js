@@ -172,7 +172,7 @@ function saveRolesAndPermissions() {
  * @properties={typeid:24,uuid:"C08C2113-3A07-4691-9D29-F293B6D32B4F"}
  */
 function syncPermissions() {
-	scopes.svySecurity.syncPermissions();
+	scopes.svySecurity.syncPermissions(true);
 }
 
 /**
