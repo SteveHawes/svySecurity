@@ -112,7 +112,7 @@ function login() {
     onLoginError(ERROR_CODES.TENANT_NOT_FOUND);
     return false;
   }
-  var user = tenant.getUser(userName);
+  var user = tenant.getUser(userName, true);
   if (!user) {
     onLoginError(ERROR_CODES.USER_NOT_FOUND);
     return false;
