@@ -452,7 +452,7 @@ width:"0"
 },
 onActionMethodID:"8D2D634B-CDEF-4A77-8EBE-B614DF9ECF61",
 styleClass:"h4 text-tertiary clickable",
-text:"%%email%% <i class=\"padding-left-10 fas fa-pencil-alt fa-sm\"><\/i>",
+text:"%%additional_email%% <i class=\"padding-left-10 fas fa-pencil-alt fa-sm\"><\/i>",
 toolTipText:"Email"
 },
 name:"labelEmail",

@@ -245,7 +245,7 @@ function onActionResetPassword(event) {
  */
 function onActionEditUserEmail(event, dataTarget) {
     if (tenant_name && user_name) {
-        var emailAddress = plugins.dialogs.showInputDialog('Edit User', utils.stringFormat('Enter email for user "%1$s"', [user_name]), email);
+        var emailAddress = plugins.dialogs.showInputDialog('Edit User', utils.stringFormat('Enter additional email for user "%1$s"', [user_name]), email);
         if (emailAddress) {
             var user = scopes.svySecurity.getUser(user_name, tenant_name);
             if (user) {
