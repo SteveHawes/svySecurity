@@ -135,7 +135,10 @@ var USER_PROPERTIES = {
 	AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "svy.security.auto-sync-permissions-when-deployed",
 	
 	/** When set to true the user will be logged in using the user id as user uid. Default false */
-	LOGIN_WITH_USER_ID_AS_USER_UID: "svy.security.login-with-user-id-as-user-uid"
+	LOGIN_WITH_USER_ID_AS_USER_UID: "svy.security.login-with-user-id-as-user-uid",
+	
+	/** When set to true USER_CACHE will be used to avoid a lot of foundset looping */
+	USE_CACHE: "svy.security.use-cache"
 }
 
 /**
@@ -530,6 +533,26 @@ function getRole(roleName, tenantName) {
 }
 
 /**
+ * @protected
+ * @type {User}
+ * @properties={typeid:35,uuid:"43C1707F-F722-4B07-B676-09B3FABF1861",variableType:-4}
+ */
+var CACHE_USER = {};
+
+/**
+ * Function to clear the existing user cache.
+ * This can be used when permissions are changed and you want to get the latest state of the user permissions.
+ * 
+ * Cache is by default, you can disable it by setting the userproperty svy.security.use-cache to false
+ * 
+ * @public 
+ * @properties={typeid:24,uuid:"D18FB0BB-7D4D-49C9-BA13-E198FB6869C7"}
+ */
+function clearUserCache() {
+	CACHE_USER = {};
+}
+
+/**
  * Gets a user by the specified username and tenant name.
  * If username is not specified will return the user currently logged in the application, if available.
  * @note Will fail if tenant is not specified and user is not logged in and multiple users are found with the specified username but associated with different tenants.
@@ -551,7 +574,16 @@ function getUser(userNameOrId, tenantNameOrId) {
 		}
 
 		// get logged-in user
-		return new User(active_user.getSelectedRecord());
+		if(getUseCache()) {
+			if(CACHE_USER.hasOwnProperty(active_user.getSelectedRecord().user_uuid.toString())) {
+				return CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()];
+			} else {
+				CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()] = new User(active_user.getSelectedRecord());
+				return CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()];
+			}
+		} else {
+			return new User(active_user.getSelectedRecord());
+		}
 	}
 
 	// tenant not specified, use active tenant
@@ -595,7 +627,7 @@ function getUser(userNameOrId, tenantNameOrId) {
 		return null;
 	}
 
-	// cerate user object
+	// create user object
 	return new User(fs.getRecord(1));
 }
 
@@ -1543,13 +1575,20 @@ function User(record) {
      * @return {Array<Role>} An array with all roles which this user is member of or an empty array if the user is not a member of any role.
      */
     this.getRoles = function() {
-        var roles = [];
-        for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
-            var role = record.users_to_user_roles.getRecord(i).user_roles_to_roles.getSelectedRecord();
-            roles.push(new Role(role));
+        if(this.cachedRoles.length == 0) {
+	        for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
+	            var role = record.users_to_user_roles.getRecord(i).user_roles_to_roles.getSelectedRecord();
+	            this.cachedRoles.push(new Role(role));
+	        }
         }
-        return roles;
+        return this.cachedRoles;
     }
+    
+    /**
+     * @protected 
+     * @type {Array<Role>}
+     */
+    this.cachedRoles = [];
 
     /**
      * Checks if this user is a member of the specified role.
@@ -1594,26 +1633,32 @@ function User(record) {
      * @return {Array<Permission>} An array with the permissions granted to this user or an empty array if the user has no permissions.
      */
     this.getPermissions = function() {
-        // map permisions to reduce recursive iterations
-        var permissions = { };
-        var roles = this.getRoles();
-        for (var i in roles) {
-            var rolePermissions = roles[i].getPermissions();
-            for (var j in rolePermissions) {
-                var permission = rolePermissions[j];
-                if (!permissions[permission.getName()]) {
-                    permissions[permission.getName()] = permission;
-                }
-            }
-        }
-
-        // convert map to array
-        var array = [];
-        for (var k in permissions) {
-            array.push(permissions[k]);
-        }
-        return array;
+    	if(this.cachedPermissions.length == 0) {
+	        // map permisions to reduce recursive iterations
+	        var permissions = { };
+	        var roles = this.getRoles();
+	        for (var i in roles) {
+	            var rolePermissions = roles[i].getPermissions();
+	            for (var j in rolePermissions) {
+	                var permission = rolePermissions[j];
+	                if (!permissions[permission.getName()]) {
+	                    permissions[permission.getName()] = permission;
+	                }
+	            }
+	        }
+	
+	        // convert map to array
+	        for (var k in permissions) {
+	        	this.cachedPermissions.push(permissions[k]);
+	        }
+    	}
+        return this.cachedPermissions;
     }
+    /**
+     * @protected 
+     * @type {Array<Permission>}
+     */
+    this.cachedPermissions = [];
 
     /**
      * Checks if the this user is granted the specified permission via the user's role membership.
@@ -2030,13 +2075,20 @@ function Role(record) {
      */
     this.getPermissions = function() {
 
-        var permissions = [];
-        for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
-            var permission = record.roles_to_roles_permissions.getRecord(i).roles_permissions_to_permissions.getSelectedRecord();
-            permissions.push(new Permission(permission));
+        if(this.cachedPermissions.length == 0) {
+            for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
+                var permission = record.roles_to_roles_permissions.getRecord(i).roles_permissions_to_permissions.getSelectedRecord();
+                this.cachedPermissions.push(new Permission(permission));
+	        }
         }
-        return permissions;
+        return this.cachedPermissions;
     }
+    
+    /**
+     * @protected  
+     * @type {Array<Permission>} 
+     */
+    this.cachedPermissions = [];
 
     /**
      * Checks if the specified permission is granted to this role.
@@ -3206,6 +3258,16 @@ function getAutoSyncPermissionsEnabled() {
 function getLoginWithUserIdAsUserUIDEnabled() {
 	var result = application.getUserProperty(USER_PROPERTIES.LOGIN_WITH_USER_ID_AS_USER_UID);
 	return result == "true" ? true : false;
+}
+
+/**
+ * @private 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"824B1235-EAAE-4668-BD85-ED1B75D5A9C4"}
+ */
+function getUseCache() {
+	var result = application.getUserProperty(USER_PROPERTIES.USE_CACHE);
+	return result != "false"? true: false;
 }
 
 /**
