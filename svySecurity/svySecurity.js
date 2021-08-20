@@ -1069,6 +1069,17 @@ function Tenant(record) {
         
         return this;
     }
+    
+    /**
+     * Gets the name of this tenant.
+     * Tenant names are unique in the system and are specified when the tenant is created.
+     *
+     * @public
+     * @return {String} The name of this tenant.
+     */
+    this.toString = function () {
+        return record.tenant_name;
+    }
 
     /**
      * Gets the name of this tenant.
@@ -1386,6 +1397,16 @@ function Tenant(record) {
 function User(record) {
     if (!record) {
         throw new Error('User record is not specified');
+    }
+    
+    /**
+     * Gets the username and the tenant of this user.
+     *
+     * @public
+     * @return {String} The username and the tenant of this user.
+     */
+    this.toString = function () {
+        return record.user_name + ", " + record.tenant_name;
     }
 
     /**
@@ -1850,6 +1871,16 @@ function Role(record) {
     if (!record) {
         throw new Error('Role record is not specified');
     }
+    
+    /**
+     * Gets the name and the tenant of this role.
+     *
+     * @public
+     * @return {String} The role name and tenant.
+     */
+    this.toString = function () {
+        return record.role_name + ", " + record.tenant_name;
+    }
 
     /**
      * Gets the name of this role. The role name is unique to the associated tenant.
@@ -2168,6 +2199,17 @@ function Permission(record) {
      * @type {JSRecord<db:/svy_security/permissions>}
      */
     this.record = record;
+    
+    /**
+     * Gets the name of this permission.
+     * The permission name is unique in the system and matches a Servoy security group name.
+     *
+     * @public
+     * @return {String} The name of the permission.
+     */
+    this.toString = function () {
+        return record.permission_name;
+    }
 
     /**
      * Gets the name of this permission.
