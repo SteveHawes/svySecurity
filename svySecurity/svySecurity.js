@@ -131,14 +131,14 @@ var DEFAULT_TENANT = 'admin';
  * @properties={typeid:35,uuid:"49CE1F05-E150-4E60-A14A-3D0BD4D747F1",variableType:-4}
  */
 var USER_PROPERTIES = {
-    /** When set to true permissions will be synced at every login for a deployed solution. Default true  */
-    AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "svy.security.auto-sync-permissions-when-deployed",
-
-    /** When set to true the user will be logged in using the user id as user uid. Default false */
-    LOGIN_WITH_USER_ID_AS_USER_UID: "svy.security.login-with-user-id-as-user-uid",
-
-    /** When set to true USER_CACHE will be used to avoid a lot of foundset looping */
-    USE_CACHE: "svy.security.use-cache"
+	/** When set to true permissions will be synced at every login for a deployed solution. Default true  */
+	AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "svy.security.auto-sync-permissions-when-deployed",
+	
+	/** When set to true the user will be logged in using the user id as user uid. Default false */
+	LOGIN_WITH_USER_ID_AS_USER_UID: "svy.security.login-with-user-id-as-user-uid",
+	
+	/** When set to true USER_CACHE will be used to avoid a lot of foundset looping */
+	USE_CACHE: "svy.security.use-cache"
 }
 
 /**
@@ -192,22 +192,22 @@ function login(user, userUid, permissionsToApply) {
     for (var i in permissions) {
         groups.push(permissions[i].getName());
     }
-
+    
     if (permissionsToApply) {
-        for (var p = 0; p < permissionsToApply.length; p++) {
-            groups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
-        }
+    	for (var p = 0; p < permissionsToApply.length; p++) {
+			groups.push(permissionsToApply[p] instanceof Permission ? permissionsToApply[p].getName() : permissionsToApply[p]);
+       	}
     }
-
+    
     // login with groups that do no longer exist will fail, so we need to filter them out
     groups = groups.filter(
-        function (groupName) {
-            var groupIdx = servoyGroups.indexOf(groupName);
-            if (groupIdx === -1) {
-                logWarning(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings and cannot be assigned to user "%2$s".', [groupName, user.getUserName()]));
-            }
-            return groupIdx >= 0;
-        }
+    	function(groupName) {
+    		var groupIdx = servoyGroups.indexOf(groupName);
+    		if (groupIdx === -1) {
+    			logWarning(utils.stringFormat('Permission "%1$s" is no longer found within internal security settings and cannot be assigned to user "%2$s".', [groupName, user.getUserName()]));
+    		}
+    		return groupIdx >= 0;
+    	}
     );
 
     // no groups
@@ -218,26 +218,26 @@ function login(user, userUid, permissionsToApply) {
 
     // determine userUID to be used for the logged user
     var loginUserUid;
-    if (userUid) {
-        // 1. login with the given userUid param if any.
-        loginUserUid = userUid;
-    } else if (!userUid && getLoginWithUserIdAsUserUIDEnabled()) {
-        // 2. if LOGIN_WITH_USER_ID_AS_USER_UID is set to true, login with the user's ID if user has ID.
-        loginUserUid = user.getId() ? user.getId() : user.getUserName();
-    } else {
-        // 3. Default: the user's username as UserID
-        loginUserUid = user.getUserName();
+    if (userUid) {	
+    	// 1. login with the given userUid param if any.
+    	loginUserUid = userUid;
+    } else if (!userUid && getLoginWithUserIdAsUserUIDEnabled()) {	
+    	// 2. if LOGIN_WITH_USER_ID_AS_USER_UID is set to true, login with the user's ID if user has ID.
+    	loginUserUid = user.getId() ? user.getId() : user.getUserName();
+    } else {	
+    	// 3. Default: the user's username as UserID
+    	loginUserUid = user.getUserName();
     }
-
+    
     // login
     if (!security.login(user.getUserName(), loginUserUid, groups)) {
         logWarning(utils.stringFormat('Servoy security.login failed for user: "%1$s" with groups: "%2$s"', [user.getUserName(), groups]));
         return false;
     }
-
+    
     // set token
     setToken(user);
-
+    
     // create session
     initSession(user);
 
@@ -258,15 +258,15 @@ function login(user, userUid, permissionsToApply) {
  * @properties={typeid:24,uuid:"341F328D-C8A6-4568-BF0C-F807A19B8977"}
  */
 function logout(solutionToLoad, method, argument) {
-    clearToken();
+	clearToken();
     closeSession();
     removeSecurityTablesFilter();
     if (arguments.length) {
         security.logout(solutionToLoad, method, argument);
     } else {
-        security.logout();
+    	security.logout();
     }
-
+ 
 }
 
 /**
@@ -304,24 +304,24 @@ function createTenant(name) {
  * @properties={typeid:24,uuid:"6C41B9E2-7033-4FD9-84EF-1D91E400DF95"}
  */
 function cloneTenant(tenantToClone, name, makeSubTenant) {
-
-    if (getTenant()) {
-        throw "Cannot clone tenant when logged in as an user.";
-    }
-
-
-    var rec = createTenantRecord(name, makeSubTenant === true && tenantToClone ? tenantToClone.getName() : null);
-    var tenant = new Tenant(rec);
-    var roles = tenantToClone.getRoles();
-    for (var r = 0; r < roles.length; r++) {
-        var role = tenant.createRole(roles[r].getName());
-        role.setDisplayName(roles[r].getDisplayName());
-        var permissions = roles[r].getPermissions();
-        for (var p = 0; p < permissions.length; p++) {
-            role.addPermission(permissions[p]);
-        }
-    }
-    return tenant;
+	
+	if (getTenant()) {
+		throw "Cannot clone tenant when logged in as an user.";
+	}
+	
+	
+	var rec = createTenantRecord(name, makeSubTenant === true && tenantToClone ? tenantToClone.getName() : null);
+	var tenant = new Tenant(rec);
+	var roles = tenantToClone.getRoles();
+	for (var r = 0; r < roles.length; r++) {
+		var role = tenant.createRole(roles[r].getName());
+		role.setDisplayName(roles[r].getDisplayName());
+		var permissions = roles[r].getPermissions();
+		for (var p = 0; p < permissions.length; p++) {
+			role.addPermission(permissions[p]);
+		}
+	}
+	return tenant;
 }
 
 /**
@@ -336,7 +336,7 @@ function cloneTenant(tenantToClone, name, makeSubTenant) {
  * @properties={typeid:24,uuid:"66D6A963-76FA-48CA-BE11-C9CD0CC74D1A"}
  */
 function createTenantRecord(name, masterTenantName) {
-    if (!name) {
+	if (!name) {
         throw new Error('Name cannot be null or empty');
     }
     if (!nameLengthIsValid(name, MAX_NAME_LENGTH)) {
@@ -396,37 +396,37 @@ function getTenants() {
  */
 function getTenant(nameOrId) {
 
-    // no name, look for current user's tenant
-    if (!nameOrId) {
+	// no name, look for current user's tenant
+	if (!nameOrId) {
 
-        // No logged-in user/tenant
-        if (!utils.hasRecords(active_tenant)) {
-            return null;
-        }
+		// No logged-in user/tenant
+		if (!utils.hasRecords(active_tenant)) {
+			return null;
+		}
 
-        // get user's tenant
-        return new Tenant(active_tenant.getRecord(1));
-    }
+		// get user's tenant
+		return new Tenant(active_tenant.getRecord(1));
+	}
 
-    // lookup tenant by name
-    var fs = datasources.db.svy_security.tenants.getFoundSet();
-    var qry = datasources.db.svy_security.tenants.createSelect();
-    /** @type {String} */
-    var uuidString = nameOrId;
-    if (nameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
-        qry.where.add(qry.columns.tenant_uuid.eq(nameOrId));
-    } else {
-        qry.where.add(qry.columns.tenant_name.eq(nameOrId));
-    }
-    fs.loadRecords(qry);
+	// lookup tenant by name
+	var fs = datasources.db.svy_security.tenants.getFoundSet();
+	var qry = datasources.db.svy_security.tenants.createSelect();
+	/** @type {String} */
+	var uuidString = nameOrId;
+	if (nameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
+		qry.where.add(qry.columns.tenant_uuid.eq(nameOrId));
+	} else {
+		qry.where.add(qry.columns.tenant_name.eq(nameOrId));
+	}
+	fs.loadRecords(qry);
 
-    // no match
-    if (fs.getSize() == 0) {
-        return null;
-    }
+	// no match
+	if (fs.getSize() == 0) {
+		return null;
+	}
 
-    // get matching tenant
-    return new Tenant(fs.getRecord(1));
+	// get matching tenant
+	return new Tenant(fs.getRecord(1));
 }
 
 /**
@@ -549,7 +549,7 @@ var CACHE_USER = {};
  * @properties={typeid:24,uuid:"D18FB0BB-7D4D-49C9-BA13-E198FB6869C7"}
  */
 function clearUserCache() {
-    CACHE_USER = {};
+	CACHE_USER = {};
 }
 
 /**
@@ -565,70 +565,70 @@ function clearUserCache() {
  * @AllowToRunInFind
  */
 function getUser(userNameOrId, tenantNameOrId) {
-    // Looking for logged-in user
-    if (!userNameOrId) {
+	// Looking for logged-in user
+	if (!userNameOrId) {
 
-        // no logged-in user
-        if (!utils.hasRecords(active_user)) {
-            return null;
-        }
+		// no logged-in user
+		if (!utils.hasRecords(active_user)) {
+			return null;
+		}
 
-        // get logged-in user
-        if (getUseCache()) {
-            if (CACHE_USER.hasOwnProperty(active_user.getSelectedRecord().user_uuid.toString())) {
-                return CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()];
-            } else {
-                CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()] = new User(active_user.getSelectedRecord());
-                return CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()];
-            }
-        } else {
-            return new User(active_user.getSelectedRecord());
-        }
-    }
+		// get logged-in user
+		if(getUseCache()) {
+			if(CACHE_USER.hasOwnProperty(active_user.getSelectedRecord().user_uuid.toString())) {
+				return CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()];
+			} else {
+				CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()] = new User(active_user.getSelectedRecord());
+				return CACHE_USER[active_user.getSelectedRecord().user_uuid.toString()];
+			}
+		} else {
+			return new User(active_user.getSelectedRecord());
+		}
+	}
 
-    // tenant not specified, use active tenant
-    if (!tenantNameOrId) {
-        if (utils.hasRecords(active_tenant)) {
-            tenantNameOrId = active_tenant.tenant_name;
-        } else {
+	// tenant not specified, use active tenant
+	if (!tenantNameOrId) {
+		if (utils.hasRecords(active_tenant)) {
+			tenantNameOrId = active_tenant.tenant_name;
+		} else {
 
-        }
-    }
+		}
+	}
 
-    // get matching user
-    var fs = datasources.db.svy_security.users.getFoundSet();
-    var qry = datasources.db.svy_security.users.createSelect();
+	// get matching user
+	var fs = datasources.db.svy_security.users.getFoundSet();
+	var qry = datasources.db.svy_security.users.createSelect();
 
-    /** @type {String} */
-    var uuidString = userNameOrId;
-    if (userNameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
-        qry.where.add(qry.columns.user_uuid.eq(userNameOrId));
-    } else {
-        qry.where.add(qry.columns.user_name.eq(userNameOrId));
-    }
+	/** @type {String} */
+	var uuidString = userNameOrId;
+	if (userNameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
+		qry.where.add(qry.columns.user_uuid.eq(userNameOrId));
+	} else {
+		qry.where.add(qry.columns.user_name.eq(userNameOrId));
+	}
 
-    uuidString = tenantNameOrId;
-    if (tenantNameOrId) {
-        if (tenantNameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
-            qry.where.add(qry.joins.users_to_tenants.columns.tenant_uuid.eq(tenantNameOrId));
-        } else {
-            qry.where.add(qry.columns.tenant_name.eq(tenantNameOrId));
-        }
-    }
-    fs.loadRecords(qry);
+	uuidString = tenantNameOrId;
+	if (tenantNameOrId) {
+		if (tenantNameOrId instanceof UUID || application.getUUID(uuidString) == uuidString) {
+			qry.where.add(qry.joins.users_to_tenants.columns.tenant_uuid.eq(tenantNameOrId));
+		} else {
+			qry.where.add(qry.columns.tenant_name.eq(tenantNameOrId));
+		}
+	}
+	fs.loadRecords(qry);
 
-    // no tenant and non-unique results
-    if (fs.getSize() > 1) {
-        throw 'Calling getUser w/ no tenant supplied and no active tenant. Results are not unique.';
-    }
+	// no tenant and non-unique results
+	if (fs.getSize() > 1) {
+		throw 'Calling getUser w/ no tenant supplied and no active tenant. Results are not unique.';
+	}
 
-    // No Match
-    if (fs.getSize() == 0) {
-        return null;
-    }
+	// No Match
+	if (fs.getSize() == 0) {
+		return null;
+	}
 
-    // create user object
-    return new User(fs.getRecord(1));
+	// create user object
+	return new User(fs.getRecord(1));
 }
 
 /**
@@ -827,7 +827,7 @@ function Tenant(record) {
      * @return {User} The user which was created.
      * @throws {String} If the user name is not specified or is not unique.
      */
-    this.createUser = function (userName, password) {
+    this.createUser = function(userName, password) {
         if (!userName) {
             throw new Error('User name cannot be null or empty');
         }
@@ -867,7 +867,7 @@ function Tenant(record) {
      * @public
      * @return {Array<User>} An array with all users associated with this tenant or an empty array if the tenant has no users.
      */
-    this.getUsers = function () {
+    this.getUsers = function() {
         var users = [];
         for (var i = 1; i <= record.tenants_to_users.getSize(); i++) {
             var user = record.tenants_to_users.getRecord(i);
@@ -883,7 +883,7 @@ function Tenant(record) {
      * @param {String} userName The username of the user.
      * @return {User} The matching user or null if a user with the specified username and associated with this tenant is not found.
      */
-    this.getUser = function (userName) {
+    this.getUser = function(userName) {
         if (!userName) {
             throw 'User name cannot be null or empty';
         }
@@ -906,7 +906,7 @@ function Tenant(record) {
      * @param {User|String} user The user object or the username of the user to be deleted. The specified user must be associated with this tenant.
      * @return {Boolean} True if the user is deleted, otherwise false.
      */
-    this.deleteUser = function (user) {
+    this.deleteUser = function(user) {
         var userName = null;
 
         if (user instanceof String) {
@@ -956,12 +956,12 @@ function Tenant(record) {
      * @return {Role} The role which was created.
      * @throws {String} If the role name is not unique to this tenant.
      */
-    this.createRole = function (name) {
-        var loggedTenant = getTenant();
-        if (loggedTenant && loggedTenant.isMasterTenant()) {
-            throw "Cannot create role for a master tenant when logged in as an user";
-        }
-
+    this.createRole = function(name) {
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot create role for a master tenant when logged in as an user";
+    	}
+    	
         if (!name) {
             throw new Error('Role name cannot be null or empty');
         }
@@ -995,7 +995,7 @@ function Tenant(record) {
      * @param {String} name The name of the role to get.
      * @return {Role} The matching role, or null if a role with the specified name and associated with this tenant is not found.
      */
-    this.getRole = function (name) {
+    this.getRole = function(name) {
         if (!name) {
             throw 'Name cannot be null or empty';
         }
@@ -1014,7 +1014,7 @@ function Tenant(record) {
      * @public
      * @return {Array<Role>} An array with the roles associated with this tenant or an empty array if the tenant has no roles.
      */
-    this.getRoles = function () {
+    this.getRoles = function() {
         var roles = [];
         for (var i = 1; i <= record.tenants_to_roles.getSize(); i++) {
             var role = record.tenants_to_roles.getRecord(i);
@@ -1040,12 +1040,12 @@ function Tenant(record) {
      * @throws {String} throws an exception if the role cannot be deleted.
      * @return {Tenant} This tenant for call-chaining support.
      */
-    this.deleteRole = function (role) {
-        var loggedTenant = getTenant();
-        if (loggedTenant && loggedTenant.isMasterTenant()) {
-            throw "Cannot delete role of a master tenant when logged in as an user.";
-        }
-
+    this.deleteRole = function(role) {
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot delete role of a master tenant when logged in as an user.";
+    	}
+    	
         var roleName = null;
 
         if (role instanceof String) {
@@ -1066,7 +1066,7 @@ function Tenant(record) {
             throw 'Role ' + roleName + ' not found in tenant';
         }
         deleteRecord(fs.getRecord(1));
-
+        
         return this;
     }
 
@@ -1077,18 +1077,7 @@ function Tenant(record) {
      * @public
      * @return {String} The name of this tenant.
      */
-    this.toString = function () {
-        return record.tenant_name;
-    }
-
-    /**
-     * Gets the name of this tenant.
-     * Tenant names are unique in the system and are specified when the tenant is created.
-     *
-     * @public
-     * @return {String} The name of this tenant.
-     */
-    this.getName = function () {
+    this.getName = function() {
         return record.tenant_name;
     }
 
@@ -1099,7 +1088,7 @@ function Tenant(record) {
      * @public
      * @return {String} The display name of this tenant. Can be null if a display name is not set.
      */
-    this.getDisplayName = function () {
+    this.getDisplayName = function() {
         return record.display_name;
     }
 
@@ -1109,7 +1098,7 @@ function Tenant(record) {
      * @param {String} displayName The display name to use.
      * @return {Tenant} This tenant for call-chaining support.
      */
-    this.setDisplayName = function (displayName) {
+    this.setDisplayName = function(displayName) {
         record.display_name = displayName;
         saveRecord(record);
         return this;
@@ -1123,7 +1112,7 @@ function Tenant(record) {
      * @public
      * @return {Array<Session>} An array with all active sessions for users associated with this tenant or an empty array if the are no active sessions.
      */
-    this.getActiveSessions = function () {
+    this.getActiveSessions = function() {
         var q = record.tenants_to_sessions.getQuery();
         addActiveSessionSearchCriteria(q);
         var fs = datasources.db.svy_security.sessions.getFoundSet();
@@ -1144,7 +1133,7 @@ function Tenant(record) {
      * @public
      * @return {Number} The number of all sessions (active and inactive) for users associated with this tenant.
      */
-    this.getSessionCount = function () {
+    this.getSessionCount = function() {
         return databaseManager.getFoundSetCount(record.tenants_to_sessions);
     }
 
@@ -1161,11 +1150,11 @@ function Tenant(record) {
      * 
      * @throws {String} Throws an exception if lock is called for the logged Tenant
      */
-    this.lock = function (reason, duration) {
-        if (getTenant() && this.getName() === getTenant().getName()) {
-            throw "Cannot lock the logged Tenant";
-        }
-
+    this.lock = function(reason, duration) {
+    	if (getTenant() && this.getName() === getTenant().getName()) {
+    		throw "Cannot lock the logged Tenant";
+    	}
+    	
         record.lock_flag = 1;
         record.lock_reason = reason;
         if (duration) {
@@ -1184,7 +1173,7 @@ function Tenant(record) {
      * @public
      * @return {Tenant} This tenant for call-chaining support.
      */
-    this.unlock = function () {
+    this.unlock = function() {
         record.lock_flag = null;
         record.lock_reason = null;
         record.lock_expiration = null;
@@ -1198,7 +1187,7 @@ function Tenant(record) {
      * @public
      * @return {Boolean} True if the tenant account is currently locked and the lock has not expired.
      */
-    this.isLocked = function () {
+    this.isLocked = function() {
         if (record.lock_flag == 1) {
             if (record.lock_expiration) {
                 var now = application.getServerTimeStamp();
@@ -1215,7 +1204,7 @@ function Tenant(record) {
      * @public
      * @return {String} The lock reason. Can be null.
      */
-    this.getLockReason = function () {
+    this.getLockReason = function() {
         return record.lock_reason;
     }
 
@@ -1226,10 +1215,10 @@ function Tenant(record) {
      * @public
      * @return {Date} The date/time when the lock expires. Can be null. The date/time is using the Servoy application server timezone.
      */
-    this.getLockExpiration = function () {
+    this.getLockExpiration = function() {
         return record.lock_expiration;
     }
-
+    
     /**
      * Gets all sub-tenants of this tenant
      * When recursive is true, all sub-tenants of this tenant's sub-tenants are included
@@ -1241,30 +1230,30 @@ function Tenant(record) {
      * @public 
      * @return {Array<Tenant>} subTenants Array of tenants that have this tenant as their master
      */
-    this.getSubTenants = function (recursive) {
-        if (getTenant()) {
-            throw "Cannot get tenant sub-tenants when logged in as an user.";
-        }
-
-        var fs = datasources.db.svy_security.tenants.getFoundSet();
-        var qry = datasources.db.svy_security.tenants.createSelect();
-        qry.where.add(qry.columns.master_tenant_name.eq(this.getName()));
-        fs.loadRecords(qry);
-
-        var subTenants = [];
-        if (utils.hasRecords(fs)) {
-            for (var s = 1; s <= fs.getSize(); s++) {
-                var recordSubTenant = fs.getRecord(s);
-                var subTenant = new Tenant(recordSubTenant);
-                subTenants.push(subTenant);
-                if (recursive === true && utils.hasRecords(recordSubTenant.tenants_to_tenants$subtenants)) {
-                    subTenants = subTenants.concat(subTenant.getSubTenants(recursive));
-                }
-            }
-        }
-        return subTenants;
-    }
-
+    this.getSubTenants = function(recursive) {
+    	if (getTenant()) {
+    		throw "Cannot get tenant sub-tenants when logged in as an user.";
+    	} 
+    	
+    	 var fs = datasources.db.svy_security.tenants.getFoundSet();
+         var qry = datasources.db.svy_security.tenants.createSelect();
+         qry.where.add(qry.columns.master_tenant_name.eq(this.getName()));
+         fs.loadRecords(qry);
+         
+         var subTenants = [];
+         if (utils.hasRecords(fs)) {
+        	 for (var s = 1; s <= fs.getSize(); s++) {
+        	 	var recordSubTenant = fs.getRecord(s);
+        	 	var subTenant = new Tenant(recordSubTenant);
+        	 	subTenants.push(subTenant);
+        	 	if (recursive === true && utils.hasRecords(recordSubTenant.tenants_to_tenants$subtenants)) {
+        	 		subTenants = subTenants.concat(subTenant.getSubTenants(recursive));
+        	 	}
+        	 }
+         }
+         return subTenants;
+    }    
+    
     /**
      * Gets all slaves of this tenant
      * When recursive is true, all slaves of this tenant's slaves are included
@@ -1278,10 +1267,10 @@ function Tenant(record) {
      * @public 
      * @return {Array<Tenant>} slaves Array of tenants that have this tenant as their master
      */
-    this.getSlaves = function (recursive) {
-        return this.getSubTenants(recursive);
+    this.getSlaves = function(recursive) {
+    	return this.getSubTenants(recursive);
     }
-
+    
     /**
      * Returns true if this Tenant is a master (template) tenant
      * <br/>
@@ -1293,22 +1282,22 @@ function Tenant(record) {
      * 
      * @throws {String} Throws an exception when logged in as an user and called for another tenant than the tenant of the logged user.
      */
-    this.isMasterTenant = function () {
+    this.isMasterTenant = function() {
+    	
+    	var loggedTenant = getTenant();
+    	if (loggedTenant) {
+    		
+    		// if is the active tenant
+    		if (loggedTenant.getName() === this.getName()) {
+    			return activeTenantIsMaster;
+    		}
 
-        var loggedTenant = getTenant();
-        if (loggedTenant) {
-
-            // if is the active tenant
-            if (loggedTenant.getName() === this.getName()) {
-                return activeTenantIsMaster;
-            }
-
-            throw "Cannot get tenant master info when logged in as an user of another tenant.";
-        }
-
-        return utils.hasRecords(record.tenants_to_tenants$subtenants);
+    		throw "Cannot get tenant master info when logged in as an user of another tenant.";
+    	} 
+    	
+    	return utils.hasRecords(record.tenants_to_tenants$subtenants);
     }
-
+    
     /**
      * Returns true if this Tenant is a sub-tenant
      * 
@@ -1316,10 +1305,10 @@ function Tenant(record) {
      * @return {Boolean} isSubTenant Whether this tenant is a sub-tenant of other tenants
      * 
      */
-    this.isSubTenant = function () {
-        return record.master_tenant_name ? true : false;
-    }
-
+    this.isSubTenant = function() {
+    	return record.master_tenant_name ? true : false;
+    }    
+    
     /**
      * Returns true if this Tenant is a slave tenant
      * 
@@ -1329,10 +1318,10 @@ function Tenant(record) {
      * @return {Boolean} isMasterTenant Whether this tenant is a master to other tenants
      * 
      */
-    this.isSlaveTenant = function () {
-        return this.isSubTenant();
+    this.isSlaveTenant = function() {
+    	return this.isSubTenant();
     }
-
+    
     /**
      * Creates a sub-tenant of this tenant with the given name.
      * Modifications to roles and permissions of this tenant will be propagated to all of its sub-tenants.
@@ -1347,13 +1336,13 @@ function Tenant(record) {
      * 
      * @return {Tenant} subTenant The sub-tenant that has been created
      */
-    this.createSubTenant = function (name) {
-        if (getTenant()) {
-            throw "Cannot create tenant sub-tenant when logged in as an user.";
-        }
-        return cloneTenant(this, name, true);
-    }
-
+    this.createSubTenant = function(name) {
+    	if (getTenant()) {
+    		throw "Cannot create tenant sub-tenant when logged in as an user.";
+    	}
+		return cloneTenant(this, name, true);
+    }    
+    
     /**
      * Creates a slave of this tenant with the given name.
      * Modifications to roles and permissions of this tenant will be propagated to all of its slaves.
@@ -1370,18 +1359,18 @@ function Tenant(record) {
      * 
      * @return {Tenant} slave The slave that has been created
      */
-    this.createSlave = function (name) {
-        return this.createSubTenant(name);
+    this.createSlave = function(name) {
+    	return this.createSubTenant(name);
     }
-
+    
     /**
      * Returns the ID of this tenant that can used to reference this tenant
      *
      * @public
      * @return {UUID} Tenant UUID.
      */
-    this.getId = function () {
-        return record.tenant_uuid
+    this.getId = function() {
+    	return record.tenant_uuid
     }
 }
 
@@ -1400,22 +1389,12 @@ function User(record) {
     }
 
     /**
-     * Gets the username and the tenant of this user.
-     *
-     * @public
-     * @return {String} The username and the tenant of this user.
-     */
-    this.toString = function () {
-        return record.user_name + ", " + record.tenant_name;
-    }
-
-    /**
      * Returns the tenant that owns this user account.
      *
      * @public
      * @return {Tenant} The parent tenant associated with this user.
      */
-    this.getTenant = function () {
+    this.getTenant = function() {
         return new Tenant(record.users_to_tenants.getSelectedRecord());
     }
 
@@ -1426,7 +1405,7 @@ function User(record) {
      * @public
      * @return {String} The username of this user.
      */
-    this.getUserName = function () {
+    this.getUserName = function() {
         return record.user_name;
     }
 
@@ -1437,23 +1416,23 @@ function User(record) {
      * @public
      * @return {String} The display name of this user.
      */
-    this.getDisplayName = function () {
+    this.getDisplayName = function() {
         return record.display_name;
     }
     /**
      * @public
      *  @return {String} The email of this user.
      */
-    this.getEmail = function () {
+    this.getEmail = function() {
         return record.email;
     }
-
+    
     /**
      * @public
      * @param {String} email
      * @return {User} This user for call-chaining support.
      */
-    this.setEmail = function (email) {
+    this.setEmail = function(email) {
         // no change
         if (email == record.email) {
             return this;
@@ -1470,7 +1449,7 @@ function User(record) {
      * @param {String} displayName The display name to use.
      * @return {User} This user for call-chaining support.
      */
-    this.setDisplayName = function (displayName) {
+    this.setDisplayName = function(displayName) {
         // no change
         if (displayName == record.display_name) {
             return this;
@@ -1488,7 +1467,7 @@ function User(record) {
      * @param {String} password The password (plain-text) to check.
      * @return {Boolean} True if the specified password matches the password of this user.
      */
-    this.checkPassword = function (password) {
+    this.checkPassword = function(password) {
         if (!password) {
             throw 'Password must be non-null, non-empty string';
         }
@@ -1505,7 +1484,7 @@ function User(record) {
      * @param {String} password The plain-text password to use.
      * @return {User} This user for call-chaining support.
      */
-    this.setPassword = function (password) {
+    this.setPassword = function(password) {
         if (!password) {
             throw 'Password must be non-null, non-empty string';
         }
@@ -1527,7 +1506,7 @@ function User(record) {
      * @param {Role|String} role The role object or role name to use. The role must be associated with the tenant of this user.
      * @return {User} This user for call-chaining support.
      */
-    this.addRole = function (role) {
+    this.addRole = function(role) {
 
         if (!role) {
             throw 'Role cannot be null';
@@ -1574,7 +1553,7 @@ function User(record) {
      * @param {Role|String} role The role object or role name to use. The role must be associated with the tenant of this user.
      * @return {User} This user for call-chaining support.
      */
-    this.removeRole = function (role) {
+    this.removeRole = function(role) {
         if (!role) {
             throw 'Role cannot be null';
         }
@@ -1595,16 +1574,16 @@ function User(record) {
      * @public
      * @return {Array<Role>} An array with all roles which this user is member of or an empty array if the user is not a member of any role.
      */
-    this.getRoles = function () {
-        if (this.cachedRoles.length == 0) {
-            for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
-                var role = record.users_to_user_roles.getRecord(i).user_roles_to_roles.getSelectedRecord();
-                this.cachedRoles.push(new Role(role));
-            }
+    this.getRoles = function() {
+        if(this.cachedRoles.length == 0) {
+	        for (var i = 1; i <= record.users_to_user_roles.getSize(); i++) {
+	            var role = record.users_to_user_roles.getRecord(i).user_roles_to_roles.getSelectedRecord();
+	            this.cachedRoles.push(new Role(role));
+	        }
         }
         return this.cachedRoles;
     }
-
+    
     /**
      * @protected 
      * @type {Array<Role>}
@@ -1618,7 +1597,7 @@ function User(record) {
      * @param {Role|String} role The role object or role name to check. The role must be associated with the tenant of this user.
      * @return {Boolean} True if the user is a member of the specified role.
      */
-    this.hasRole = function (role) {
+    this.hasRole = function(role) {
         if (!role) {
             throw 'Role cannot be null';
         }
@@ -1653,26 +1632,26 @@ function User(record) {
      * @public
      * @return {Array<Permission>} An array with the permissions granted to this user or an empty array if the user has no permissions.
      */
-    this.getPermissions = function () {
-        if (this.cachedPermissions.length == 0) {
-            // map permisions to reduce recursive iterations
-            var permissions = {};
-            var roles = this.getRoles();
-            for (var i in roles) {
-                var rolePermissions = roles[i].getPermissions();
-                for (var j in rolePermissions) {
-                    var permission = rolePermissions[j];
-                    if (!permissions[permission.getName()]) {
-                        permissions[permission.getName()] = permission;
-                    }
-                }
-            }
-
-            // convert map to array
-            for (var k in permissions) {
-                this.cachedPermissions.push(permissions[k]);
-            }
-        }
+    this.getPermissions = function() {
+    	if(this.cachedPermissions.length == 0) {
+	        // map permisions to reduce recursive iterations
+	        var permissions = { };
+	        var roles = this.getRoles();
+	        for (var i in roles) {
+	            var rolePermissions = roles[i].getPermissions();
+	            for (var j in rolePermissions) {
+	                var permission = rolePermissions[j];
+	                if (!permissions[permission.getName()]) {
+	                    permissions[permission.getName()] = permission;
+	                }
+	            }
+	        }
+	
+	        // convert map to array
+	        for (var k in permissions) {
+	        	this.cachedPermissions.push(permissions[k]);
+	        }
+    	}
         return this.cachedPermissions;
     }
     /**
@@ -1691,7 +1670,7 @@ function User(record) {
      * @param {Permission|String} permission The permission object or permission name to check.
      * @return {Boolean} True if the user has been granted the specified permission.
      */
-    this.hasPermission = function (permission) {
+    this.hasPermission = function(permission) {
         if (!permission) {
             throw 'Permission cannot be null';
         }
@@ -1713,7 +1692,7 @@ function User(record) {
      * @public
      * @return {Number} The number of all sessions (active and inactive) for this user.
      */
-    this.getSessionCount = function () {
+    this.getSessionCount = function() {
         return databaseManager.getFoundSetCount(record.users_to_sessions);
     }
 
@@ -1725,7 +1704,7 @@ function User(record) {
      * @public
      * @return {Array<Session>} An array with all active sessions for this user or an empty array if the are no active sessions.
      */
-    this.getActiveSessions = function () {
+    this.getActiveSessions = function() {
         var q = record.users_to_sessions.getQuery();
         addActiveSessionSearchCriteria(q);
         var fs = datasources.db.svy_security.sessions.getFoundSet();
@@ -1752,12 +1731,12 @@ function User(record) {
      * @throws {String} Throws an exception if lock is called for the logged User
      * 
      */
-    this.lock = function (reason, duration) {
-        var loggedUser = getUser()
-        if (loggedUser && this.getUserName() === loggedUser.getUserName() && this.getTenant().getName() === loggedUser.getTenant().getName()) {
-            throw "Cannot lock the logged User";
-        }
-
+    this.lock = function(reason, duration) {
+    	var loggedUser = getUser()
+    	if (loggedUser && this.getUserName() === loggedUser.getUserName() && this.getTenant().getName() === loggedUser.getTenant().getName()) {
+    		throw "Cannot lock the logged User";
+    	}
+    	
         record.lock_flag = 1;
         record.lock_reason = reason;
         if (duration) {
@@ -1776,7 +1755,7 @@ function User(record) {
      * @public
      * @return {User} This user for call-chaining support.
      */
-    this.unlock = function () {
+    this.unlock = function() {
         record.lock_flag = null;
         record.lock_reason = null;
         record.lock_expiration = null;
@@ -1790,7 +1769,7 @@ function User(record) {
      * @public
      * @return {Boolean} True if the user account is currently locked and the lock has not expired.
      */
-    this.isLocked = function () {
+    this.isLocked = function() {
         if (record.lock_flag == 1) {
             if (record.lock_expiration) {
                 var now = application.getServerTimeStamp();
@@ -1809,7 +1788,7 @@ function User(record) {
      * @public
      * @return {String} The lock reason. Can be null.
      */
-    this.getLockReason = function () {
+    this.getLockReason = function() {
         return record.lock_reason;
     }
 
@@ -1820,7 +1799,7 @@ function User(record) {
      * @public
      * @return {Date} The date/time when the lock expires. Can be null. The date/time is using the Servoy application server timezone.
      */
-    this.getLockExpiration = function () {
+    this.getLockExpiration = function() {
         return record.lock_expiration;
     }
 
@@ -1832,7 +1811,7 @@ function User(record) {
      * @param {Number} [duration] The duration of token validity in milliseconds. Default is 30 minutes in future.
      * @return {String} The generated access token.
      */
-    this.generateAccessToken = function (duration) {
+    this.generateAccessToken = function(duration) {
         record.access_token = application.getUUID().toString();
         if (!duration) {
             duration = ACCESS_TOKEN_DEFAULT_VALIDITY;
@@ -1843,15 +1822,15 @@ function User(record) {
         saveRecord(record);
         return record.access_token;
     }
-
+    
     /**
      * Gets the ID of this user which can be used to store references to this user for example as creator/modifier in tables
      *
      * @public
      * @return {UUID} User UUID.
      */
-    this.getId = function () {
-        return record.user_uuid;
+    this.getId = function() {
+    	return record.user_uuid;
     }
 }
 
@@ -1873,22 +1852,12 @@ function Role(record) {
     }
 
     /**
-     * Gets the name and the tenant of this role.
-     *
-     * @public
-     * @return {String} The role name and tenant.
-     */
-    this.toString = function () {
-        return record.role_name + ", " + record.tenant_name;
-    }
-
-    /**
      * Gets the name of this role. The role name is unique to the associated tenant.
      *
      * @public
      * @return {String} The role name.
      */
-    this.getName = function () {
+    this.getName = function() {
         return record.role_name;
     }
 
@@ -1897,7 +1866,7 @@ function Role(record) {
      * @public
      * @return {String} The display name of this role. Can be null.
      */
-    this.getDisplayName = function () {
+    this.getDisplayName = function() {
         return record.display_name;
     }
 
@@ -1914,12 +1883,12 @@ function Role(record) {
      * @return {Role} This role for call-chaining support.
      * @throws {String} throws an exception if the displayName cannot be changed
      */
-    this.setDisplayName = function (displayName) {
-        var loggedTenant = getTenant();
-        if (loggedTenant && loggedTenant.isMasterTenant()) {
-            throw "Cannot cannot set the display name to role of a master tenant when logged in as an user";
-        }
-
+    this.setDisplayName = function(displayName) {
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot cannot set the display name to role of a master tenant when logged in as an user";
+    	}
+    	
         record.display_name = displayName;
         saveRecord(record);
         return this;
@@ -1931,7 +1900,7 @@ function Role(record) {
      * @public
      * @return {Tenant} The tenant which this role belongs to.
      */
-    this.getTenant = function () {
+    this.getTenant = function() {
         return new Tenant(record.roles_to_tenants.getSelectedRecord());
     }
 
@@ -1943,7 +1912,7 @@ function Role(record) {
      * @param {User|String} user The user object or username of user to add. The user must be associated with the tenant of this role.
      * @return {Role} This role for call-chaining support.
      */
-    this.addUser = function (user) {
+    this.addUser = function(user) {
 
         if (!user) {
             throw 'User cannot be null'
@@ -1987,7 +1956,7 @@ function Role(record) {
      * @public
      * @return {Array<User>} An array with all users who are members of this role or an empty array if the role has no members.
      */
-    this.getUsers = function () {
+    this.getUsers = function() {
         var users = [];
         for (var i = 1; i <= record.roles_to_user_roles.getSize(); i++) {
             var user = record.roles_to_user_roles.getRecord(i).user_roles_to_users.getSelectedRecord();
@@ -2003,7 +1972,7 @@ function Role(record) {
      * @param {User|String} user The user object or username of user to check. The user must be associated with the tenant of this role.
      * @return {Boolean} True if the specified user is a member of this role.
      */
-    this.hasUser = function (user) {
+    this.hasUser = function(user) {
 
         if (!user) {
             throw 'User cannot be null';
@@ -2036,7 +2005,7 @@ function Role(record) {
      * @param {User|String} user The user object or username of user to remove.
      * @return {Role} This role for call-chaining support.
      */
-    this.removeUser = function (user) {
+    this.removeUser = function(user) {
         if (!user) {
             throw 'User cannot be null';
         }
@@ -2065,15 +2034,15 @@ function Role(record) {
      * @throws {String} Throws an exception when permission cannot be grant.
      * @return {Role} This role for call-chaining support.
      */
-    this.addPermission = function (permission) {
+    this.addPermission = function(permission) {
 
         if (!permission) {
             throw 'Permission cannot be null';
         }
-        var loggedTenant = getTenant();
-        if (loggedTenant && loggedTenant.isMasterTenant()) {
-            throw "Cannot grant permission to role of a master tenant when logged in as an user";
-        }
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot grant permission to role of a master tenant when logged in as an user";
+    	}
 
         /**
          * @type {String}
@@ -2104,17 +2073,17 @@ function Role(record) {
      * @public
      * @return {Array<Permission>} An array with all permissions granted to this role or an empty array if no permissions are granted.
      */
-    this.getPermissions = function () {
+    this.getPermissions = function() {
 
-        if (this.cachedPermissions.length == 0) {
+        if(this.cachedPermissions.length == 0) {
             for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
                 var permission = record.roles_to_roles_permissions.getRecord(i).roles_permissions_to_permissions.getSelectedRecord();
                 this.cachedPermissions.push(new Permission(permission));
-            }
+	        }
         }
         return this.cachedPermissions;
     }
-
+    
     /**
      * @protected  
      * @type {Array<Permission>} 
@@ -2128,7 +2097,7 @@ function Role(record) {
      * @param {Permission|String} permission The permission object or name of permission to check.
      * @return {Boolean} True if the specified permission is granted to this role.
      */
-    this.hasPermission = function (permission) {
+    this.hasPermission = function(permission) {
         if (!permission) {
             throw 'Permission cannot be null';
         }
@@ -2155,15 +2124,15 @@ function Role(record) {
      * @return {Role} This role for call-chaining support.
      * @throws {String} Throws an exception when permission cannot be removed.
      */
-    this.removePermission = function (permission) {
+    this.removePermission = function(permission) {
         if (!permission) {
             throw 'Permission cannot be null';
         }
-        var loggedTenant = getTenant();
-        if (loggedTenant && loggedTenant.isMasterTenant()) {
-            throw "Cannot remove permission from role of a master tenant when logged in as an user";
-        }
-
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot remove permission from role of a master tenant when logged in as an user";
+    	}
+        
         var permissionName = permission instanceof String ? permission : permission.getName();
         for (var i = 1; i <= record.roles_to_roles_permissions.getSize(); i++) {
             if (record.roles_to_roles_permissions.getRecord(i).permission_name == permissionName) {
@@ -2171,7 +2140,7 @@ function Role(record) {
                 break;
             }
         }
-
+        
         return this;
     }
 }
@@ -2193,7 +2162,7 @@ function Permission(record) {
     if (!record) {
         throw new Error('Permission record is not specified');
     }
-
+    
     /** 
      * @protected 
      * @type {JSRecord<db:/svy_security/permissions>}
@@ -2207,17 +2176,7 @@ function Permission(record) {
      * @public
      * @return {String} The name of the permission.
      */
-    this.toString = function () {
-        return record.permission_name;
-    }
-    /**
-     * Gets the name of this permission.
-     * The permission name is unique in the system and matches a Servoy security group name.
-     *
-     * @public
-     * @return {String} The name of the permission.
-     */
-    this.getName = function () {
+    this.getName = function() {
         return record.permission_name;
     }
 
@@ -2228,7 +2187,7 @@ function Permission(record) {
      * @public
      * @return {String} The display name of the permission. Can be null.
      */
-    this.getDisplayName = function () {
+    this.getDisplayName = function() {
         return record.display_name;
     }
 
@@ -2239,7 +2198,7 @@ function Permission(record) {
      * @param {String} [displayName] The display name to use.
      * @return {Permission} This permission for call-chaining support.
      */
-    this.setDisplayName = function (displayName) {
+    this.setDisplayName = function(displayName) {
         record.display_name = displayName;
         saveRecord(record);
         return this;
@@ -2259,15 +2218,15 @@ function Permission(record) {
      * @return {Permission} This permission for call-chaining support.
      * @throws {String} Throws an exception when permission cannot be granted.
      */
-    this.addRole = function (role) {
+    this.addRole = function(role) {
         if (!role) {
             throw new Error('Role cannot be null');
         }
-
-        var loggedTenant = getTenant();
-        if (loggedTenant && loggedTenant.isMasterTenant()) {
-            throw "Cannot grant permission to role of a master tenant when logged in as an user";
-        }
+        
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot grant permission to role of a master tenant when logged in as an user";
+    	}
         var roleName = role.getName();
         if (!this.hasRole(role)) {
             var rolePermRec = record.permissions_to_roles_permissions.getRecord(record.permissions_to_roles_permissions.newRecord(false, false));
@@ -2290,7 +2249,7 @@ function Permission(record) {
      * @public
      * @return {Array<Role>} An array with all roles to which this permission is granted or an empty array if the permission has not been granted to any role.
      */
-    this.getRoles = function () {
+    this.getRoles = function() {
         var roles = [];
         for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
             var role = record.permissions_to_roles_permissions.getRecord(i).roles_permissions_to_roles.getSelectedRecord();
@@ -2306,7 +2265,7 @@ function Permission(record) {
      * @param {Role|String} role The role object or the name of the role to check.
      * @return {Boolean} True if this permission is granted to the specified role.
      */
-    this.hasRole = function (role) {
+    this.hasRole = function(role) {
         if (!role) {
             throw 'Role cannot be null';
         }
@@ -2333,14 +2292,14 @@ function Permission(record) {
      * @return {Permission} This permission for call-chaining support.
      * @throws {String} Throws an exception when permission cannot be removed.
      */
-    this.removeRole = function (role) {
+    this.removeRole = function(role) {
         if (!role) {
             throw 'Role cannot be null';
         }
-        var loggedTenant = getTenant();
-        if (loggedTenant && loggedTenant.isMasterTenant()) {
-            throw "Cannot remove permission from role of a master tenant when logged in as an user";
-        }
+    	var loggedTenant = getTenant();
+    	if (loggedTenant && loggedTenant.isMasterTenant()) {
+    		throw "Cannot remove permission from role of a master tenant when logged in as an user";
+    	}
         var roleName = role instanceof String ? role : role.getName();
 
         for (var i = 1; i <= record.permissions_to_roles_permissions.getSize(); i++) {
@@ -2358,7 +2317,7 @@ function Permission(record) {
      * @public
      * @return {Array<User>} An array with all users whom this permission is granted to or an empty array if no user has this permission.
      */
-    this.getUsers = function () {
+    this.getUsers = function() {
 
         var users = [];
         var q = datasources.db.svy_security.users.createSelect();
@@ -2402,7 +2361,7 @@ function Session(record) {
      * @public
      * @return {String} The internal unique ID of this session.
      */
-    this.getID = function () {
+    this.getID = function() {
         return record.id.toString();
     }
 
@@ -2414,7 +2373,7 @@ function Session(record) {
      * @public
      * @return {User} The user who created this session or null if the user account has been deleted.
      */
-    this.getUser = function () {
+    this.getUser = function() {
         if (!utils.hasRecords(record.sessions_to_users)) {
             return null;
         }
@@ -2428,7 +2387,7 @@ function Session(record) {
      * @public
      * @return {String} The username of the user who created this session.
      */
-    this.getUserName = function () {
+    this.getUserName = function() {
         return record.user_name;
     }
 
@@ -2439,7 +2398,7 @@ function Session(record) {
      * @public
      * @return {Tenant}
      */
-    this.getTenant = function () {
+    this.getTenant = function() {
         if (!utils.hasRecords(record.sessions_to_tenants)) {
             return null;
         }
@@ -2453,7 +2412,7 @@ function Session(record) {
      * @public
      * @return {String} The name of the tenant associated with this session.
      */
-    this.getTenantName = function () {
+    this.getTenantName = function() {
         return record.tenant_name;
     }
 
@@ -2464,7 +2423,7 @@ function Session(record) {
      * @public
      * @return {Date} The start date/time of this session.
      */
-    this.getStart = function () {
+    this.getStart = function() {
         return record.session_start
     }
 
@@ -2477,7 +2436,7 @@ function Session(record) {
      * @return {Date} The end date/time of this session.
      *
      */
-    this.getEnd = function () {
+    this.getEnd = function() {
         return record.session_end;
     }
 
@@ -2490,7 +2449,7 @@ function Session(record) {
      * @deprecated Sessions are cleaned by security batch processor
      *
      */
-    this.getLastActivity = function () {
+    this.getLastActivity = function() {
         return record.last_client_ping;
     }
 
@@ -2500,7 +2459,7 @@ function Session(record) {
      * @public
      * @return {String} The client IP address of the session.
      */
-    this.getIPAddress = function () {
+    this.getIPAddress = function() {
         return record.ip_address;
     }
 
@@ -2511,7 +2470,7 @@ function Session(record) {
      * @public
      * @return {String} The client user agent string of this session. Can be null.
      */
-    this.getUserAgentString = function () {
+    this.getUserAgentString = function() {
         return record.user_agent_string;
     }
 
@@ -2522,10 +2481,10 @@ function Session(record) {
      * @public
      * @return {String} The Servoy Client ID associated with the session.
      */
-    this.getServoyClientID = function () {
+    this.getServoyClientID = function() {
         return record.servoy_client_id;
     }
-
+    
     /**
      * Gets the session duration in milliseconds (as updated in the database)
      * @note The session duration is updated on each "client ping" which by default is once per minute
@@ -2533,7 +2492,7 @@ function Session(record) {
      * @public
      * @return {Number} The Servoy Client ID associated with the session.
      */
-    this.getDuration = function () {
+    this.getDuration = function() {
         return record.session_duration;
     }
 
@@ -2543,7 +2502,7 @@ function Session(record) {
      * @public
      * @return {Boolean} True if the session has not been terminated and has not been inactive for longer than the session inactivity timeout period.
      */
-    this.isActive = function () {
+    this.isActive = function() {
         return record.is_active;
     }
 
@@ -2552,7 +2511,7 @@ function Session(record) {
      * @public
      * @return {Boolean} True if the session was terminated/closed normally or by timeout from inactivity.
      */
-    this.isTerminated = function () {
+    this.isTerminated = function() {
         return record.session_end != null || this.isAbandoned();
     }
 
@@ -2562,7 +2521,7 @@ function Session(record) {
      * @public
      * @return {Boolean} True if this session was not terminated/closed normally, but has timed out due to inactivity.
      */
-    this.isAbandoned = function () {
+    this.isAbandoned = function() {
         return record.session_end == null && !this.isActive();
     }
 
@@ -2572,17 +2531,17 @@ function Session(record) {
      * @public
      * @return {String}
      */
-    this.getSolutionName = function () {
-        return record.solution_name;
+    this.getSolutionName = function(){
+    	return record.solution_name;
     }
-
+    
     /**
      * Records a client ping in the database. Internal-use only.
      *
      * @protected
      * @deprecated 
      */
-    this.sendPing = function () {
+    this.sendPing = function() {
         setSessionLastPingAndDuration(record);
         saveRecord(record);
     }
@@ -2736,21 +2695,21 @@ function initSession(user) {
     if (!sessionRec.session_start) sessionRec.session_start = new Date();
 
     // DEPRECATED 1.2.0
-    //    sessionRec.last_client_ping = application.getServerTimeStamp();
-
+//    sessionRec.last_client_ping = application.getServerTimeStamp();
+    
     if (application.getApplicationType() == APPLICATION_TYPES.NG_CLIENT) {
         sessionRec.user_agent_string = plugins.ngclientutils.getUserAgent();
     }
-
-
-
+    
+    
+    
     saveRecord(sessionRec);
 
     // create ping job
     // DERECATED 1.2.0
-    //    var jobName = 'com.servoy.extensions.security.sessionUpdater';
-    //    plugins.scheduler.removeJob(jobName);
-    //    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
+//    var jobName = 'com.servoy.extensions.security.sessionUpdater';
+//    plugins.scheduler.removeJob(jobName);
+//    plugins.scheduler.addJob(jobName, application.getServerTimeStamp(), sessionClientPing, SESSION_PING_INTERVAL);
 
     // store session id
     activeTenantIsMaster = user.getTenant().isMasterTenant();
@@ -2769,7 +2728,7 @@ function initSession(user) {
  * @deprecated 1.2.0
  * @properties={typeid:24,uuid:"92DCCEDD-F678-4E72-89A3-BEEE78E88958"}
  */
-function sessionClientPing() {
+function sessionClientPing() {    
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
     setSessionLastPingAndDuration(sessionRec);
@@ -2785,18 +2744,18 @@ function sessionClientPing() {
 function closeSession() {
     if (!utils.hasRecords(active_session)) return;
     var sessionRec = active_session.getRecord(1);
-
+    
     // SET END TIME AND DURATION
     var now = application.getServerTimeStamp();
     sessionRec.session_end = now;
-
+    
     // Safety check, in case session start is null (SVYX-242).
-    var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
-    sessionRec.session_duration = Math.max(0, now.getTime() - sessionStart.getTime());
-
+	var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
+    sessionRec.session_duration = Math.max(0,now.getTime() - sessionStart.getTime());
+    
     //	DEPRECATED 1.2.0
-    //    setSessionLastPingAndDuration(sessionRec, true);
-
+//    setSessionLastPingAndDuration(sessionRec, true);
+    
     saveRecord(sessionRec);
     sessionID = null;
     activeUserName = null;
@@ -2816,8 +2775,8 @@ function setSessionLastPingAndDuration(sessionRec, setEndDate) {
     }
     var now = application.getServerTimeStamp();
     sessionRec.last_client_ping = now;
-    // Safety check, in case session start is null (SVYX-242).
-    var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
+ // Safety check, in case session start is null (SVYX-242).
+	var sessionStart = sessionRec.session_start ? sessionRec.session_start : now;
     var duration = now.getTime() - sessionStart.getTime();
     if (duration < 0) {
         duration = 0;
@@ -2970,23 +2929,23 @@ function nameLengthIsValid(name, maxLength) {
  * @properties={typeid:24,uuid:"9100D50E-8FC1-4466-9E94-3730E6B18783"}
  */
 function addActiveSessionSearchCriteria(qbSelect) {
-
-    // GET ACTIVE CLIENT IDS
-    var activeClientIDs = [];
-    var clients = plugins.clientmanager.getConnectedClients();
-    for (var i in clients) {
-        var client = clients[i];
-        activeClientIDs.push(client.getClientID());
-    }
-
-    // SELECT IN [...CLIENT IDS]
-    qbSelect.where.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs));
-
-    //    var expiration = application.getServerTimeStamp();
-    //    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 1 min in the past
-    //    var andActiveCriteria = qbSelect.and;
-    //    andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
-    //    qbSelect.where.add(andActiveCriteria);
+	
+	// GET ACTIVE CLIENT IDS
+	var activeClientIDs = [];
+	var clients = plugins.clientmanager.getConnectedClients();
+	for(var i in clients){
+		var client = clients[i];
+		activeClientIDs.push(client.getClientID());
+	}
+	
+	// SELECT IN [...CLIENT IDS]
+	qbSelect.where.add(qbSelect.columns.servoy_client_id.isin(activeClientIDs));
+    
+//    var expiration = application.getServerTimeStamp();
+//    expiration.setTime(expiration.getTime() - SESSION_TIMEOUT); // i.e 1 min in the past
+//    var andActiveCriteria = qbSelect.and;
+//    andActiveCriteria.add(qbSelect.columns.session_end.isNull).add(qbSelect.columns.last_client_ping.gt(expiration));
+//    qbSelect.where.add(andActiveCriteria);
 }
 
 /**
@@ -3010,32 +2969,32 @@ function getVersion() {
  * @private
  * @properties={typeid:24,uuid:"B34BC0F8-6792-4AD1-BD36-9E616C790B81"}
  */
-function createSampleData() {
-    if (!getTenants().length) {
-        logInfo('No security data found. Default data will be created');
-        var tenant = createTenant(DEFAULT_TENANT);
-        var user = tenant.createUser(DEFAULT_TENANT);
-        user.setPassword(DEFAULT_TENANT);
-        var role = tenant.createRole(DEFAULT_TENANT);
-        user.addRole(role);
-
-        // check if there are permissions
-        var permissions = getPermissions();
-        if (!permissions.length) {
-            logInfo('No permission data found. Permissions will be synced');
-            syncPermissions();
-            permissions = getPermissions();
-        }
-
-        // assign default permission
-        var permission = getPermissions()[0];
-        if (permission) {
-            role.addPermission(permission);
-        } else {
-            role.addPermission("Administrators")
-            logInfo('No permission data found. Administrator permission will be assigned as default permission')
-        }
-    }
+function createSampleData(){
+	if (!getTenants().length) {
+		logInfo('No security data found. Default data will be created');
+		var tenant = createTenant(DEFAULT_TENANT);
+		var user = tenant.createUser(DEFAULT_TENANT);
+		user.setPassword(DEFAULT_TENANT);
+		var role = tenant.createRole(DEFAULT_TENANT);
+		user.addRole(role);
+		
+		// check if there are permissions
+		var permissions = getPermissions();
+		if (!permissions.length) {
+			logInfo('No permission data found. Permissions will be synced');
+			syncPermissions();
+			permissions = getPermissions();
+		}
+		
+		// assign default permission
+		var permission = getPermissions()[0];
+		if (permission) {
+			role.addPermission(permission);
+		} else {
+			role.addPermission("Administrators")
+			logInfo('No permission data found. Administrator permission will be assigned as default permission')
+		}
+	}
 }
 
 /**
@@ -3048,39 +3007,39 @@ function createSampleData() {
  * @properties={typeid:24,uuid:"17106233-8761-463C-ABDB-6F8ED312DFA5"}
  */
 function afterRecordInsert_role(record) {
-    var loggedTenant = getTenant();
-    if (loggedTenant && loggedTenant.isMasterTenant()) {
-        logWarning("You are creating a role while you are logged in as an user of a master tenant");
-    }
-    if (loggedTenant && loggedTenant.isSubTenant()) {
-        logWarning("You are creating a role while you are logged in as an user of a sub-tenant");
-    }
-
-    if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
-        //propagate insert to all sub-tenants
-        for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
-            var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
-
-            var recordRoleSubTenant;
-            var roleFound = false;
-            for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
-                recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
-                if (recordRoleSubTenant.role_name === record.role_name) {
-                    roleFound = true;
-                    break;
-                }
-            }
-
-            if (roleFound === true) {
-                continue;
-            }
-
-            recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(recordSubTenant.tenants_to_roles.newRecord());
-            //copy fields to not miss values in case columns are added in the future
-            databaseManager.copyMatchingFields(record, recordRoleSubTenant, ['tenant_name']);
-            databaseManager.saveData(recordRoleSubTenant);
-        }
-    }
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are creating a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are creating a role while you are logged in as an user of a sub-tenant");
+	}
+	
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate insert to all sub-tenants
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
+			
+			var recordRoleSubTenant;
+			var roleFound = false;
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					roleFound = true;
+					break;
+				}
+			}
+			
+			if (roleFound === true) {
+				continue;
+			}
+			
+			recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(recordSubTenant.tenants_to_roles.newRecord());
+			//copy fields to not miss values in case columns are added in the future
+			databaseManager.copyMatchingFields(record, recordRoleSubTenant, ['tenant_name']);
+			databaseManager.saveData(recordRoleSubTenant);
+		}
+	}
 }
 
 /**
@@ -3093,30 +3052,30 @@ function afterRecordInsert_role(record) {
  * @properties={typeid:24,uuid:"90523996-D26E-4296-B97E-8B911FE4A4C7"}
  */
 function afterRecordUpdate_role(record) {
-    var loggedTenant = getTenant();
-    if (loggedTenant && loggedTenant.isMasterTenant()) {
-        logWarning("You are updating a role while you are logged in as an user of a master tenant");
-    }
-    if (loggedTenant && loggedTenant.isSubTenant()) {
-        logWarning("You are updating a role while you are logged in as an user of a sub-tenant");
-    }
-
-
-    if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
-        //propagate update to all sub-tenants
-        for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
-            var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
-
-            for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
-                var recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
-                if (recordRoleSubTenant.role_name === record.role_name) {
-                    databaseManager.copyMatchingFields(record, recordRoleSubTenant, ['tenant_name']);
-                    databaseManager.saveData(recordRoleSubTenant);
-                    break;
-                }
-            }
-        }
-    }
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are updating a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are updating a role while you are logged in as an user of a sub-tenant");
+	}
+	
+	
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate update to all sub-tenants
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
+			
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				var recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					databaseManager.copyMatchingFields(record, recordRoleSubTenant, ['tenant_name']);					
+					databaseManager.saveData(recordRoleSubTenant);
+					break;
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -3129,50 +3088,50 @@ function afterRecordUpdate_role(record) {
  * @properties={typeid:24,uuid:"6A602687-ACF0-4F04-B0D6-8D5762FEF65E"}
  */
 function afterRecordInsert_role_permission(record) {
-    var loggedTenant = getTenant();
-    if (loggedTenant && loggedTenant.isMasterTenant()) {
-        logWarning("You are granting a permission to a role while you are logged in as an user of a master tenant");
-    }
-    if (loggedTenant && loggedTenant.isSubTenant()) {
-        logWarning("You are granting a permission to a role while you are logged in as an user of a sub-tenant");
-    }
-
-    if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$subtenants)) {
-        //propagate insert to all sub-tenants
-        for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
-            var recordSubTenant = record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
-
-            var recordRolePermissionSubTenant,
-                recordRoleSubTenant,
-                roleFound = false,
-                permissionFound;
-            for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
-                recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
-                if (recordRoleSubTenant.role_name === record.role_name) {
-                    roleFound = true;
-                    permissionFound = false;
-                    for (var p = 1; p <= recordRoleSubTenant.roles_to_roles_permissions.getSize(); p++) {
-                        recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(p);
-                        if (recordRolePermissionSubTenant.permission_name === record.permission_name) {
-                            logDebug('Sub-tenant ' + recordSubTenant.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
-                            permissionFound = true;
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            if (roleFound && !permissionFound) {
-                recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(recordRoleSubTenant.roles_to_roles_permissions.newRecord());
-                //copy fields to not miss values in case columns are added in the future
-                databaseManager.copyMatchingFields(record, recordRolePermissionSubTenant, ['tenant_name']);
-                databaseManager.saveData(recordRolePermissionSubTenant);
-            } else if (!roleFound) {
-                logDebug('Sub-tenant ' + recordSubTenant.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
-            }
-        }
-    }
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are granting a permission to a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are granting a permission to a role while you are logged in as an user of a sub-tenant");
+	}
+	
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate insert to all sub-tenants
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
+			
+			var recordRolePermissionSubTenant,
+				recordRoleSubTenant,
+				roleFound = false,
+				permissionFound;
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					roleFound = true;
+					permissionFound = false;
+					for (var p = 1; p <= recordRoleSubTenant.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSubTenant.permission_name === record.permission_name) {
+							logDebug('Sub-tenant ' + recordSubTenant.tenant_name + ' already has a permission ' + record.permission_name + ' granted to role ' + record.role_name);
+							permissionFound = true;
+							break;
+						}
+					}
+					break;
+				}
+			}
+			
+			if (roleFound && !permissionFound) {
+				recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(recordRoleSubTenant.roles_to_roles_permissions.newRecord());
+				//copy fields to not miss values in case columns are added in the future
+				databaseManager.copyMatchingFields(record, recordRolePermissionSubTenant, ['tenant_name']);
+				databaseManager.saveData(recordRolePermissionSubTenant);
+			} else if (!roleFound) {
+				logDebug('Sub-tenant ' + recordSubTenant.tenant_name + ' has no role ' + record.role_name + ' to which permission ' + record.permission_name + ' could be granted');
+			}
+		}
+	}
 }
 
 /**
@@ -3185,28 +3144,28 @@ function afterRecordInsert_role_permission(record) {
  * @properties={typeid:24,uuid:"AC038DA1-1E18-4116-8922-E2B7FD079374"}
  */
 function afterRecordDelete_role(record) {
-    var loggedTenant = getTenant();
-    if (loggedTenant && loggedTenant.isMasterTenant()) {
-        logWarning("You are deleting a role while you are logged in as an user of a master tenant");
-    }
-    if (loggedTenant && loggedTenant.isSubTenant()) {
-        logWarning("You are deleting a role while you are logged in as an user of a sub-tenant");
-    }
-
-    if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
-        //propagate delete to all sub-tenants
-        for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
-            var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
-
-            for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
-                var recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
-                if (recordRoleSubTenant.role_name === record.role_name) {
-                    recordSubTenant.tenants_to_roles.deleteRecord(r)
-                    break;
-                }
-            }
-        }
-    }
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are deleting a role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are deleting a role while you are logged in as an user of a sub-tenant");
+	}
+	
+	if (utils.hasRecords(record.roles_to_tenants) && utils.hasRecords(record.roles_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate delete to all sub-tenants
+		for (var i = 1; i <= record.roles_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
+			
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				var recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					recordSubTenant.tenants_to_roles.deleteRecord(r)
+					break;
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -3219,35 +3178,35 @@ function afterRecordDelete_role(record) {
  * @properties={typeid:24,uuid:"094D2472-04CC-4555-8BCD-CE55D18BE397"}
  */
 function afterRecordDelete_roles_permissions(record) {
-    var loggedTenant = getTenant();
-    if (loggedTenant && loggedTenant.isMasterTenant()) {
-        logWarning("You are removing permission from role while you are logged in as an user of a master tenant");
-    }
-    if (loggedTenant && loggedTenant.isSubTenant()) {
-        logWarning("You are removing permission from role while you are logged in as an user of a sub-tenant");
-    }
-
-    if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$subtenants)) {
-        //propagate delete to all sub-tenants
-        for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
-            var recordSubTenant = record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
-
-            var recordRolePermissionSubTenant,
-                recordRoleSubTenant;
-            for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
-                recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
-                if (recordRoleSubTenant.role_name === record.role_name) {
-                    for (var p = 1; p <= recordRoleSubTenant.roles_to_roles_permissions.getSize(); p++) {
-                        recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(p);
-                        if (recordRolePermissionSubTenant.permission_name === record.permission_name) {
-                            recordRoleSubTenant.roles_to_roles_permissions.deleteRecord(p)
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
+	var loggedTenant = getTenant();
+	if (loggedTenant && loggedTenant.isMasterTenant()) {
+		logWarning("You are removing permission from role while you are logged in as an user of a master tenant");
+	}
+	if (loggedTenant && loggedTenant.isSubTenant()) {
+		logWarning("You are removing permission from role while you are logged in as an user of a sub-tenant");
+	}
+	
+	if (utils.hasRecords(record.roles_permissions_to_tenants) && utils.hasRecords(record.roles_permissions_to_tenants.tenants_to_tenants$subtenants)) {
+		//propagate delete to all sub-tenants
+		for (var i = 1; i <= record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getSize(); i++) {
+			var recordSubTenant = record.roles_permissions_to_tenants.tenants_to_tenants$subtenants.getRecord(i);
+			
+			var recordRolePermissionSubTenant,
+				recordRoleSubTenant;
+			for (var r = 1; r <= recordSubTenant.tenants_to_roles.getSize(); r++) {
+				recordRoleSubTenant = recordSubTenant.tenants_to_roles.getRecord(r);
+				if (recordRoleSubTenant.role_name === record.role_name) {
+					for (var p = 1; p <= recordRoleSubTenant.roles_to_roles_permissions.getSize(); p++) {
+						recordRolePermissionSubTenant = recordRoleSubTenant.roles_to_roles_permissions.getRecord(p);
+						if (recordRolePermissionSubTenant.permission_name === record.permission_name) {
+							recordRoleSubTenant.roles_to_roles_permissions.deleteRecord(p)
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -3260,25 +3219,25 @@ function afterRecordDelete_roles_permissions(record) {
  * @properties={typeid:24,uuid:"FA620835-B83C-4F75-B5BC-0A83EBE50D87"}
  */
 function afterRecordDelete_tenant(record) {
-    var loggedTenant = getTenant();
-    if (loggedTenant) {
-        logWarning("You are deleting a tenant while you are logged in as an user.");
-    }
-
-    // TODO should also check if i can delete any tenant while logged in !?
-
-    if (utils.hasRecords(record.tenants_to_tenants$subtenants)) {
-        //if the tenant to delete itself has a master, set that on all sub-tenants
-        var masterTenantName = null;
-        if (utils.hasRecords(record.tenants_to_tenants$master)) {
-            masterTenantName = record.tenants_to_tenants$master.tenant_name;
-        }
-        for (var s = 1; s <= record.tenants_to_tenants$subtenants.getSize(); s++) {
-            var recordSubTenant = record.tenants_to_tenants$subtenants.getRecord(s);
-            recordSubTenant.master_tenant_name = masterTenantName;
-        }
-        databaseManager.saveData(record.tenants_to_tenants$subtenants);
-    }
+	var loggedTenant = getTenant();
+	if (loggedTenant) {
+		logWarning("You are deleting a tenant while you are logged in as an user.");
+	}
+	
+	// TODO should also check if i can delete any tenant while logged in !?
+	
+	if (utils.hasRecords(record.tenants_to_tenants$subtenants)) {
+		//if the tenant to delete itself has a master, set that on all sub-tenants
+		var masterTenantName = null;
+		if (utils.hasRecords(record.tenants_to_tenants$master)) {
+			masterTenantName = record.tenants_to_tenants$master.tenant_name;
+		}
+		for (var s = 1; s <= record.tenants_to_tenants$subtenants.getSize(); s++) {
+			var recordSubTenant = record.tenants_to_tenants$subtenants.getRecord(s);
+			recordSubTenant.master_tenant_name = masterTenantName;
+		}
+		databaseManager.saveData(record.tenants_to_tenants$subtenants);
+	}
 }
 
 /**
@@ -3287,8 +3246,8 @@ function afterRecordDelete_tenant(record) {
  * @properties={typeid:24,uuid:"84E4C3B3-806D-4109-9DBB-37895F94B402"}
  */
 function getAutoSyncPermissionsEnabled() {
-    var result = application.getUserProperty(USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED);
-    return result != "false" ? true : false;
+	var result = application.getUserProperty(USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED);
+	return result != "false" ? true : false;
 }
 
 /**
@@ -3297,8 +3256,8 @@ function getAutoSyncPermissionsEnabled() {
  * @properties={typeid:24,uuid:"15191E19-7A16-489B-B595-DCED6AE9632E"}
  */
 function getLoginWithUserIdAsUserUIDEnabled() {
-    var result = application.getUserProperty(USER_PROPERTIES.LOGIN_WITH_USER_ID_AS_USER_UID);
-    return result == "true" ? true : false;
+	var result = application.getUserProperty(USER_PROPERTIES.LOGIN_WITH_USER_ID_AS_USER_UID);
+	return result == "true" ? true : false;
 }
 
 /**
@@ -3307,8 +3266,8 @@ function getLoginWithUserIdAsUserUIDEnabled() {
  * @properties={typeid:24,uuid:"824B1235-EAAE-4668-BD85-ED1B75D5A9C4"}
  */
 function getUseCache() {
-    var result = application.getUserProperty(USER_PROPERTIES.USE_CACHE);
-    return result != "false" ? true : false;
+	var result = application.getUserProperty(USER_PROPERTIES.USE_CACHE);
+	return result != "false"? true: false;
 }
 
 /**
@@ -3327,27 +3286,27 @@ function getUseCache() {
  * 
  * @properties={typeid:24,uuid:"78FDBC6C-9E49-4A6F-B9EE-57326E2F273E"}
  */
-function setTokenBasedAuth(namespace, expiresIn, resources) {
-
-    // clears token based auth
-    tokenBasedAuth = null;
-    if (!namespace) {
-        logDebug('Token-based auth mode disabled');
-        return;
-    }
-
-    if (!expiresIn || expiresIn < 0) {
-        expiresIn = 0;
-    }
-    if (resources && resources.length) {
-        resources = resources.join(',');
-    }
-    tokenBasedAuth = {
-        namespace: namespace,
-        expiresIn: expiresIn,
-        resources: resources
-    };
-    logDebug('Token-based auth mode enabled: ' + JSON.stringify(tokenBasedAuth));
+function setTokenBasedAuth(namespace, expiresIn, resources){
+	
+	// clears token based auth
+	tokenBasedAuth = null;
+	if(!namespace){
+		logDebug('Token-based auth mode disabled');
+		return;
+	}
+	
+	if(!expiresIn || expiresIn < 0){
+		expiresIn = 0;
+	}
+	if(resources && resources.length){
+		resources = resources.join(',');
+	}
+	tokenBasedAuth = {
+		namespace : namespace,
+		expiresIn : expiresIn,
+		resources : resources
+	};
+	logDebug('Token-based auth mode enabled: ' + JSON.stringify(tokenBasedAuth));
 }
 
 /**
@@ -3357,30 +3316,30 @@ function setTokenBasedAuth(namespace, expiresIn, resources) {
  * 
  * @properties={typeid:24,uuid:"E2D3BD33-9A85-4407-8B0E-008F1B71F1CE"}
  */
-function setToken(user) {
-    if (!tokenBasedAuth) {
-        return;
-    }
-    var expiration = null;
-    if (tokenBasedAuth.expiresIn) {
-        expiration = new Date();
-        expiration = scopes.svyDateUtils.addMilliseconds(expiration, tokenBasedAuth.expiresIn * 3.6e+6);
-    }
+function setToken(user){
+	if(!tokenBasedAuth){
+		return;
+	}
+	var expiration = null;
+	if(tokenBasedAuth.expiresIn){
+		expiration = new Date();
+		expiration = scopes.svyDateUtils.addMilliseconds(expiration,tokenBasedAuth.expiresIn * 3.6e+6);
+	}
 
-    var payload = {
-        namespace: tokenBasedAuth.namespace,
-        user: user.getUserName(),
-        tenant: user.getTenant().getName(),
-        resources: tokenBasedAuth.resources,
-        expiration: expiration
-    }
-    var token = plugins.jwt.create(payload, expiration);
-    if (!token) {
-        logWarning('A token could not be generated. Check JWT plugin configuration / server secret.');
-        return;
-    }
-    logDebug('A secure login token was issued ' + JSON.stringify(payload));
-    application.setUserProperty(tokenBasedAuth.namespace, token);
+	var payload = {
+		namespace : tokenBasedAuth.namespace,
+		user : user.getUserName(),
+		tenant : user.getTenant().getName(),
+		resources : tokenBasedAuth.resources,
+		expiration : expiration
+	}
+	var token = plugins.jwt.create(payload,expiration);
+	if(!token){
+		logWarning('A token could not be generated. Check JWT plugin configuration / server secret.');
+		return;
+	}
+	logDebug('A secure login token was issued ' + JSON.stringify(payload));
+	application.setUserProperty(tokenBasedAuth.namespace,token);
 }
 
 /**
@@ -3401,42 +3360,42 @@ function setToken(user) {
  *  
  * @properties={typeid:24,uuid:"566D772A-3F0C-44F3-84E9-8E4FB3801B8D"}
  */
-function loginWithToken(namespace) {
-    if (!namespace) {
-        throw 'namespace is required';
-    }
-    var token = application.getUserProperty(namespace);
-    if (!token) {
-        logDebug('No token found for namespace="' + namespace + '"');
-        return false;
-    }
-    var payload = plugins.jwt.verify(token);
-    if (!payload) {
-        logDebug('Invalid token found for namespace="' + namespace + '". Token is expired or server secret has changed.' + JSON.stringify(payload));
-        return false;
-    }
+function loginWithToken(namespace){
+	if(!namespace){
+		throw 'namespace is required';
+	}
+	var token = application.getUserProperty(namespace);
+	if(!token){
+		logDebug('No token found for namespace="'+namespace+'"');
+		return false;
+	}
+	var payload = plugins.jwt.verify(token);
+	if(!payload){
+		logDebug('Invalid token found for namespace="'+namespace+'". Token is expired or server secret has changed.' + JSON.stringify(payload));
+		return false;
+	}
 
-    var user = getUser(payload.user, payload.tenant);
-    if (!user) {
-        logDebug('A valid token was found, but could not find user for login token.' + JSON.stringify(payload));
-        return false;
-    }
-    var resources = payload.resources;
-    if (resources && resources.length) {
-        resources = resources.split(',');
-        var solutionName = application.getSolutionName();
-        if (resources.indexOf(solutionName) == -1) {
-            logDebug('The current solution "' + solutionName + '" is not in the token\'s list of protected resources' + JSON.stringify(payload));
-            return false;
-        }
-    }
-    if (!login(user)) {
-        logDebug('A valid token was found for the user, but The user could not be logged in.' + JSON.stringify(payload));
-        return false;
-    }
-    setTokenBasedAuth(namespace);
-    logDebug('Successful token-based login: ' + JSON.stringify(payload));
-    return true;
+	var user = getUser(payload.user,payload.tenant);
+	if(!user){
+		logDebug('A valid token was found, but could not find user for login token.' + JSON.stringify(payload));
+		return false;
+	}
+	var resources = payload.resources;
+	if(resources && resources.length){
+		resources = resources.split(',');
+		var solutionName = application.getSolutionName();
+		if(resources.indexOf(solutionName) == -1){
+			logDebug('The current solution "'+solutionName+'" is not in the token\'s list of protected resources' + JSON.stringify(payload));
+			return false;
+		}
+	}
+	if(!login(user)){
+		logDebug('A valid token was found for the user, but The user could not be logged in.' + JSON.stringify(payload));
+		return false;
+	}
+	setTokenBasedAuth(namespace);
+	logDebug('Successful token-based login: ' + JSON.stringify(payload));
+	return true;
 }
 
 /**
@@ -3444,11 +3403,11 @@ function loginWithToken(namespace) {
  * @private  
  * @properties={typeid:24,uuid:"B9A6555D-6AAA-48F2-87E6-804988D69649"}
  */
-function clearToken() {
-    if (tokenBasedAuth) {
-        application.setUserProperty(tokenBasedAuth.namespace, null);
-        logDebug('Login token cleared for namespace=' + tokenBasedAuth.namespace);
-    }
+function clearToken(){
+	if(tokenBasedAuth){
+		application.setUserProperty(tokenBasedAuth.namespace,null);
+		logDebug('Login token cleared for namespace=' + tokenBasedAuth.namespace);
+	}
 }
 
 /**
@@ -3458,25 +3417,25 @@ function clearToken() {
  * @SuppressWarnings (unused)
  * @properties={typeid:35,uuid:"9C3DE1BE-A17E-4380-AB9F-09500C26514F",variableType:-4}
  */
-var init = function () {
+var init = function() {	
+	
+	// set MAX values based on column length
+	var propertiesTable = datasources.db.svy_security.users.getTable();
+	MAX_USERNAME_LENGTH = propertiesTable.getColumn('user_name').getLength();
+	
+	if (application.isInDeveloper()) {
+		syncPermissions();
+	} else if (getAutoSyncPermissionsEnabled()) {
+		
+		// auto sync permission
+		syncPermissions();
 
-    // set MAX values based on column length
-    var propertiesTable = datasources.db.svy_security.users.getTable();
-    MAX_USERNAME_LENGTH = propertiesTable.getColumn('user_name').getLength();
-
-    if (application.isInDeveloper()) {
-        syncPermissions();
-    } else if (getAutoSyncPermissionsEnabled()) {
-
-        // auto sync permission
-        syncPermissions();
-
-        var msg = "Security permissions are synchronized at every user login for the deployed solution.\n\
+		var msg = "Security permissions are synchronized at every user login for the deployed solution.\n\
 		Such default behavior is setup to facilitate your testing and your first deployment, however synchronizing permissions at every login can impact the perfomances of your solution.\n\
 		Is recommended to use a postImportHook module running scopes.svySecurity.syncPermissions() to synchronize permissions at every deployement instead and disable auto-sync for every login.\n\
 		Auto-sync can be disabled by setting the user property " + USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED + "=false";
-        logWarning(msg);
-    }
-    createSampleData();
+		logWarning(msg);
+	}
+	createSampleData();
     scopes.svySecurityBatch.startBatch();
 }();
