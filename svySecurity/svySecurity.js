@@ -138,7 +138,9 @@ var USER_PROPERTIES = {
 	LOGIN_WITH_USER_ID_AS_USER_UID: "svy.security.login-with-user-id-as-user-uid",
 	
 	/** When set to true USER_CACHE will be used to avoid a lot of foundset looping */
-	USE_CACHE: "svy.security.use-cache"
+	USE_CACHE: "svy.security.use-cache",
+	/**when set to true it will create sampledata. Default true; eg: user.sample-data-when-enabled=true*/
+	SAMPLE_DATA_WHEN_ENABLED: "sample-data-when-enabled"
 }
 
 /**
@@ -3313,6 +3315,15 @@ function getUseCache() {
 }
 
 /**
+ * @private 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"497E3F57-2C81-49BA-B5A3-311BEE053BDE"}
+ */
+function getSampleDataEnabled(){
+	var result = application.getUserProperty(USER_PROPERTIES.SAMPLE_DATA_WHEN_ENABLED);
+	return result != "false" ? true : false;
+}
+/**
  * Initializes token-based authentication mode for a given namespace. 
  * Call this method once on startup in the login-solution or on-load or first-show of the login-form to enable this mode. 
  * Once initialized, a token will be automatically issued and stored after successful user logins. Use options for expiration and protected resources
@@ -3478,6 +3489,8 @@ var init = function() {
 		Auto-sync can be disabled by setting the user property " + USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED + "=false";
 		logWarning(msg);
 	}
-	createSampleData();
+	if(getSampleDataEnabled()){
+		createSampleData();
+	}
     scopes.svySecurityBatch.startBatch();
 }();
