@@ -3521,9 +3521,10 @@ function switchTenant(newTenant, saveOutstandingEdits) {
 				tenants.splice(tenants.indexOf(newTenantName), 1)
 				tenants.unshift(newTenantName);
 			} else {
-				if (tenants.indexOf(newTenantName) != -1) {
-					tenants.push(newTenantName);
-				}
+				tenants = [newTenantName];
+//				if (tenants.indexOf(newTenantName) != -1) {
+//					tenants.push(newTenantName);
+//				}
 			}
 			if (tenants.length > 0) {
 				tenants.push(null);
