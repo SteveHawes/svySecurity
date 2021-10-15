@@ -131,16 +131,29 @@ var DEFAULT_TENANT = 'admin';
  * @properties={typeid:35,uuid:"49CE1F05-E150-4E60-A14A-3D0BD4D747F1",variableType:-4}
  */
 var USER_PROPERTIES = {
-	/** When set to true permissions will be synced at every login for a deployed solution. Default true  */
+	/** 
+	 * When set to true permissions will be synced at every login for a deployed solution. Default true
+	 * @example user.svy.security.auto-sync-permissions-when-deployed=true
+	 * */
 	AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED: "svy.security.auto-sync-permissions-when-deployed",
 	
-	/** When set to true the user will be logged in using the user id as user uid. Default false */
+	/** 
+	 * When set to true the user will be logged in using the user id as user uid. Default false 
+	 * @example user.svy.security.login-with-user-id-as-user-uid=false
+	 * */
 	LOGIN_WITH_USER_ID_AS_USER_UID: "svy.security.login-with-user-id-as-user-uid",
 	
-	/** When set to true USER_CACHE will be used to avoid a lot of foundset looping */
+	/** 
+	 * When set to true USER_CACHE will be used to avoid a lot of foundset looping 
+	 * @example user.svy.security.use-cache=true
+	 * */
 	USE_CACHE: "svy.security.use-cache",
-	/**when set to true it will create sampledata. Default true; eg: user.sample-data-when-enabled=true*/
-	SAMPLE_DATA_WHEN_ENABLED: "svy.security.sample-data-when-enabled"
+	
+	/**
+	 * When set to true it will create sampledata. Default true
+	 * @example  user.svy.security.create-sample-data=true
+	 * */
+	CREATE_SAMPLE_DATA: "svy.security.create-sample-data"
 }
 
 /**
@@ -3319,10 +3332,11 @@ function getUseCache() {
  * @return {Boolean}
  * @properties={typeid:24,uuid:"497E3F57-2C81-49BA-B5A3-311BEE053BDE"}
  */
-function getSampleDataEnabled(){
-	var result = application.getUserProperty(USER_PROPERTIES.SAMPLE_DATA_WHEN_ENABLED);
+function getCreateSampleDataEnabled() {
+	var result = application.getUserProperty(USER_PROPERTIES.CREATE_SAMPLE_DATA);
 	return result != "false" ? true : false;
 }
+
 /**
  * Initializes token-based authentication mode for a given namespace. 
  * Call this method once on startup in the login-solution or on-load or first-show of the login-form to enable this mode. 
@@ -3489,7 +3503,7 @@ var init = function() {
 		Auto-sync can be disabled by setting the user property " + USER_PROPERTIES.AUTO_SYNC_PERMISSIONS_WHEN_DEPLOYED + "=false";
 		logWarning(msg);
 	}
-	if(getSampleDataEnabled()){
+	if (getCreateSampleDataEnabled()) {
 		createSampleData();
 	}
     scopes.svySecurityBatch.startBatch();
