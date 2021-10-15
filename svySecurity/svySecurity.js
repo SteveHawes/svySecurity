@@ -140,7 +140,7 @@ var USER_PROPERTIES = {
 	/** When set to true USER_CACHE will be used to avoid a lot of foundset looping */
 	USE_CACHE: "svy.security.use-cache",
 	/**when set to true it will create sampledata. Default true; eg: user.sample-data-when-enabled=true*/
-	SAMPLE_DATA_WHEN_ENABLED: "sample-data-when-enabled"
+	SAMPLE_DATA_WHEN_ENABLED: "svy.security.sample-data-when-enabled"
 }
 
 /**
