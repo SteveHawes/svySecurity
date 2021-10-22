@@ -55,7 +55,7 @@ autoEnterType:1,
 compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:5,
 dataType:12,
-length:50,
+length:254,
 name:"creation_user_name"
 },
 {
@@ -65,7 +65,7 @@ autoEnterType:1,
 compatibleColumnTypes:"[[-9,50,0]]",
 creationOrderIndex:6,
 dataType:12,
-length:50,
+length:254,
 name:"modification_user_name"
 }
 ],
