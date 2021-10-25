@@ -357,7 +357,14 @@ function getUserProperty(propertyKey, propertyType) {
 	if (!activeUserName) {
 		throw new Error('No user name set in svyProperties. Make sure a user name is set by calling setUserName().');
 	}
-	return getProperty(propertyKey, propertyType, activeTenantName, activeUserName);
+	var property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName, activeSolutionName);
+	if(!property) {
+		property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName);
+		if(property) {
+			property = setProperty(propertyKey, propertyType, property.getPropertyValue(), activeUserName, activeTenantName, activeSolutionName);
+		}
+	}
+	return property;
 }
 
 /**
@@ -387,7 +394,13 @@ function getUserPropertyValue(propertyKey, propertyType) {
 	if (!activeUserName) {
 		throw new Error('No user name set in svyProperties. Make sure a user name is set by calling setUserName().');
 	}
-	var property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName);
+	var property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName, activeSolutionName);
+	if(!property) {
+		property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName);
+		if(property) {
+			property = setProperty(propertyKey, propertyType, property.getPropertyValue(), activeUserName, activeTenantName, activeSolutionName);
+		}
+	}
 	if (property) {
 		return property.getPropertyValue();
 	} else {
@@ -412,7 +425,14 @@ function getTenantProperty(propertyKey, propertyType) {
 	if (!activeTenantName) {
 		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
 	}
-	return getProperty(propertyKey, propertyType, activeTenantName, null);
+	var property = getProperty(propertyKey, propertyType, activeTenantName, null, activeSolutionName);
+	if(!property) {
+		property = getProperty(propertyKey, propertyType, activeTenantName, null);
+		if(property) {
+			property = setProperty(propertyKey, propertyType, property.getPropertyValue(), null, activeTenantName, activeSolutionName);
+		}
+	}
+	return property;
 }
 
 /**
@@ -432,7 +452,13 @@ function getTenantPropertyValue(propertyKey, propertyType) {
 	if (!activeTenantName) {
 		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
 	}
-	var property = getProperty(propertyKey, propertyType, activeTenantName, null);
+	var property = getProperty(propertyKey, propertyType, activeTenantName, null, activeSolutionName);
+	if(!property) {
+		property = getProperty(propertyKey, propertyType, activeTenantName, null);
+		if(property) {
+			property = setProperty(propertyKey, propertyType, property.getPropertyValue(), null, activeTenantName, activeSolutionName);
+		}
+	}
 	if (property) {
 		return property.getPropertyValue();
 	} else {
@@ -467,7 +493,7 @@ function getSolutionProperty(propertyKey, propertyType) {
 	if (!activeSolutionName) {
 		throw new Error('No solution name set in svyProperties. Make sure a solution name is set by calling setSolutionName().');
 	}
-	return getProperty(propertyKey, propertyType, activeTenantName, activeUserName, activeSolutionName);
+	return getProperty(propertyKey, propertyType, null, null, activeSolutionName);
 }
 
 /**
@@ -497,7 +523,7 @@ function getSolutionPropertyValue(propertyKey, propertyType) {
 	if (!activeUserName) {
 		throw new Error('No solution name set in svyProperties. Make sure a solution name is set by calling setSolutionName().');
 	}
-	var property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName, activeSolutionName);
+	var property = getProperty(propertyKey, propertyType, null, null, activeSolutionName);
 	if (property) {
 		return property.getPropertyValue();
 	} else {
@@ -628,7 +654,7 @@ function setUserProperty(propertyKey, propertyType, value) {
 	if (!activeUserName) {
 		throw new Error('No user name set in svyProperties. Make sure a user name is set by calling setUserName().');
 	}
-	return setProperty(propertyKey, propertyType, value, activeUserName, activeTenantName);
+	return setProperty(propertyKey, propertyType, value, activeUserName, activeTenantName, activeSolutionName);
 }
 
 /**
@@ -649,7 +675,7 @@ function setTenantProperty(propertyKey, propertyType, value) {
 	if (!activeTenantName) {
 		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
 	}
-	return setProperty(propertyKey, propertyType, value, null, activeTenantName);
+	return setProperty(propertyKey, propertyType, value, null, activeTenantName, activeSolutionName);
 }
 
 /**
@@ -670,7 +696,7 @@ function setSolutionProperty(propertyKey, propertyType, value) {
 	if (!activeSolutionName) {
 		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
 	}
-	return setProperty(propertyKey, propertyType, value, activeUserName, activeTenantName, activeSolutionName);
+	return setProperty(propertyKey, propertyType, value, null, null, activeSolutionName);
 }
 
 /**
