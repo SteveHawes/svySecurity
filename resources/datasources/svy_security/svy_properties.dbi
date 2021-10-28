@@ -57,13 +57,6 @@ creationOrderIndex:6,
 dataType:12,
 length:500,
 name:"display_name"
-},
-{
-allowNull:true,
-creationOrderIndex:7,
-dataType:12,
-length:50,
-name:"solution_name"
 }
 ],
 name:"svy_properties",

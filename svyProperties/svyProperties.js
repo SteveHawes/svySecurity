@@ -10,14 +10,6 @@ var MAX_TENANTNAME_LENGTH = 50;
  * @private
  * @type {Number}
  *
- * @properties={typeid:35,uuid:"BB9ABC90-B18B-49F5-AF5B-9792EBCAFE73",variableType:4}
- */
-var MAX_SOLUTION_NAME_LENGTH = 50;
-
-/**
- * @private
- * @type {Number}
- *
  * @properties={typeid:35,uuid:"F45AB1DC-D4F8-4304-AFE5-0F6206F04BC4",variableType:8}
  */
 var MAX_USERNAME_LENGTH = 254;
@@ -83,14 +75,6 @@ var activeUserName;
  * @properties={typeid:35,uuid:"30EF256B-D6ED-4975-8BBF-7F02F3BE46EF"}
  */
 var activeTenantName;
-
-/**
- * @type {String}
- * @private 
- *
- * @properties={typeid:35,uuid:"920780CB-8C20-4263-B682-E2BF198DBC40"}
- */
-var activeSolutionName = application.getSolutionName();
 
 /**
  * If false then when saving or deleting security-related records
@@ -233,7 +217,7 @@ function initProperty() {
      * Gets the tenant name for this property.
      *
      * @public
-     * @return {String} The tenant name of this property. Can be null if a tenant name is not set.
+     * @return {String} The property value of this property. Can be null if a display name is not set.
      * @this {Property}
      */
     Property.prototype.getTenantName = function() {
@@ -244,22 +228,11 @@ function initProperty() {
      * Gets the user name for this property.
      *
      * @public
-     * @return {String} The user name of this property. Can be null if a user name is not set.
+     * @return {String} The property value of this property. Can be null if a display name is not set.
      * @this {Property}
      */
     Property.prototype.getUserName = function() {
         return this.record.user_name;
-    }    
-    
-    /**
-     * Gets the solution name for this property.
-     *
-     * @public
-     * @return {String} The solution name of this property. Can be null if a solution name is not set.
-     * @this {Property}
-     */
-    Property.prototype.getSolutionName = function() {
-        return this.record.solution_name;
     }    
     
     /**
@@ -304,30 +277,6 @@ function initProperty() {
 function setUserName(userName, tenantName) {
 	activeUserName = userName;
 	activeTenantName = tenantName;
-}
-
-/**
- * Sets the solution name for the logged in user<br>
- * It is used in all convenience methods to get or set properties for the solution<br>
- * 
- * @param {String} solutionName the name of the active solution for which solution related properties are stored
- * 
- * @public 
- * 
- * @example 
- * <pre>
- * function onSolutionOpen(arg, queryParams) {
- *   // don't set the solution name if solution specific properties are not required
- *   // scopes.svyProperties.setSolutionName(solutionName);
- * 
- *   scopes.svyProperties.setUserName(loggedUniqueUserName, loggedUniqueTenantName);
- * }
- * </pre>
- *
- * @properties={typeid:24,uuid:"7FFFDE9B-265B-4149-8738-80DE4082E826"}
- */
-function setSolutionName(solutionName) {
-	activeSolutionName = solutionName;
 }
 
 /**
@@ -441,72 +390,6 @@ function getTenantPropertyValue(propertyKey, propertyType) {
 }
 
 /**
- * Returns the property with the given key and type for the solution set via <code>setSolutionName()</code>
- * 
- * @param {String} propertyKey the identifier for the property
- * @param {String} propertyType the type of property (typically an enum value)
- * 
- * @return {Property} the property found or null if not found
- * 
- * @public 
- * 
- * @example
- * <pre>
- * function onShow(firstShow, event) {
- * 	var propertyKey = application.getSolutionName() + "-" + controller.getName() + "-" + elements.table.getName();
- *	var columnState = scopes.svyProperties.getUserProperty(propertyKey, 'table-state');
- *	
- *	// restore the ng-grid state 
- *	if (columnState) elements.table.restoreColumnState(columnState.getPropertyValue());
- * }
- * </pre>
- *
- * @properties={typeid:24,uuid:"B7AF9215-710E-402A-BEB2-9DE23E7A1441"}
- */
-function getSolutionProperty(propertyKey, propertyType) {
-	if (!activeSolutionName) {
-		throw new Error('No solution name set in svyProperties. Make sure a solution name is set by calling setSolutionName().');
-	}
-	return getProperty(propertyKey, propertyType, activeTenantName, activeUserName, activeSolutionName);
-}
-
-/**
- * Returns the value of the property with the given key and type for the solution set via <code>setSolutionName()</code>
- * 
- * @param {String} propertyKey the identifier for the property
- * @param {String} propertyType the type of property (typically an enum value)
- * 
- * @return {String} the value of the property found or null if not found
- * 
- * @public 
- * 
- * @example
- * <pre>
- * function onShow(firstShow, event) {
- * 	var propertyKey = application.getSolutionName() + "-" + controller.getName() + "-" + elements.table.getName();
- *	var columnState = scopes.svyProperties.getUserPropertyValue(propertyKey, 'table-state');
- *	
- *	// restore the ng-grid state 
- *	if (columnState) elements.table.restoreColumnState(columnState);
- * }
- * </pre>
- *
- * @properties={typeid:24,uuid:"CE5F5200-4B3C-46F8-9479-A06C5F43C9F3"}
- */
-function getSolutionPropertyValue(propertyKey, propertyType) {
-	if (!activeUserName) {
-		throw new Error('No solution name set in svyProperties. Make sure a solution name is set by calling setSolutionName().');
-	}
-	var property = getProperty(propertyKey, propertyType, activeTenantName, activeUserName, activeSolutionName);
-	if (property) {
-		return property.getPropertyValue();
-	} else {
-		return null;
-	}
-}
-
-
-/**
  * Returns the global property with the given key and type<br>
  * Global properties are properties where the tenant and user name is not set
  * 
@@ -520,7 +403,7 @@ function getSolutionPropertyValue(propertyKey, propertyType) {
  * @properties={typeid:24,uuid:"86FF4B96-8D1E-4499-B62C-7E3073930E4A"}
  */
 function getGlobalProperty(propertyKey, propertyType) {
-	return getProperty(propertyKey, propertyType, null, null, null);
+	return getProperty(propertyKey, propertyType, null, null);
 }
 
 /**
@@ -537,7 +420,7 @@ function getGlobalProperty(propertyKey, propertyType) {
  * @properties={typeid:24,uuid:"F7E35C5D-B22F-4798-AAE8-F1C498699E30"}
  */
 function getGlobalPropertyValue(propertyKey, propertyType) {
-	var property = getProperty(propertyKey, propertyType, null, null, null);
+	var property = getProperty(propertyKey, propertyType, null, null);
 	if (property) {
 		return property.getPropertyValue();
 	} else {
@@ -553,7 +436,6 @@ function getGlobalPropertyValue(propertyKey, propertyType) {
  * @param {String} propertyType the type of property (typically an enum value)
  * @param {String} [tenantName] the tenant name for which this property is stored
  * @param {String} [userName] the user name for which this property is stored
- * @param {String} [solutionName] the solution name for which this property is stored
  * 
  * @return {Property} the property found or null if not found
  * 
@@ -561,7 +443,7 @@ function getGlobalPropertyValue(propertyKey, propertyType) {
  *
  * @properties={typeid:24,uuid:"623D678C-543A-45DE-99BA-27027352B03C"}
  */
-function getProperty(propertyKey, propertyType, tenantName, userName, solutionName) {
+function getProperty(propertyKey, propertyType, tenantName, userName) {
 	if (!propertyKey || !propertyType) {
 		if (!propertyKey) {
 			throw new Error('No propertyKey provided');
@@ -584,17 +466,12 @@ function getProperty(propertyKey, propertyType, tenantName, userName, solutionNa
 	} else {
 		query.where.add(query.columns.tenant_name.isNull);		
 	}
-	if (solutionName) {
-		query.where.add(query.columns.solution_name.eq(solutionName));
-	} else {
-		query.where.add(query.columns.solution_name.isNull);		
-	}
 	var fs = datasources.db.svy_security.svy_properties.getFoundSet();
 	fs.loadRecords(query);
 	
 	if (utils.hasRecords(fs)) {
 		if (fs.getSize() > 1) {
-			log.warn('More than one property found for propertyKey "{}", propertyType "{}", tenantName "{}",  userName "{}" and solutionName"{}"', propertyKey, propertyType, tenantName, userName, solutionName);
+			log.warn('More than one property found for propertyKey "{}", propertyType "{}", tenantName "{}" and userName "{}"', propertyKey, propertyType, tenantName, userName);
 		}
 		return new Property(fs.getRecord(1));
 	} else {
@@ -653,27 +530,6 @@ function setTenantProperty(propertyKey, propertyType, value) {
 }
 
 /**
- * Sets the given value to the solution wide property with the given key and type or creates a new property if not found<br>
- * Solution wide properties can be further refined by specifying a tenant and/or username
- * 
- * @param {String} propertyKey the identifier for the property
- * @param {String} propertyType the type of property (typically an enum value)
- * @param {String} value the string value of the property
- * 
- * @return {Property}
- * 
- * @public 
- *
- * @properties={typeid:24,uuid:"29C09F7D-02D3-40E5-B69D-96BDAC666A2A"}
- */
-function setSolutionProperty(propertyKey, propertyType, value) {
-	if (!activeSolutionName) {
-		throw new Error('No tenant name set in svyProperties. Make sure a tenant name is set by calling setUserName().');
-	}
-	return setProperty(propertyKey, propertyType, value, activeUserName, activeTenantName, activeSolutionName);
-}
-
-/**
  * Sets the given value to the global property with the given key and type or creates a new property if not found<br>
  * Global properties are properties where the tenant and user name is not set
  * 
@@ -688,7 +544,7 @@ function setSolutionProperty(propertyKey, propertyType, value) {
  * @properties={typeid:24,uuid:"3E48CC2C-F3B6-4462-9CB2-3D69D5F69B27"}
  */
 function setGlobalProperty(propertyKey, propertyType, value) {
-	return setProperty(propertyKey, propertyType, value, null, null, null);
+	return setProperty(propertyKey, propertyType, value, null, null);
 }
 
 /**
@@ -699,7 +555,6 @@ function setGlobalProperty(propertyKey, propertyType, value) {
  * @param {String} value the string value of the property
  * @param {String} userName the user name for which this property is stored
  * @param {String} tenantName the tenant name for which this property is stored
- * @param {String} [solutionName] the solution name for which this property is stored
  * 
  * @return {Property}
  * 
@@ -707,8 +562,8 @@ function setGlobalProperty(propertyKey, propertyType, value) {
  *
  * @properties={typeid:24,uuid:"C64333B6-744C-4F07-ACBF-31DF4BD627F3"}
  */
-function setProperty(propertyKey, propertyType, value, userName, tenantName, solutionName) {
-	var property = getOrCreateProperty(propertyKey, propertyType, solutionName, tenantName, userName, value);
+function setProperty(propertyKey, propertyType, value, userName, tenantName) {
+	var property = getOrCreateProperty(propertyKey, propertyType, tenantName, userName, value);
 	return property.setPropertyValue(value);
 }
 
@@ -720,7 +575,6 @@ function setProperty(propertyKey, propertyType, value, userName, tenantName, sol
  * @param {String} propertyValue
  * @param {String} [tenantName]
  * @param {String} [userName]
- * @param {String} [solutionName]
  * 
  * @return {Property}
  * @private  
@@ -729,7 +583,7 @@ function setProperty(propertyKey, propertyType, value, userName, tenantName, sol
  *
  * @properties={typeid:24,uuid:"08D8D77A-FC88-453D-A9CA-9B320A9CF2F3"}
  */
-function createProperty(propertyKey, propertyType, propertyValue, solutionName, tenantName, userName) {
+function createProperty(propertyKey, propertyType, propertyValue, tenantName, userName) {
 	if (!propertyKey) {
 		throw new Error('propertyKey cannot be null or empty');
 	}
@@ -753,10 +607,6 @@ function createProperty(propertyKey, propertyType, propertyValue, solutionName, 
 		throw new Error(utils.stringFormat('TenantName must be between 1 and %1$s characters long.', [MAX_TENANTNAME_LENGTH]));
 	}
 
-	if (!textLengthIsValid(solutionName, MAX_SOLUTION_NAME_LENGTH)) {
-		throw new Error(utils.stringFormat('SolutionName must be between 1 and %1$s characters long.', [MAX_SOLUTION_NAME_LENGTH]));
-	}
-
 	if (!textLengthIsValid(userName, MAX_USERNAME_LENGTH)) {
 		throw new Error(utils.stringFormat('UserName must be between 1 and %1$s characters long.', [MAX_USERNAME_LENGTH]));
 	}
@@ -764,7 +614,7 @@ function createProperty(propertyKey, propertyType, propertyValue, solutionName, 
 	var fs = datasources.db.svy_security.svy_properties.getFoundSet();
 
 	// Check if value is unique values
-	var fsExists = scopes.svyDataUtils.getFoundSetWithExactValues(fs.getDataSource(), ["property_namespace", "property_type", "tenant_name", "user_name", "solution_name"], [propertyKey, propertyType, tenantName, userName, solutionName]);
+	var fsExists = scopes.svyDataUtils.getFoundSetWithExactValues(fs.getDataSource(), ["property_namespace", "property_type", "tenant_name", "user_name"], [propertyKey, propertyType, tenantName, userName]);
 	if (fsExists.getSize()) {
 		// return the exception here !?
 		throw new scopes.svyDataUtils.ValueNotUniqueException("There is already a property for values", fsExists);
@@ -776,7 +626,6 @@ function createProperty(propertyKey, propertyType, propertyValue, solutionName, 
 	rec.property_value = propertyValue;
 	rec.tenant_name = tenantName;
 	rec.user_name = userName;
-	rec.solution_name = solutionName;
 
 	saveRecord(rec);
 	
@@ -788,7 +637,6 @@ function createProperty(propertyKey, propertyType, propertyValue, solutionName, 
  * 
  * @param propertyKey
  * @param propertyType
- * @param [solutionName]
  * @param [tenantName]
  * @param [userName]
  * @param [propertyValue]
@@ -800,10 +648,10 @@ function createProperty(propertyKey, propertyType, propertyValue, solutionName, 
  *
  * @properties={typeid:24,uuid:"61F0F863-A1D0-4B21-944D-63DEAC9B8FA7"}
  */
-function getOrCreateProperty(propertyKey, propertyType, solutionName, tenantName, userName, propertyValue) {
-	var property = getProperty(propertyKey, propertyType, tenantName, userName, solutionName);
+function getOrCreateProperty(propertyKey, propertyType, tenantName, userName, propertyValue) {
+	var property = getProperty(propertyKey, propertyType, tenantName, userName);
 	if (!property) {
-		return createProperty(propertyKey, propertyType, propertyValue, solutionName, tenantName, userName);
+		return createProperty(propertyKey, propertyType, propertyValue, tenantName, userName);
 	} else {
 		return property;
 	}
@@ -845,14 +693,13 @@ function getPropertyById(propertyId) {
  * @param {String} [propertyType] has to match exactly
  * @param {String} [tenantName] has to match exactly
  * @param {String} [userName] has to match exactly
- * @param {String} [solutionName] has to match exactly
  * 
  * @return {Array<Property>}
  * @public 
  *
  * @properties={typeid:24,uuid:"7F95F54F-D932-4226-AA75-60841D07CBF4"}
  */
-function getProperties(propertyKey, propertyType, tenantName, userName, solutionName) {
+function getProperties(propertyKey, propertyType, tenantName, userName) {
 	if ((propertyKey == null || propertyKey == undefined)) {
 		throw new Error("propertyKey required");
 	}
@@ -865,12 +712,8 @@ function getProperties(propertyKey, propertyType, tenantName, userName, solution
 		//user not given - will be ignored
 		userName = IGNORE_PARAMETER;
 	}
-	if (arguments.length <= 4) {
-		//solution not given - will be ignored
-		solutionName = IGNORE_PARAMETER;
-	}
 	
-	return loadProperties(propertyKey, propertyType, tenantName, userName, solutionName);
+	return loadProperties(propertyKey, propertyType, tenantName, userName);
 }
 
 /**
@@ -882,14 +725,13 @@ function getProperties(propertyKey, propertyType, tenantName, userName, solution
  * @param {String} propertyType has to match exactly
  * @param {String} [tenantName] has to match exactly
  * @param {String} [userName] has to match exactly
- * @param {String} [solutionName] has to match exactly
  * 
  * @return {Array<Property>}
  * @public 
  *
  * @properties={typeid:24,uuid:"82C26D51-AD85-47DD-98D6-7CE2B8449EF0"}
  */
-function getPropertiesByType(propertyType, tenantName, userName, solutionName) {
+function getPropertiesByType(propertyType, tenantName, userName) {
 	if ((propertyType == null || propertyType == undefined)) {
 		throw new Error("propertyType required");
 	}
@@ -902,18 +744,13 @@ function getPropertiesByType(propertyType, tenantName, userName, solutionName) {
 		//user not given - will be ignored
 		userName = IGNORE_PARAMETER;
 	}
-	if (arguments.length <= 3) {
-		//solution not given - will be ignored
-		solutionName = IGNORE_PARAMETER;
-	}
 	
-	return loadProperties(null, propertyType, solutionName, tenantName, userName);
+	return loadProperties(null, propertyType, tenantName, userName);
 }
 
 /**
  * @param {String} propertyKey
  * @param {String} propertyType
- * @param {String} solutionName will not be queried if IGNORE_PARAMETER, else will ask for exact match or is null
  * @param {String} tenantName will not be queried if IGNORE_PARAMETER, else will ask for exact match or is null
  * @param {String} userName will not be queried if IGNORE_PARAMETER, else will ask for exact match or is null
  * 
@@ -923,7 +760,7 @@ function getPropertiesByType(propertyType, tenantName, userName, solutionName) {
  *
  * @properties={typeid:24,uuid:"4CCA87D6-FC62-442B-9F66-A17DD48BBAF7"}
  */
-function loadProperties(propertyKey, propertyType, solutionName, tenantName, userName) {
+function loadProperties(propertyKey, propertyType, tenantName, userName) {
 	var query = datasources.db.svy_security.svy_properties.createSelect();
 	query.result.addPk();
 	
@@ -952,14 +789,6 @@ function loadProperties(propertyKey, propertyType, solutionName, tenantName, use
 			query.where.add(query.columns.user_name.isNull);
 		} else {
 			query.where.add(query.columns.user_name.eq(userName));			
-		}
-	}
-	
-	if (solutionName !== IGNORE_PARAMETER) {
-		if (!solutionName) {
-			query.where.add(query.columns.solution_name.isNull);
-		} else {
-			query.where.add(query.columns.solution_name.eq(solutionName));			
 		}
 	}
 	
@@ -1134,7 +963,6 @@ var init = (function() {
 	
 	// set MAX values based on column length
 	MAX_TENANTNAME_LENGTH = propertiesTable.getColumn('tenant_name').getLength();
-	MAX_SOLUTION_NAME_LENGTH = propertiesTable.getColumn('solution_name').getLength();
 	MAX_USERNAME_LENGTH = propertiesTable.getColumn('user_name').getLength();
 	MAX_NAMESPACE_LENGTH = propertiesTable.getColumn('property_namespace').getLength();
 	MAX_TYPE_LENGTH = propertiesTable.getColumn('property_type').getLength();
