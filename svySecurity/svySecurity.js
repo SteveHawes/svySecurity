@@ -3618,6 +3618,7 @@ function logFailedLogin(userName, tenantName, error) {
  *
  * @param {String|UUID} newTenant
  * @param {Boolean} [saveOutstandingEdits]	-	flag to indicate if outstanding edits should be saved before switching tenant - default: TRUE
+ * @param {Boolean} [showAllRecords]		-	flag to indicate if records from all accessible tenants should be shown
  *
  * @return {Array<String>} Array of tenants for security filter
  *
@@ -3627,7 +3628,7 @@ function logFailedLogin(userName, tenantName, error) {
  *
  * @properties={typeid:24,uuid:"C03E6E6C-1737-4DC1-AB52-26A6E9B9E959"}
  */
-function switchTenant(newTenant, saveOutstandingEdits) {
+function switchTenant(newTenant, saveOutstandingEdits, showAllRecords) {
 	var tenants = [];
 	try {
 		removeSecurityTablesFilter();
@@ -3640,13 +3641,16 @@ function switchTenant(newTenant, saveOutstandingEdits) {
 		if (saveOutstandingEdits === undefined || saveOutstandingEdits === null)
 			saveOutstandingEdits = true;
 
+		if (showAllRecords === undefined || showAllRecords === null)
+			showAllRecords = false;
+
 		if (saveOutstandingEdits)
 			databaseManager.saveData();
 
 		var newTenantName = tenant.getName()
 		if (newTenantName != activeTenantName) {
 			tenants = getUser().getAccessibleTenants();
-			if (getUser().hasPermission('DEVELOPER')) {
+			if (showAllRecords) {
 				tenants.splice(tenants.indexOf(newTenantName), 1)
 				tenants.unshift(newTenantName);
 			} else {
@@ -3656,7 +3660,7 @@ function switchTenant(newTenant, saveOutstandingEdits) {
 				//				}
 			}
 			if (tenants.length > 0) {
-				tenants.push(null);
+				if(tenants.indexOf(null) == -1) tenants.push(null);
 				security.setTenantValue(tenants);
 				activeTenantName = tenant.getName();
 				activeTenantIsMaster = tenant.isMasterTenant();
