@@ -3629,7 +3629,9 @@ function logFailedLogin(userName, tenantName, error) {
  * @properties={typeid:24,uuid:"C03E6E6C-1737-4DC1-AB52-26A6E9B9E959"}
  */
 function switchTenant(newTenant, saveOutstandingEdits, showAllRecords) {
-	var tenants = [];
+	/** @type {Array<String>} */
+	var tenants;
+
 	try {
 		removeSecurityTablesFilter();
 		/** @type {Tenant} */
@@ -3644,11 +3646,15 @@ function switchTenant(newTenant, saveOutstandingEdits, showAllRecords) {
 		if (showAllRecords === undefined || showAllRecords === null)
 			showAllRecords = false;
 
+		var currentShowAllRecords = security.getTenantValue().filter(function(element) {
+				return typeof element == "string"
+			}).length > 1;
+
 		if (saveOutstandingEdits)
 			databaseManager.saveData();
 
 		var newTenantName = tenant.getName()
-		if (newTenantName != activeTenantName) {
+		if (newTenantName != activeTenantName || showAllRecords != currentShowAllRecords) {
 			tenants = getUser().getAccessibleTenants();
 			if (showAllRecords) {
 				tenants.splice(tenants.indexOf(newTenantName), 1)
@@ -3660,7 +3666,7 @@ function switchTenant(newTenant, saveOutstandingEdits, showAllRecords) {
 				//				}
 			}
 			if (tenants.length > 0) {
-				if(tenants.indexOf(null) == -1) tenants.push(null);
+				if (tenants.indexOf(null) == -1) tenants.push(null);
 				security.setTenantValue(tenants);
 				activeTenantName = tenant.getName();
 				activeTenantIsMaster = tenant.isMasterTenant();
@@ -3671,6 +3677,7 @@ function switchTenant(newTenant, saveOutstandingEdits, showAllRecords) {
 		}
 	} finally {
 		filterSecurityTables();
+		tenants = security.getTenantValue();
 	}
 
 	return tenants
