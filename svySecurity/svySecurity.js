@@ -259,22 +259,9 @@ function login(user, userUid, permissionsToApply) {
 
 	// login
 	var tenants = [];
-	if (user.hasPermission('DEVELOPER')) {
-		var query = datasources.db.svy_security.users.createSelect();
-
-		query.result.add(query.columns.tenant_name);
-		query.sort.add(query.columns.tenant_name);
-		query.where.add(query.columns.user_name.eq(user.getUserName()));
-		tenants = databaseManager.getDataSetByQuery(query, false, -1).getColumnAsArray(1);
-		tenants.splice(tenants.indexOf(user.getTenant().getName()), 1);
-		tenants.unshift(user.getTenant().getName());
-		tenants.push(null);
-		security.setTenantValue(tenants);
-	} else {
-		tenants.push(user.getTenant().getName())
-		tenants.push(null);
-		security.setTenantValue(tenants);
-	}
+	tenants.push(user.getTenant().getName())
+	tenants.push(null);
+	security.setTenantValue(tenants);
 
 	// determine userUID to be used for the logged user
 	var loginUserUid;
